@@ -214,10 +214,10 @@
 				bottom: (tc.top + tc.height) / tex_h,
 			};
 			var pos = [
-				tmp_pos.left, tmp_pos.bottom, 0,
-				tmp_pos.right, tmp_pos.bottom, 0,
-				tmp_pos.left, tmp_pos.top, 0,
-				tmp_pos.right, tmp_pos.top, 0,
+				tmp_pos.left, -tmp_pos.bottom, 0,
+				tmp_pos.right, -tmp_pos.bottom, 0,
+				tmp_pos.left, -tmp_pos.top, 0,
+				tmp_pos.right, -tmp_pos.top, 0,
 			];
 			var texCoord = [
 				tmp_texCoord.left, tmp_texCoord.bottom,
@@ -230,37 +230,6 @@
 				texCoord: texCoord,
 			});
 		}
-
-		// // 左上
-		// vertices.push({
-		// 	pos: [
-		// 		-1.0,  0.0,  0.0,
-		// 		 0.0,  0.0,  0.0,
-		// 		-1.0,  1.0,  0.0,
-		// 		 0.0,  1.0,  0.0,
-		// 	],
-		// 	texCoord: [
-		// 		0.0, 0.5,
-		// 		0.5, 0.5,
-		// 		0.0, 0.0,
-		// 		0.5, 0.0,
-		// 	],
-		// });
-		// // 左下
-		// vertices.push({
-		// 	pos: [
-		// 		-1.0, -1.0,  0.0,
-		// 		 0.0, -1.0,  0.0,
-		// 		-1.0,  0.0,  0.0,
-		// 		 0.0,  0.0,  0.0,
-		// 	],
-		// 	texCoord: [
-		// 		0.0, 1.0,
-		// 		0.5, 1.0,
-		// 		0.0, 0.5,
-		// 		0.5, 0.5,
-		// 	],
-		// });
 
 		// インデックスバッファ生成 & 登録
 		var indexData = [
