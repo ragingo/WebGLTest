@@ -184,39 +184,83 @@
 		// エフェクト切り替え
 		gl.uniform1i(uniformLocation.effectType, view.getSelectedEffectType());
 
-		// TODO: texCoord から算出して pos を生成
+		const tex_w = 512.0;
+		const tex_h = 512.0;
+		var texCoords = [
+			{ left:   0, top:   0, width: 256, height: 256 },
+			{ left:   0, top: 256, width: 256, height: 256 },
+			{ left: 256, top:   0, width: 256, height: 256 },
+			{ left: 256, top: 256, width: 256, height: 256 },
+		];
+
 		// 頂点バッファ更新
 		var vertices = [];
-		// 左上
-		vertices.push({
-			pos: [
-				-1.0,  0.0,  0.0,
-				 0.0,  0.0,  0.0,
-				-1.0,  1.0,  0.0,
-				 0.0,  1.0,  0.0,
-			],
-			texCoord: [
-				0.0, 0.5,
-				0.5, 0.5,
-				0.0, 0.0,
-				0.5, 0.0,
-			],
-		});
-		// 左下
-		vertices.push({
-			pos: [
-				-1.0, -1.0,  0.0,
-				 0.0, -1.0,  0.0,
-				-1.0,  0.0,  0.0,
-				 0.0,  0.0,  0.0,
-			],
-			texCoord: [
-				0.0, 1.0,
-				0.5, 1.0,
-				0.0, 0.5,
-				0.5, 0.5,
-			],
-		});
+		for (var i = 0; i < texCoords.length; i++) {
+			var tc = texCoords[i];
+			var tmp_pos = {
+				left:   (tc.left / tex_w) * 2.0 - 1.0,
+				top:    (tc.top / tex_h) * 2.0 - 1.0,
+				width:  (tc.width / tex_w) * 2.0 - 1.0,
+				height: (tc.height / tex_h) * 2.0 - 1.0,
+				right:  ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
+				bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
+			};
+			var tmp_texCoord = {
+				left:   tc.left / tex_w,
+				top:    tc.top / tex_h,
+				width:  tc.width / tex_w,
+				height: tc.height / tex_h,
+				right:  (tc.left + tc.width) / tex_w,
+				bottom: (tc.top + tc.height) / tex_h,
+			};
+			var pos = [
+				tmp_pos.left, tmp_pos.bottom, 0,
+				tmp_pos.right, tmp_pos.bottom, 0,
+				tmp_pos.left, tmp_pos.top, 0,
+				tmp_pos.right, tmp_pos.top, 0,
+			];
+			var texCoord = [
+				tmp_texCoord.left, tmp_texCoord.bottom,
+				tmp_texCoord.right, tmp_texCoord.bottom,
+				tmp_texCoord.left, tmp_texCoord.top,
+				tmp_texCoord.right, tmp_texCoord.top,
+			];
+			vertices.push({
+				pos: pos,
+				texCoord: texCoord,
+			});
+		}
+
+		// // 左上
+		// vertices.push({
+		// 	pos: [
+		// 		-1.0,  0.0,  0.0,
+		// 		 0.0,  0.0,  0.0,
+		// 		-1.0,  1.0,  0.0,
+		// 		 0.0,  1.0,  0.0,
+		// 	],
+		// 	texCoord: [
+		// 		0.0, 0.5,
+		// 		0.5, 0.5,
+		// 		0.0, 0.0,
+		// 		0.5, 0.0,
+		// 	],
+		// });
+		// // 左下
+		// vertices.push({
+		// 	pos: [
+		// 		-1.0, -1.0,  0.0,
+		// 		 0.0, -1.0,  0.0,
+		// 		-1.0,  0.0,  0.0,
+		// 		 0.0,  0.0,  0.0,
+		// 	],
+		// 	texCoord: [
+		// 		0.0, 1.0,
+		// 		0.5, 1.0,
+		// 		0.0, 0.5,
+		// 		0.5, 0.5,
+		// 	],
+		// });
 
 		// インデックスバッファ生成 & 登録
 		var indexData = [
