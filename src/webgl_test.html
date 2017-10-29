@@ -23,6 +23,13 @@
 		init: function() {
 			// スライダ初期化
 			this.sliders = {
+				polygon: { body: ragii.dom.getElem("#slider_polygon"), label: ragii.dom.getElem("#label_polygon") },
+				rotation_x: { body: ragii.dom.getElem("#slider_rotation_x"), label: ragii.dom.getElem("#label_rotation_x") },
+				rotation_y: { body: ragii.dom.getElem("#slider_rotation_y"), label: ragii.dom.getElem("#label_rotation_y") },
+				rotation_z: { body: ragii.dom.getElem("#slider_rotation_z"), label: ragii.dom.getElem("#label_rotation_z") },
+				scale_x: { body: ragii.dom.getElem("#slider_scale_x"), label: ragii.dom.getElem("#label_scale_x") },
+				scale_y: { body: ragii.dom.getElem("#slider_scale_y"), label: ragii.dom.getElem("#label_scale_y") },
+				scale_z: { body: ragii.dom.getElem("#slider_scale_z"), label: ragii.dom.getElem("#label_scale_z") },
 				r: { body: ragii.dom.getElem("#slider_color_r"), label: ragii.dom.getElem("#label_color_r_value") },
 				g: { body: ragii.dom.getElem("#slider_color_g"), label: ragii.dom.getElem("#label_color_g_value") },
 				b: { body: ragii.dom.getElem("#slider_color_b"), label: ragii.dom.getElem("#label_color_b_value") },
@@ -32,12 +39,19 @@
 			};
 			{
 				var that = this;
-				this.sliders.r.body.oninput = function() { return that.onColorSliderValueChanged(that.sliders.r); };
-				this.sliders.g.body.oninput = function() { return that.onColorSliderValueChanged(that.sliders.g); };
-				this.sliders.b.body.oninput = function() { return that.onColorSliderValueChanged(that.sliders.b); };
-				this.sliders.a.body.oninput = function() { return that.onColorSliderValueChanged(that.sliders.a); };
-				this.sliders.vivid_k1.body.oninput = function() { return that.onColorSliderValueChanged(that.sliders.vivid_k1); };
-				this.sliders.vivid_k2.body.oninput = function() { return that.onColorSliderValueChanged(that.sliders.vivid_k2); };
+				this.sliders.polygon.body.oninput = function() { return that.onSliderValueChanged(that.sliders.polygon); };
+				this.sliders.rotation_x.body.oninput = function() { return that.onSliderValueChanged(that.sliders.rotation_x); };
+				this.sliders.rotation_y.body.oninput = function() { return that.onSliderValueChanged(that.sliders.rotation_y); };
+				this.sliders.rotation_z.body.oninput = function() { return that.onSliderValueChanged(that.sliders.rotation_z); };
+				this.sliders.scale_x.body.oninput = function() { return that.onSliderValueChanged(that.sliders.scale_x); };
+				this.sliders.scale_y.body.oninput = function() { return that.onSliderValueChanged(that.sliders.scale_y); };
+				this.sliders.scale_z.body.oninput = function() { return that.onSliderValueChanged(that.sliders.scale_z); };
+				this.sliders.r.body.oninput = function() { return that.onSliderValueChanged(that.sliders.r); };
+				this.sliders.g.body.oninput = function() { return that.onSliderValueChanged(that.sliders.g); };
+				this.sliders.b.body.oninput = function() { return that.onSliderValueChanged(that.sliders.b); };
+				this.sliders.a.body.oninput = function() { return that.onSliderValueChanged(that.sliders.a); };
+				this.sliders.vivid_k1.body.oninput = function() { return that.onSliderValueChanged(that.sliders.vivid_k1); };
+				this.sliders.vivid_k2.body.oninput = function() { return that.onSliderValueChanged(that.sliders.vivid_k2); };
 			}
 
 			this.effectSelector = ragii.dom.getElem('#comboEffectSelector');
@@ -46,8 +60,8 @@
 			this.canvas = ragii.dom.getElem('#canvas');
 		},
 
-		// 色指定スライダーの値変更時
-		onColorSliderValueChanged: function(slider) {
+		// スライダーの値変更時
+		onSliderValueChanged: function(slider) {
 			slider.label.innerText = slider.body.value;
 		},
 
@@ -90,6 +104,26 @@
 				this.sliders.vivid_k1.body.value,
 				this.sliders.vivid_k2.body.value
 			];
+		},
+
+		getScale : function() {
+			return {
+				x: this.sliders.scale_x.body.value,
+				y: this.sliders.scale_y.body.value,
+				z: this.sliders.scale_z.body.value,
+			};
+		},
+
+		getPolygonCount : function() {
+			return this.sliders.polygon.body.value;
+		},
+
+		getRotation : function() {
+			return {
+				x: this.sliders.rotation_x.body.value,
+				y: this.sliders.rotation_y.body.value,
+				z: this.sliders.rotation_z.body.value,
+			};
 		},
 	};
 
@@ -193,6 +227,11 @@
 			{ left: 256, top: 256, width: 256, height: 256 },
 		];
 
+		// 遊び要素として、ただポリゴン数を後ろから削るだけ
+		for (var i = 0; i < 4 - view.getPolygonCount(); i++) {
+			texCoords.pop();
+		}
+
 		// 頂点バッファ更新
 		var vertices = [];
 		for (var i = 0; i < texCoords.length; i++) {
@@ -257,6 +296,12 @@
 				gl.enableVertexAttribArray(item.location);
 				gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
 			});
+
+			var scale = view.getScale();
+			gl.vertexAttrib3f(gl.getAttribLocation(that.program, 'scale'), scale.x, scale.y, scale.z);
+
+			var rotation = view.getRotation();
+			gl.vertexAttrib3f(gl.getAttribLocation(that.program, 'rotation'), rotation.x, rotation.y, rotation.z);
 
 			gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
 		});
@@ -395,14 +440,21 @@
 				</canvas>
 			</td>
 			<td>
+				<label>ポリゴン数</label><input id="slider_polygon" type="range" min="0" max="4" step="1" value="4" /><label id="label_polygon"></label><br />
+				<label>rotation X</label><input id="slider_rotation_x" type="range" min="0.0" max="360.0" step="0.1" value="0.0" /><label id="label_rotation_x"></label><br />
+				<label>rotation Y</label><input id="slider_rotation_y" type="range" min="0.0" max="360.0" step="0.1" value="0.0" /><label id="label_rotation_y"></label><br />
+				<label>rotation Z</label><input id="slider_rotation_z" type="range" min="0.0" max="360.0" step="0.1" value="0.0" /><label id="label_rotation_z"></label><br />
+				<label>scale X</label><input id="slider_scale_x" type="range" min="0.0" max="10.0" step="0.1" value="1.0" /><label id="label_scale_x"></label><br />
+				<label>scale Y</label><input id="slider_scale_y" type="range" min="0.0" max="10.0" step="0.1" value="1.0" /><label id="label_scale_y"></label><br />
+				<label>scale Z</label><input id="slider_scale_z" type="range" min="0.0" max="10.0" step="0.1" value="1.0" /><label id="label_scale_z"></label><br />
 				<label>R    </label><input id="slider_color_r" type="range" min="0" max="255" step="1" value="255" /><label id="label_color_r_value"></label><br />
 				<label>G    </label><input id="slider_color_g" type="range" min="0" max="255" step="1" value="255" /><label id="label_color_g_value"></label><br />
 				<label>B    </label><input id="slider_color_b" type="range" min="0" max="255" step="1" value="255" /><label id="label_color_b_value"></label><br />
 				<label>A    </label><input id="slider_color_a" type="range" min="0" max="255" step="1" value="255" /><label id="label_color_a_value"></label><br />
-				<div class="vivid_params">
+				<div class="vivid_params" style="visibility:collapse">
 				  <label>鮮やかさ K1</label><input id="slider_vivid_k1" type="range" min="-1.5" max="1.5" step="0.1" value="1.0" /><label id="label_vivid_k1_value"></label><br />
 				</div>
-				<div class="vivid_params">
+				<div class="vivid_params" style="visibility:collapse">
 				  <label>鮮やかさ K2</label><input id="slider_vivid_k2" type="range" min="-1.5" max="1.5" step="0.1" value="1.0" /><label id="label_vivid_k2_value"></label><br />
 				</div>
 			</td>

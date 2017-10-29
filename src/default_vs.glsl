@@ -1,6 +1,8 @@
 attribute vec3 position;
 attribute vec4 color;
 attribute vec2 texCoord;
+attribute vec3 scale;
+attribute vec3 rotation;
 varying   vec2 vTextureCoord;
 
 /* 単位行列
@@ -58,7 +60,7 @@ mat4 mat4_translate(vec3 value) {
  * |r3|        0| -sin(θ)|  cos(θ)|        0|
  * |r4|        0|        0|        0|        1|
 */
-mat4 mat4_rotate_x(float rad) {
+mat4 mat4_rotation_x(float rad) {
 	return mat4(
 		vec4(1.0, 0.0, 0.0, 0.0),
 		vec4(0.0, cos(rad), -sin(rad), 0.0),
@@ -69,6 +71,11 @@ mat4 mat4_rotate_x(float rad) {
 
 void main() {
 	vTextureCoord = texCoord;
-	mat4 mat_result = mat4_identity();
+
+	mat4 mat_result =
+		mat4_identity() * 
+		mat4_scale(scale) *
+		mat4_rotation_x((rotation.x * 2.0 * 3.14) / 360.0);
+
 	gl_Position = mat_result * vec4(position, 1.0);
 }
