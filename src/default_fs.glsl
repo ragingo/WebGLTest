@@ -1,6 +1,6 @@
 precision mediump float;
 
-uniform sampler2D texture;
+uniform sampler2D uSampler;
 uniform int       effectType;
 uniform vec2      textureSize;
 uniform vec4      editColor;
@@ -132,7 +132,7 @@ void get_neighbour_pixels(out vec4 pix[9]) {
 			float x = vTextureCoord.x + (float(col)-1.0) * offset.x;
 			float y = vTextureCoord.y + (float(row)-1.0) * offset.y;
 			vec2 kernel = vec2(x, y);
-			vec4 result = texture2D(texture, kernel);
+			vec4 result = texture2D(uSampler, kernel);
 
 			pix[row+col] = apply_edit_color(result); // 外部指定色を掛けて更新
 		}
@@ -202,7 +202,7 @@ vec4 sine_wave(vec4 pix) {
 	float wave = amp * sin(uv.x/180.0 * pi * freq);
 	vec2 new_wave = vec2(uv.x, uv.y + wave);
 
-	result = texture2D(texture, new_wave);
+	result = texture2D(uSampler, new_wave);
 	result = apply_edit_color(result);
 
 	return result;
@@ -224,7 +224,7 @@ vec4 vivid(vec4 pix, float k1, float k2) {
 void main() {
 
 	// 元の色
-	vec4 color = texture2D(texture, vTextureCoord);
+	vec4 color = texture2D(uSampler, vTextureCoord);
 
 	color *= apply_edit_color(color);
 

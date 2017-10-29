@@ -3,6 +3,9 @@
 <head>
 <title>Shader Practice</title>
 
+<!-- webgl 公式リファレンス -->
+<!-- https://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf -->
+
 <script type="text/javascript" src="ragii.js"></script>
 
 <script type="text/javascript">
@@ -173,11 +176,11 @@
 
 				gl.useProgram(that.program);
 
+				gl.viewport(0, 0, canvas.width, canvas.height);
+
 				// 深度テストの有効化
 				gl.enable(gl.DEPTH_TEST);
 				gl.depthFunc(gl.LEQUAL);
-
-				gl.activeTexture(gl.TEXTURE0);
 
 				that.createTexture(that.texture_source);
 			});
@@ -198,11 +201,14 @@
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		
+
+		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 		var uniformLocation = {
-			texture: gl.getUniformLocation(this.program, 'texture'),
+			sampler: gl.getUniformLocation(this.program, 'uSampler'),
 			effectType: gl.getUniformLocation(this.program, 'effectType'),
 			textureSize: gl.getUniformLocation(this.program, 'textureSize'),
 			editColor: gl.getUniformLocation(this.program, 'editColor'),
@@ -210,7 +216,7 @@
 		}
 		
 		// テクスチャ登録
-		gl.uniform1i(uniformLocation.texture, 0);
+		gl.uniform1i(uniformLocation.sampler, 0);
 		gl.uniform2fv(uniformLocation.textureSize, [canvas.width, canvas.height]);
 		gl.uniform4fv(uniformLocation.editColor, view.getEditColor());
 		gl.uniform2fv(uniformLocation.vividParams, view.getVividEffectParameters());
