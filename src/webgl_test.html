@@ -93,27 +93,6 @@
 		},
 	};
 
-	// Shader Source Code
-	var shaderSource = {
-		vertex: null,
-		fragment: null,
-		load: function() {
-			this.vertex = ragii.dom.getElem('#vs');
-			this.fragment = ragii.dom.getElem('#fs');
-		},
-	};
-
-	// https://wgld.org/d/webgl/w026.html を参考にして色々書き換え
-
-	// 頂点情報
-	var vertexInfo = {
-		// 頂点インデックス
-		index: [
-			0, 1, 2,
-			1, 3, 2,
-		]
-	};
-
 	// グラフィックスクラス
 	var Graphics = function() {
 		this.gl = null;
@@ -141,15 +120,13 @@
 
 				that.program = gl.createProgram();
 
-				shaderSource.load();
-
 				// vs 生成 & コンパイル
-				var vs = that.createShader("x-shader/x-vertex");
+				var vs = gl.createShader(gl.VERTEX_SHADER);
 				that.compileShader(vs, vs_src);
 				gl.attachShader(that.program, vs);
 
 				// fs 生成 & コンパイル
-				var fs = that.createShader("x-shader/x-fragment");
+				var fs = gl.createShader(gl.FRAGMENT_SHADER);
 				that.compileShader(fs, fs_src);
 				gl.attachShader(that.program, fs);
 
@@ -161,16 +138,13 @@
 				}
 
 				gl.useProgram(that.program);
-				
-				// IBO 登録
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, that.createIBO(vertexInfo.index));
-				
+
 				// 深度テストの有効化
 				gl.enable(gl.DEPTH_TEST);
 				gl.depthFunc(gl.LEQUAL);
-				
+
 				gl.activeTexture(gl.TEXTURE0);
-				
+
 				that.createTexture(that.texture_source);
 			});
 
@@ -244,6 +218,13 @@
 			],
 		});
 
+		// インデックスバッファ生成 & 登録
+		var indexData = [
+			0, 1, 2,
+			1, 3, 2,
+		];
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.createIBO(indexData));
+
 		var that = this;
 		vertices.forEach(function(vertex){
 			var vbo_array = [
@@ -264,23 +245,11 @@
 				gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
 			});
 
-			gl.drawElements(gl.TRIANGLES, vertexInfo.index.length, gl.UNSIGNED_SHORT, 0);
+			gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
 		});
-		
+
 		// コンテキストの再描画
 		gl.flush();
-	}
-
-	// シェーダを生成する関数
-	Graphics.prototype.createShader = function(type, source) {
-		var gl = this.gl;
-		switch (type) {
-			case 'x-shader/x-vertex':
-				return gl.createShader(gl.VERTEX_SHADER);
-
-			case 'x-shader/x-fragment':
-				return gl.createShader(gl.FRAGMENT_SHADER);
-		}
 	}
 
 	Graphics.prototype.compileShader = function(shader, source) {
@@ -428,4 +397,5 @@
 	</table>
 
 </body>
+
 </html>
