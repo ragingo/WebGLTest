@@ -224,6 +224,12 @@
 		// エフェクト切り替え
 		gl.uniform1i(uniformLocation.effectType, view.getSelectedEffectType());
 
+		let scale = view.getScale();
+		gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'scale'), scale.x, scale.y, scale.z);
+
+		let rotation = view.getRotation();
+		gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'rotation'), rotation.x, rotation.y, rotation.z);
+
 		const tex_w = 512.0;
 		const tex_h = 512.0;
 		let texCoords = [
@@ -283,6 +289,9 @@
 		];
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.createIBO(indexData));
 
+		// TODO: VBO生成を見直す
+		// https://wgld.org/d/webgl/w088.html
+
 		let that = this;
 		vertices.forEach(function(vertex){
 			let vbo_array = [
@@ -302,13 +311,6 @@
 				gl.enableVertexAttribArray(item.location);
 				gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
 			});
-
-			let scale = view.getScale();
-			gl.vertexAttrib3f(gl.getAttribLocation(that.program, 'scale'), scale.x, scale.y, scale.z);
-
-			let rotation = view.getRotation();
-			gl.vertexAttrib3f(gl.getAttribLocation(that.program, 'rotation'), rotation.x, rotation.y, rotation.z);
-
 			gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
 		});
 
@@ -379,7 +381,6 @@
 			return;
 		}
 
-		const fps = 60;
 		let frameCount = 0;
 		let now = 0.0;
 		let last = 0.0;
