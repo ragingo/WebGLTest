@@ -12,7 +12,7 @@ var ragii = {
 				return null;
 			}
 
-			var elems = null;
+			let elems = null;
 			if (key[0] == '#') {
 				elems = [ document.getElementById(key.substr(1)) ];
 			}
@@ -20,7 +20,7 @@ var ragii = {
 				elems = document.getElementsByClassName(key.substr(1));
 			}
 			else if (/^<[0-9a-zA-Z]+>$/.test(key)) {
-				var name = key.substring(1, key.length - 1);
+				let name = key.substring(1, key.length - 1);
 				elems = document.getElementsByTagName(name);
 			}
 			else {
@@ -29,7 +29,7 @@ var ragii = {
 			return elems;
 		},
 		getElem: function(key) {
-			var elems = this.getElems(key);
+			let elems = this.getElems(key);
 			if (elems.length > 0) {
 				return elems[0];
 			}
@@ -39,7 +39,7 @@ var ragii = {
 	http: {
 		// GET リクエスト
 		get: function(url, callback) {
-			var xhr = new XMLHttpRequest();
+			let xhr = new XMLHttpRequest();
 			xhr.addEventListener("loadend", function(){
 				if (xhr.readyState != 4) {
 					console.log("not ready.");
@@ -66,7 +66,7 @@ var ragii = {
 				if (!xhr.responseBody) {
 					return;
 				}
-				var buf = new Uint8Array(xhr.responseBody);
+				let buf = new Uint8Array(xhr.responseBody);
 				if (callback) {
 					callback(buf);
 				}
@@ -82,7 +82,7 @@ var ragii = {
 			if (binary.length == 0) {
 				return "";
 			}
-			var base64 = window.btoa(binary);
+			let base64 = window.btoa(binary);
 			return "data:image/" + type + ";base64," + base64;
 		}
 	}

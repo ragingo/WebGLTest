@@ -41,7 +41,7 @@
 				vivid_k2: { body: ragii.dom.getElem("#slider_vivid_k2"), label: ragii.dom.getElem("#label_vivid_k2_value") },
 			};
 			{
-				var that = this;
+				let that = this;
 				this.sliders.polygon.body.oninput = function() { return that.onSliderValueChanged(that.sliders.polygon); };
 				this.sliders.rotation_x.body.oninput = function() { return that.onSliderValueChanged(that.sliders.rotation_x); };
 				this.sliders.rotation_y.body.oninput = function() { return that.onSliderValueChanged(that.sliders.rotation_y); };
@@ -89,7 +89,7 @@
 		},
 
 		getSelectedEffectType: function() {
-			var value = this.effectSelector.options[this.effectSelector.selectedIndex].value;
+			let value = this.effectSelector.options[this.effectSelector.selectedIndex].value;
 			return parseInt(value, 10);
 		},
 
@@ -131,7 +131,7 @@
 	};
 
 	// グラフィックスクラス
-	var Graphics = function() {
+	let Graphics = function() {
 		this.gl = null;
 		this.program = null;
 		this.texture = null;
@@ -146,24 +146,24 @@
 			return false;
 		}
 
-		var gl = this.gl;
-		var that = this;
+		let gl = this.gl;
+		let that = this;
 
 		ragii.http.get("/default_vs.glsl", function(xhr) {
-			var vs_src = xhr.responseText;
+			let vs_src = xhr.responseText;
 
 			ragii.http.get("/default_fs.glsl", function(xhr2) {
-				var fs_src = xhr2.responseText;
+				let fs_src = xhr2.responseText;
 
 				that.program = gl.createProgram();
 
 				// vs 生成 & コンパイル
-				var vs = gl.createShader(gl.VERTEX_SHADER);
+				let vs = gl.createShader(gl.VERTEX_SHADER);
 				that.compileShader(vs, vs_src);
 				gl.attachShader(that.program, vs);
 
 				// fs 生成 & コンパイル
-				var fs = gl.createShader(gl.FRAGMENT_SHADER);
+				let fs = gl.createShader(gl.FRAGMENT_SHADER);
 				that.compileShader(fs, fs_src);
 				gl.attachShader(that.program, fs);
 
@@ -196,7 +196,7 @@
 			return;
 		}
 
-		var gl = this.gl;
+		let gl = this.gl;
 		// クリア
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clearDepth(1.0);
@@ -207,7 +207,7 @@
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-		var uniformLocation = {
+		let uniformLocation = {
 			sampler: gl.getUniformLocation(this.program, 'uSampler'),
 			effectType: gl.getUniformLocation(this.program, 'effectType'),
 			textureSize: gl.getUniformLocation(this.program, 'textureSize'),
@@ -226,7 +226,7 @@
 
 		const tex_w = 512.0;
 		const tex_h = 512.0;
-		var texCoords = [
+		let texCoords = [
 			{ left:   0, top:   0, width: 256, height: 256 },
 			{ left:   0, top: 256, width: 256, height: 256 },
 			{ left: 256, top:   0, width: 256, height: 256 },
@@ -234,15 +234,15 @@
 		];
 
 		// 遊び要素として、ただポリゴン数を後ろから削るだけ
-		for (var i = 0; i < 4 - view.getPolygonCount(); i++) {
+		for (let i = 0; i < 4 - view.getPolygonCount(); i++) {
 			texCoords.pop();
 		}
 
 		// 頂点バッファ更新
-		var vertices = [];
-		for (var i = 0; i < texCoords.length; i++) {
-			var tc = texCoords[i];
-			var tmp_pos = {
+		let vertices = [];
+		for (let i = 0; i < texCoords.length; i++) {
+			let tc = texCoords[i];
+			let tmp_pos = {
 				left:   (tc.left / tex_w) * 2.0 - 1.0,
 				top:    (tc.top / tex_h) * 2.0 - 1.0,
 				width:  (tc.width / tex_w) * 2.0 - 1.0,
@@ -250,7 +250,7 @@
 				right:  ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
 				bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
 			};
-			var tmp_texCoord = {
+			let tmp_texCoord = {
 				left:   tc.left / tex_w,
 				top:    tc.top / tex_h,
 				width:  tc.width / tex_w,
@@ -258,13 +258,13 @@
 				right:  (tc.left + tc.width) / tex_w,
 				bottom: (tc.top + tc.height) / tex_h,
 			};
-			var pos = [
+			let pos = [
 				tmp_pos.left, -tmp_pos.bottom, 0,
 				tmp_pos.right, -tmp_pos.bottom, 0,
 				tmp_pos.left, -tmp_pos.top, 0,
 				tmp_pos.right, -tmp_pos.top, 0,
 			];
-			var texCoord = [
+			let texCoord = [
 				tmp_texCoord.left, tmp_texCoord.bottom,
 				tmp_texCoord.right, tmp_texCoord.bottom,
 				tmp_texCoord.left, tmp_texCoord.top,
@@ -277,15 +277,15 @@
 		}
 
 		// インデックスバッファ生成 & 登録
-		var indexData = [
+		let indexData = [
 			0, 1, 2,
 			1, 3, 2,
 		];
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.createIBO(indexData));
 
-		var that = this;
+		let that = this;
 		vertices.forEach(function(vertex){
-			var vbo_array = [
+			let vbo_array = [
 				{
 					buffer: that.createVBO(vertex.pos),
 					location: gl.getAttribLocation(that.program, 'position'),
@@ -303,10 +303,10 @@
 				gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
 			});
 
-			var scale = view.getScale();
+			let scale = view.getScale();
 			gl.vertexAttrib3f(gl.getAttribLocation(that.program, 'scale'), scale.x, scale.y, scale.z);
 
-			var rotation = view.getRotation();
+			let rotation = view.getRotation();
 			gl.vertexAttrib3f(gl.getAttribLocation(that.program, 'rotation'), rotation.x, rotation.y, rotation.z);
 
 			gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
@@ -317,7 +317,7 @@
 	}
 
 	Graphics.prototype.compileShader = function(shader, source) {
-		var gl = this.gl;
+		let gl = this.gl;
 
 		gl.shaderSource(shader, source);
 		gl.compileShader(shader);
@@ -330,8 +330,8 @@
 	
 	// VBOを生成する関数
 	Graphics.prototype.createVBO = function(data) {
-		var gl = this.gl;
-		var buf = gl.createBuffer();
+		let gl = this.gl;
+		let buf = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -340,9 +340,8 @@
 
 	// IBOを生成する関数
 	Graphics.prototype.createIBO = function(data) {
-		var gl = this.gl;
-
-		var buf = gl.createBuffer();
+		let gl = this.gl;
+		let buf = gl.createBuffer();
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
@@ -351,12 +350,12 @@
 	
 	// テクスチャを生成する関数
 	Graphics.prototype.createTexture = function(source) {
-		var that = this;
-		var gl = this.gl;
+		let that = this;
+		let gl = this.gl;
 
-		var img = new Image();
+		let img = new Image();
 		img.onload = function() {
-			var tex = gl.createTexture();
+			let tex = gl.createTexture();
 			gl.bindTexture(gl.TEXTURE_2D, tex);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 			gl.generateMipmap(gl.TEXTURE_2D);
@@ -372,7 +371,7 @@
 		view.init();
 
 		// グラフィック処理開始
-		var g = new Graphics();
+		let g = new Graphics();
 
 		// 初期化
 		if (!g.init()) {
@@ -381,16 +380,13 @@
 		}
 
 		const fps = 60;
-		var frameCount = 0;
-		var now;
-		var last;
-		var elapsed = 0;
+		let frameCount = 0;
+		let now = 0.0;
+		let last = 0.0;
+		let elapsed = 0.0;
 
-		(function() {
-			now = new Date().getTime();
-			if (!last) {
-				last = now;
-			}
+		window.requestAnimationFrame(function(timestamp) {
+			now = timestamp;
 			elapsed += (now - last);
 			last = now;
 
@@ -399,14 +395,14 @@
 			if (elapsed >= 1000) {
 				ragii.dom.getElem("#fps").innerText = frameCount + " FPS";
 				frameCount = 0;
-				elapsed -= 1000;
+				elapsed -= 1000.0;
 			}
 
 			// 描画
 			g.render();
 
-			setTimeout(arguments.callee, 1000 / fps);
-		})();
+			window.requestAnimationFrame(arguments.callee);
+		});
 	}
 
 </script>
