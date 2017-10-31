@@ -134,8 +134,14 @@
 	let Graphics = function() {
 		this.gl = null;
 		this.program = null;
-		this.texture = null;
-		this.texture_source = "res/Lenna.png";
+		this.textureInfo = {
+			src: "res/Lenna.png",
+			texture: null,
+		};
+		this.subTextureInfo = {
+			src: "res/smile_basic_font_table.png",
+			texture: null,
+		};
 	};
 
 	// 初期化
@@ -181,8 +187,6 @@
 				// 深度テストの有効化
 				gl.enable(gl.DEPTH_TEST);
 				gl.depthFunc(gl.LEQUAL);
-
-				that.createTexture(that.texture_source);
 			});
 
 		});
@@ -190,6 +194,16 @@
 		return true;
 	}
 
+	// 準備
+	Graphics.prototype.prepare = function() {
+		this.createTexture(this.textureInfo);
+		//this.createTexture(this.subTextureInfo);
+
+		return true;
+	}
+
+	// 描画
+	// 毎フレーム実行される
 	Graphics.prototype.render = function() {
 
 		if (!this.program) {
@@ -203,7 +217,7 @@
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+		gl.bindTexture(gl.TEXTURE_2D, this.textureInfo.texture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -289,9 +303,6 @@
 		];
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.createIBO(indexData));
 
-		// TODO: VBO生成を見直す
-		// https://wgld.org/d/webgl/w088.html
-
 		let that = this;
 		vertices.forEach(function(vertex){
 			let vbo_array = [
@@ -318,6 +329,7 @@
 		gl.flush();
 	}
 
+	// シェーダーコードをコンパイル
 	Graphics.prototype.compileShader = function(shader, source) {
 		let gl = this.gl;
 
@@ -330,7 +342,7 @@
 		}
 	}
 	
-	// VBOを生成する関数
+	// VBO生成
 	Graphics.prototype.createVBO = function(data) {
 		let gl = this.gl;
 		let buf = gl.createBuffer();
@@ -340,7 +352,7 @@
 		return buf;
 	}
 
-	// IBOを生成する関数
+	// IBO生成
 	Graphics.prototype.createIBO = function(data) {
 		let gl = this.gl;
 		let buf = gl.createBuffer();
@@ -350,11 +362,12 @@
 		return buf;
 	}
 	
-	// テクスチャを生成する関数
-	Graphics.prototype.createTexture = function(source) {
+	// テクスチャ生成
+	Graphics.prototype.createTexture = function(texInfo) {
 		let that = this;
 		let gl = this.gl;
 
+		let info = texInfo;
 		let img = new Image();
 		img.onload = function() {
 			let tex = gl.createTexture();
@@ -362,10 +375,10 @@
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
-			that.texture = tex;
+			info.texture = tex;
 		};
 
-		img.src = that.texture_source;
+		img.src = info.src;
 	}
 
 	function main() {
@@ -385,6 +398,7 @@
 		let now = 0.0;
 		let last = 0.0;
 		let elapsed = 0.0;
+		let prepared = false;
 
 		window.requestAnimationFrame(function(timestamp) {
 			now = timestamp;
@@ -399,8 +413,13 @@
 				elapsed -= 1000.0;
 			}
 
-			// 描画
-			g.render();
+			if (prepared) {
+				// 描画
+				g.render();
+			}
+			else {
+				prepared = g.prepare();
+			}
 
 			window.requestAnimationFrame(arguments.callee);
 		});
