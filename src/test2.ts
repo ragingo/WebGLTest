@@ -1,6 +1,7 @@
 class Graphics2 {
 
-	gl: WebGLRenderingContext;
+	private gl: WebGLRenderingContext;
+	private m_VsCode: string;
 
 	constructor(gl: WebGLRenderingContext) {
 		this.gl = gl;
