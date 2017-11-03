@@ -73,8 +73,7 @@ class ShaderProgram {
 	}
 
 }
-	
-	
+
 class Graphics2 {
 
 	private gl: WebGLRenderingContext;
@@ -183,8 +182,53 @@ class DefaultDraw implements IDrawable {
 
 }
 
+class TextureDrawInfo {
+	
+	private _width : number;
+	public get width() : number {
+		return this._width;
+	}
+	public set width(v : number) {
+		this._width = v;
+	}
+	
+	private _height : number;
+	public get height() : number {
+		return this._height;
+	}
+	public set height(v : number) {
+		this._height = v;
+	}
+
+	private _effectType : number;
+	public get effectType() : number {
+		return this._effectType;
+	}
+	public set effectType(v : number) {
+		this._effectType = v;
+	}
+	
+	private _color : Float32Array;
+	public get color() : Float32Array {
+		return this._color;
+	}
+	public set color(v : Float32Array) {
+		this._color = v;
+	}
+	
+}
+
 class TextureRender implements IDrawable {
 
+	
+	private _textureDrawInfo : TextureDrawInfo;
+	public get textureDrawInfo() : TextureDrawInfo {
+		return this._textureDrawInfo;
+	}
+	public set textureDrawInfo(v : TextureDrawInfo) {
+		this._textureDrawInfo = v;
+	}
+	
 	getContext(): WebGLRenderingContext {
 		return this.gl;
 	}
@@ -206,7 +250,7 @@ class TextureRender implements IDrawable {
 			this.loadTexture().then(r2 => {
 			});
 		}
-}
+	}
 
 	onDraw(): void {
 
@@ -220,8 +264,7 @@ class TextureRender implements IDrawable {
 		gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		// gl.bindTexture(gl.TEXTURE_2D, null);
-		
+
 		let uniformLocation = {
 			sampler: gl.getUniformLocation(this.program, 'uSampler'),
 			effectType: gl.getUniformLocation(this.program, 'effectType'),
@@ -234,19 +277,17 @@ class TextureRender implements IDrawable {
 		gl.uniform1i(uniformLocation.sampler, 0);
 
 		if (uniformLocation.textureSize){
-			gl.uniform2fv(uniformLocation.textureSize, [512, 512]); // 型チェック(null)厳しい・・・
+			gl.uniform2fv(uniformLocation.textureSize, [this._textureDrawInfo.width, this._textureDrawInfo.height]);
 		}
 		if (uniformLocation.editColor) {
-			gl.uniform4fv(uniformLocation.editColor, [255, 255, 255, 255]);
+			gl.uniform4fv(uniformLocation.editColor, this._textureDrawInfo.color);
 		}
 
-		//gl.uniform2fv(uniformLocation.textureSize, [canvas.width, canvas.height]);
-		//gl.uniform4fv(uniformLocation.editColor, view.getEditColor());
 		//gl.uniform2fv(uniformLocation.vividParams, view.getVividEffectParameters());
 
 		// エフェクト切り替え
 		//gl.uniform1i(uniformLocation.effectType, view.getSelectedEffectType());
-		gl.uniform1i(uniformLocation.effectType, 0);
+		gl.uniform1i(uniformLocation.effectType, this._textureDrawInfo.effectType);
 
 		// let scale = view.getScale();
 		// gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'scale'), scale.x, scale.y, scale.z);
@@ -408,9 +449,43 @@ class TextureRender implements IDrawable {
 	private m_Processing: boolean = false;
 }
 
-function main2(canvas: HTMLCanvasElement)
+class MainView
 {
-	let gl = canvas.getContext("webgl");
+	fps: HTMLParagraphElement;
+	canvas: HTMLCanvasElement;
+	effectSelector: HTMLSelectElement;
+	color: Array<HTMLInputElement>;
+
+	public setFps(value: string): void {
+		this.fps.innerText = value;
+	}
+
+	public getColor(): Float32Array {
+		return new Float32Array(this.color.map(x => parseInt(x.value)));
+	}
+
+	public getEffectType(): number {
+		return parseInt(this.effectSelector.options[this.effectSelector.selectedIndex].value);
+	}
+
+	constructor() {
+		this.fps = document.getElementById("fps") as HTMLParagraphElement;
+		this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
+		this.effectSelector = document.getElementById("effectSelector") as HTMLSelectElement;
+		this.color = [
+			document.getElementById("slider_color_r") as HTMLInputElement,
+			document.getElementById("slider_color_g") as HTMLInputElement,
+			document.getElementById("slider_color_b") as HTMLInputElement,
+			document.getElementById("slider_color_a") as HTMLInputElement,
+		];
+	}
+}
+
+function main2()
+{
+	let view: MainView = new MainView();
+
+	let gl = view.canvas.getContext("webgl");
 	if (!gl) {
 		console.log("webgl not supported.");
 		return;
@@ -418,7 +493,7 @@ function main2(canvas: HTMLCanvasElement)
 
 	let gfx = new Graphics2(gl);
 
-	if (!gfx.init(canvas.width, canvas.height)) {
+	if (!gfx.init(view.canvas.width, view.canvas.height)) {
 		console.log("gfx init failed. ");
 		return;
 	}
@@ -429,12 +504,16 @@ function main2(canvas: HTMLCanvasElement)
 	}
 
 	gfx.pushRenderTarget(new DefaultDraw());
-	gfx.pushRenderTarget(new TextureRender());
+
+	let textureRender = new TextureRender();
+	textureRender.textureDrawInfo = new TextureDrawInfo();
+	gfx.pushRenderTarget(textureRender);
 
 	let frameCount: number = 0;
 	let now: number = 0.0;
 	let last: number = 0.0;
 	let elapsed: number = 0.0;
+
 
 	let frameRequestCallback = (time: number) => {
 		now = time;
@@ -444,11 +523,16 @@ function main2(canvas: HTMLCanvasElement)
 		frameCount++;
 
 		if (elapsed >= 1000) {
-			//ragii.dom.getElem("#fps").innerText = frameCount + " FPS";
+			view.setFps(frameCount + " FPS");
 			frameCount = 0;
 			elapsed -= 1000.0;
 		}
 
+		textureRender.textureDrawInfo.width = view.canvas.width;
+		textureRender.textureDrawInfo.height = view.canvas.height;
+		textureRender.textureDrawInfo.effectType = view.getEffectType();
+		textureRender.textureDrawInfo.color = view.getColor();
+		
 		gfx.render();
 
 		window.requestAnimationFrame(frameRequestCallback);

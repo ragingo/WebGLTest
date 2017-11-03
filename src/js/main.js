@@ -120,11 +120,43 @@ class DefaultDraw {
     onEndDraw() {
     }
 }
+class TextureDrawInfo {
+    get width() {
+        return this._width;
+    }
+    set width(v) {
+        this._width = v;
+    }
+    get height() {
+        return this._height;
+    }
+    set height(v) {
+        this._height = v;
+    }
+    get effectType() {
+        return this._effectType;
+    }
+    set effectType(v) {
+        this._effectType = v;
+    }
+    get color() {
+        return this._color;
+    }
+    set color(v) {
+        this._color = v;
+    }
+}
 class TextureRender {
     constructor() {
         this.m_TextureLoaded = false;
         this.m_ShaderLoaded = false;
         this.m_Processing = false;
+    }
+    get textureDrawInfo() {
+        return this._textureDrawInfo;
+    }
+    set textureDrawInfo(v) {
+        this._textureDrawInfo = v;
     }
     getContext() {
         return this.gl;
@@ -164,12 +196,12 @@ class TextureRender {
         };
         gl.uniform1i(uniformLocation.sampler, 0);
         if (uniformLocation.textureSize) {
-            gl.uniform2fv(uniformLocation.textureSize, [512, 512]);
+            gl.uniform2fv(uniformLocation.textureSize, [this._textureDrawInfo.width, this._textureDrawInfo.height]);
         }
         if (uniformLocation.editColor) {
-            gl.uniform4fv(uniformLocation.editColor, [255, 255, 255, 255]);
+            gl.uniform4fv(uniformLocation.editColor, this._textureDrawInfo.color);
         }
-        gl.uniform1i(uniformLocation.effectType, 0);
+        gl.uniform1i(uniformLocation.effectType, this._textureDrawInfo.effectType);
         gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'scale'), 1, 1, 1);
         gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'rotation'), 1, 1, 1);
         const tex_w = 512.0;
@@ -294,14 +326,37 @@ class TextureRender {
         return true;
     }
 }
-function main2(canvas) {
-    let gl = canvas.getContext("webgl");
+class MainView {
+    setFps(value) {
+        this.fps.innerText = value;
+    }
+    getColor() {
+        return new Float32Array(this.color.map(x => parseInt(x.value)));
+    }
+    getEffectType() {
+        return parseInt(this.effectSelector.options[this.effectSelector.selectedIndex].value);
+    }
+    constructor() {
+        this.fps = document.getElementById("fps");
+        this.canvas = document.getElementById("canvas");
+        this.effectSelector = document.getElementById("effectSelector");
+        this.color = [
+            document.getElementById("slider_color_r"),
+            document.getElementById("slider_color_g"),
+            document.getElementById("slider_color_b"),
+            document.getElementById("slider_color_a"),
+        ];
+    }
+}
+function main2() {
+    let view = new MainView();
+    let gl = view.canvas.getContext("webgl");
     if (!gl) {
         console.log("webgl not supported.");
         return;
     }
     let gfx = new Graphics2(gl);
-    if (!gfx.init(canvas.width, canvas.height)) {
+    if (!gfx.init(view.canvas.width, view.canvas.height)) {
         console.log("gfx init failed. ");
         return;
     }
@@ -310,7 +365,9 @@ function main2(canvas) {
         return;
     }
     gfx.pushRenderTarget(new DefaultDraw());
-    gfx.pushRenderTarget(new TextureRender());
+    let textureRender = new TextureRender();
+    textureRender.textureDrawInfo = new TextureDrawInfo();
+    gfx.pushRenderTarget(textureRender);
     let frameCount = 0;
     let now = 0.0;
     let last = 0.0;
@@ -321,9 +378,14 @@ function main2(canvas) {
         last = now;
         frameCount++;
         if (elapsed >= 1000) {
+            view.setFps(frameCount + " FPS");
             frameCount = 0;
             elapsed -= 1000.0;
         }
+        textureRender.textureDrawInfo.width = view.canvas.width;
+        textureRender.textureDrawInfo.height = view.canvas.height;
+        textureRender.textureDrawInfo.effectType = view.getEffectType();
+        textureRender.textureDrawInfo.color = view.getColor();
         gfx.render();
         window.requestAnimationFrame(frameRequestCallback);
     };
