@@ -120,10 +120,14 @@ var view = {
 	},
 };
 
-let IDrawable = function() {};
-IDrawable.prototype.beginDraw = function(){}
-IDrawable.prototype.draw = function(){}
-IDrawable.prototype.endDraw = function(){}
+async function loadShaderCodes(callback)
+{
+	var vs = await HttpUtils.getText("./glsl/default_vs.glsl");
+	var fs = await HttpUtils.getText("./glsl/default_fs.glsl");
+	if (callback) {
+		callback(vs, fs);
+	}
+}
 
 // グラフィックスクラス
 let Graphics = function() {
@@ -140,21 +144,16 @@ let Graphics = function() {
 };
 
 // 初期化
-Graphics.prototype.init = function() {
+Graphics.prototype.init = async function(gl) {
 
-	this.gl = view.canvas.getContext('webgl');
+	this.gl = gl;
 	if (!this.gl) {
 		return false;
 	}
 
-	let gl = this.gl;
 	let that = this;
 
-	ragii.http.get("/default_vs.glsl", function(xhr) {
-		let vs_src = xhr.responseText;
-
-		ragii.http.get("/default_fs.glsl", function(xhr2) {
-			let fs_src = xhr2.responseText;
+	await loadShaderCodes(function(vs_src, fs_src) {
 
 			that.program = gl.createProgram();
 
@@ -184,7 +183,6 @@ Graphics.prototype.init = function() {
 			gl.depthFunc(gl.LEQUAL);
 		});
 
-	});
 
 	return true;
 }
@@ -195,6 +193,20 @@ Graphics.prototype.prepare = function() {
 	//this.createTexture(this.subTextureInfo);
 
 	return true;
+}
+
+// テクスチャ生成
+Graphics.prototype.createTexture = function(texInfo) {
+    let that = this;
+    let gl = this.gl;
+
+    let info = texInfo;
+    let img = new Image();
+    img.onload = function() {
+        info.texture = Graphics2.createTexture(gl, img);
+    };
+
+    img.src = info.src;
 }
 
 // 描画
@@ -296,18 +308,18 @@ Graphics.prototype.render = function() {
 		0, 1, 2,
 		1, 3, 2,
 	];
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.createIBO(indexData));
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics2.createVertexBuffer(gl, indexData));
 
 	let that = this;
 	vertices.forEach(function(vertex){
 		let vbo_array = [
 			{
-				buffer: that.createVBO(vertex.pos),
+				buffer: Graphics2.createVertexBuffer(gl, vertex.pos),
 				location: gl.getAttribLocation(that.program, 'position'),
 				stride: 3
 			},
 			{
-				buffer: that.createVBO(vertex.texCoord),
+				buffer: Graphics2.createVertexBuffer(gl, vertex.texCoord),
 				location: gl.getAttribLocation(that.program, 'texCoord'),
 				stride: 2
 			},
@@ -337,46 +349,7 @@ Graphics.prototype.compileShader = function(shader, source) {
 	}
 }
 
-// VBO生成
-Graphics.prototype.createVBO = function(data) {
-	let gl = this.gl;
-	let buf = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-	gl.bindBuffer(gl.ARRAY_BUFFER, null);
-	return buf;
-}
-
-// IBO生成
-Graphics.prototype.createIBO = function(data) {
-	let gl = this.gl;
-	let buf = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	return buf;
-}
-
-// テクスチャ生成
-Graphics.prototype.createTexture = function(texInfo) {
-	let that = this;
-	let gl = this.gl;
-
-	let info = texInfo;
-	let img = new Image();
-	img.onload = function() {
-		let tex = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, tex);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-		gl.generateMipmap(gl.TEXTURE_2D);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-		info.texture = tex;
-	};
-
-	img.src = info.src;
-}
-
-var main = function() {
+var main = function(gl) {
 	// パーツ初期化
 	view.init();
 
@@ -384,7 +357,7 @@ var main = function() {
 	let g = new Graphics();
 
 	// 初期化
-	if (!g.init()) {
+	if (!g.init(gl)) {
 		console.log("WebGL 初期化失敗！");
 		return;
 	}
