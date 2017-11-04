@@ -1,5 +1,5 @@
 "use strict";
-class HttpUtils {
+class HttpUtil {
     static async get(url, responseType) {
         return new Promise(resolve => {
             let xhr = new XMLHttpRequest();
@@ -24,19 +24,19 @@ class HttpUtils {
         });
     }
     static async getText(url) {
-        let xhr = await HttpUtils.get(url);
+        let xhr = await HttpUtil.get(url);
         return new Promise(resolve => {
             return resolve(xhr.responseText);
         });
     }
     static async getRaw(url) {
-        let xhr = await HttpUtils.get(url);
+        let xhr = await HttpUtil.get(url);
         return new Promise(resolve => {
             return resolve(xhr.response);
         });
     }
     static async getBinary(url) {
-        let xhr = await HttpUtils.get(url, "arraybuffer");
+        let xhr = await HttpUtil.get(url, "arraybuffer");
         return new Promise(resolve => {
             return resolve(xhr.response);
         });
@@ -82,5 +82,18 @@ class DomUtil {
             return elems[0];
         }
         return null;
+    }
+}
+class ArrayUtil {
+    static toHTMLElements(array) {
+        let result = [];
+        for (let i = 0; i < array.length; i++) {
+            let item = array[i];
+            result.push(item);
+        }
+        return result;
+    }
+    static pushAll(src, dst) {
+        src.forEach(x => dst.push(x));
     }
 }
