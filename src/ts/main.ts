@@ -74,7 +74,7 @@ class ShaderProgram {
 
 }
 
-class Graphics2 {
+class Graphics {
 
 	private gl: WebGLRenderingContext;
 	private m_DrawTagets: Array<IDrawable> = [];
@@ -377,18 +377,18 @@ class TextureRender implements IDrawable {
 			0, 1, 2,
 			1, 3, 2,
 		];
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics2.createIndexBuffer(gl, indexData));
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
 
 		let that = this;
 		vertices.forEach((vertex) => {
 			let vbo_array = [
 				{
-					buffer: Graphics2.createVertexBuffer(gl, vertex.pos),
+					buffer: Graphics.createVertexBuffer(gl, vertex.pos),
 					location: gl.getAttribLocation(that.program, 'position'),
 					stride: 3
 				},
 				{
-					buffer: Graphics2.createVertexBuffer(gl, vertex.texCoord),
+					buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
 					location: gl.getAttribLocation(that.program, 'texCoord'),
 					stride: 2
 				},
@@ -447,7 +447,7 @@ class TextureRender implements IDrawable {
 
 		let img = new Image();
 		img.onload = () => {
-			let tex = Graphics2.createTexture(this.gl, img);
+			let tex = Graphics.createTexture(this.gl, img);
 			if (!tex) {
 				console.log("texture is null.");
 				return;
@@ -471,7 +471,6 @@ class TextureRender implements IDrawable {
 
 	private m_Processing: boolean = false;
 }
-
 
 class ArrayUtils
 {
@@ -655,7 +654,7 @@ class MainView extends ViewBase
 	}
 }
 
-function main2()
+function main()
 {
 	let view: MainView = new MainView();
 
@@ -665,7 +664,7 @@ function main2()
 		return;
 	}
 
-	let gfx = new Graphics2(gl);
+	let gfx = new Graphics(gl);
 
 	if (!gfx.init(view.canvas.width, view.canvas.height)) {
 		console.log("gfx init failed. ");
