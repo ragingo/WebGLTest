@@ -132,52 +132,79 @@ class MainView extends ViewBase {
         this.polygonCountLabel.innerText = sender.value;
     }
 }
-function main() {
-    let view = new MainView();
-    view.resetValues();
-    let gl = view.canvas.getContext("webgl");
-    if (!gl) {
-        console.log("webgl not supported.");
-        return;
+class Application {
+    static registerAppFrame(frame) {
+        Application.s_AppFrames.push(frame);
     }
-    let gfx = new Graphics(gl);
-    if (!gfx.init(view.canvas.width, view.canvas.height)) {
-        console.log("gfx init failed. ");
-        return;
-    }
-    if (!gfx.prepare()) {
-        console.log("gfx prepare failed. ");
-        return;
-    }
-    let textureRender = new TextureRender();
-    {
-        gfx.pushRenderTarget(new DefaultDraw());
-        gfx.pushRenderTarget(textureRender);
-    }
-    let frameCount = 0;
-    let now = 0.0;
-    let last = 0.0;
-    let elapsed = 0.0;
-    let frameRequestCallback = (time) => {
-        now = time;
-        elapsed += (now - last);
-        last = now;
-        frameCount++;
-        if (elapsed >= 1000) {
-            view.setFpsLabel(frameCount + " FPS");
-            frameCount = 0;
-            elapsed -= 1000.0;
-        }
-        textureRender.textureDrawInfo.width = view.canvas.width;
-        textureRender.textureDrawInfo.height = view.canvas.height;
-        textureRender.textureDrawInfo.effectType = view.getEffectTypeValue();
-        textureRender.textureDrawInfo.color = view.getColorValue();
-        textureRender.textureDrawInfo.rotation = view.getRotationValue();
-        textureRender.textureDrawInfo.scale = view.getScaleValue();
-        textureRender.textureDrawInfo.vivid = view.getVividValue();
-        textureRender.textureDrawInfo.polygonCount = view.getPolygonCountValue();
-        gfx.render();
+    static main() {
+        Application.s_AppFrames.forEach(f => {
+            f.onStart();
+        });
+        let frameCount = 0;
+        let now = 0.0;
+        let last = 0.0;
+        let elapsed = 0.0;
+        let frameRequestCallback = (time) => {
+            now = time;
+            elapsed += (now - last);
+            last = now;
+            frameCount++;
+            if (elapsed >= 1000) {
+                Application.s_AppFrames.forEach(f => {
+                    f.onFpsUpdate(frameCount);
+                });
+                frameCount = 0;
+                elapsed -= 1000.0;
+            }
+            Application.s_AppFrames.forEach(f => {
+                f.onUpdate();
+            });
+            window.requestAnimationFrame(frameRequestCallback);
+        };
         window.requestAnimationFrame(frameRequestCallback);
-    };
-    window.requestAnimationFrame(frameRequestCallback);
+    }
+}
+Application.s_AppFrames = [];
+class MainFrame {
+    constructor() {
+        this.m_View = new MainView();
+        this.m_View.resetValues();
+        this.m_TextureRender = new TextureRender();
+    }
+    onFpsUpdate(fps) {
+        this.m_View.setFpsLabel(fps + "FPS");
+    }
+    onStart() {
+        let gl = this.m_View.canvas.getContext("webgl");
+        if (!gl) {
+            console.log("webgl not supported.");
+            return;
+        }
+        this.m_Gfx = new Graphics(gl);
+        if (!this.m_Gfx.init(this.m_View.canvas.width, this.m_View.canvas.height)) {
+            console.log("gfx init failed. ");
+            return;
+        }
+        if (!this.m_Gfx.prepare()) {
+            console.log("gfx prepare failed. ");
+            return;
+        }
+        this.m_Gfx.pushRenderTarget(new DefaultDraw());
+        this.m_Gfx.pushRenderTarget(this.m_TextureRender);
+    }
+    onUpdate() {
+        this.m_TextureRender.textureDrawInfo.width = this.m_View.canvas.width;
+        this.m_TextureRender.textureDrawInfo.height = this.m_View.canvas.height;
+        this.m_TextureRender.textureDrawInfo.effectType = this.m_View.getEffectTypeValue();
+        this.m_TextureRender.textureDrawInfo.color = this.m_View.getColorValue();
+        this.m_TextureRender.textureDrawInfo.rotation = this.m_View.getRotationValue();
+        this.m_TextureRender.textureDrawInfo.scale = this.m_View.getScaleValue();
+        this.m_TextureRender.textureDrawInfo.vivid = this.m_View.getVividValue();
+        this.m_TextureRender.textureDrawInfo.polygonCount = this.m_View.getPolygonCountValue();
+        this.m_Gfx.render();
+    }
+}
+function main() {
+    Application.registerAppFrame(new MainFrame());
+    Application.main();
 }
