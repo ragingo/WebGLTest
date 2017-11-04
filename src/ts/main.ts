@@ -78,16 +78,12 @@ class Graphics {
 
 	private gl: WebGLRenderingContext;
 	private m_DrawTagets: Array<IDrawable> = [];
-	private m_ViewportWidth: number;
-	private m_ViewportHeight: number;
 
 	constructor(gl: WebGLRenderingContext) {
 		this.gl = gl;
 	}
 
 	public init(w: number, h: number): boolean {
-		this.m_ViewportWidth = w;
-		this.m_ViewportHeight = h;
 		this.gl.viewport(0, 0, w, h);
 
 		// 深度テストの有効化

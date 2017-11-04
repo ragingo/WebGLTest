@@ -54,8 +54,6 @@ class Graphics {
         this.gl = gl;
     }
     init(w, h) {
-        this.m_ViewportWidth = w;
-        this.m_ViewportHeight = h;
         this.gl.viewport(0, 0, w, h);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.depthFunc(this.gl.LEQUAL);
