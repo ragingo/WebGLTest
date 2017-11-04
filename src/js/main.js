@@ -15,6 +15,8 @@ class MainView extends ViewBase {
         this.scaleLabels = [];
         this.vivid = [];
         this.vividLabels = [];
+        this.reset = this.getById("reset");
+        this.reset.onclick = () => { this.onResetClick(this.reset); };
         this.fpsLabel = this.getById("fps");
         this.canvas = this.getById("canvas");
         this.effectSelector = this.getById("effectSelector");
@@ -64,7 +66,7 @@ class MainView extends ViewBase {
         ], this.vividLabels);
         this.vivid.forEach((x, i) => { x.oninput = () => this.onVividChanged(x, i); });
         this.polygonCount = this.getById("slider_polygon");
-        this.polygonCount.onchange = () => { this.onPolygonCountChanged(this.polygonCount); };
+        this.polygonCount.oninput = () => { this.onPolygonCountChanged(this.polygonCount); };
         this.polygonCountLabel = this.getById("label_polygon");
     }
     setFpsLabel(value) {
@@ -88,6 +90,23 @@ class MainView extends ViewBase {
     getPolygonCountValue() {
         return this.polygonCount.valueAsNumber;
     }
+    resetValues() {
+        this.rotation.forEach(x => x.value = x.defaultValue);
+        this.scale.forEach(x => x.value = x.defaultValue);
+        this.color.forEach(x => x.value = x.defaultValue);
+        this.effectSelector.value = "0";
+        this.vivid.forEach(x => x.value = x.defaultValue);
+        this.polygonCount.value = this.polygonCount.defaultValue;
+        this.rotation.forEach(x => x.oninput.call(null));
+        this.scale.forEach(x => x.oninput.call(null));
+        this.color.forEach(x => x.oninput.call(null));
+        this.effectSelector.onchange.call(null);
+        this.vivid.forEach(x => x.oninput.call(null));
+        this.polygonCount.oninput.call(null);
+    }
+    onResetClick(sender) {
+        this.resetValues();
+    }
     onEffectTypeChanged(sender) {
         let elems = ArrayUtil.toHTMLElements(document.getElementsByClassName("vivid_params"));
         if (sender.selectedIndex == 16) {
@@ -110,10 +129,12 @@ class MainView extends ViewBase {
         this.vividLabels[index].innerText = sender.value.toString();
     }
     onPolygonCountChanged(sender) {
+        this.polygonCountLabel.innerText = sender.value;
     }
 }
 function main() {
     let view = new MainView();
+    view.resetValues();
     let gl = view.canvas.getContext("webgl");
     if (!gl) {
         console.log("webgl not supported.");

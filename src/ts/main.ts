@@ -8,6 +8,7 @@ class ViewBase
 
 class MainView extends ViewBase
 {
+	reset: HTMLButtonElement;
 	fpsLabel: HTMLParagraphElement;
 	canvas: HTMLCanvasElement;
 	effectSelector: HTMLSelectElement;
@@ -52,6 +53,9 @@ class MainView extends ViewBase
 
 	constructor() {
 		super();
+
+		this.reset = this.getById("reset");
+		this.reset.onclick = () => { this.onResetClick(this.reset); };
 
 		this.fpsLabel = this.getById("fps");
 		this.canvas = this.getById("canvas");
@@ -131,8 +135,28 @@ class MainView extends ViewBase
 		this.vivid.forEach((x, i) => { x.oninput = () => this.onVividChanged(x, i); });
 
 		this.polygonCount = this.getById("slider_polygon");
-		this.polygonCount.onchange = () => { this.onPolygonCountChanged(this.polygonCount); };
+		this.polygonCount.oninput = () => { this.onPolygonCountChanged(this.polygonCount); };
 		this.polygonCountLabel = this.getById("label_polygon");
+	}
+
+	public resetValues(): void {
+		this.rotation.forEach(x => x.value = x.defaultValue);
+		this.scale.forEach(x => x.value = x.defaultValue);
+		this.color.forEach(x => x.value = x.defaultValue);
+		this.effectSelector.value = "0";
+		this.vivid.forEach(x => x.value = x.defaultValue);
+		this.polygonCount.value = this.polygonCount.defaultValue;
+		
+		this.rotation.forEach(x => x.oninput.call(null));
+		this.scale.forEach(x => x.oninput.call(null));
+		this.color.forEach(x => x.oninput.call(null));
+		this.effectSelector.onchange.call(null);
+		this.vivid.forEach(x => x.oninput.call(null));
+		this.polygonCount.oninput.call(null);
+	}
+
+	private onResetClick(sender: HTMLElement) {
+		this.resetValues();
 	}
 
 	private onEffectTypeChanged(sender: HTMLSelectElement) {
@@ -162,12 +186,14 @@ class MainView extends ViewBase
 	}
 
 	private onPolygonCountChanged(sender: HTMLInputElement) {
+		this.polygonCountLabel.innerText = sender.value;
 	}
 }
 
 function main()
 {
 	let view: MainView = new MainView();
+	view.resetValues();
 
 	let gl = view.canvas.getContext("webgl");
 	if (!gl) {
