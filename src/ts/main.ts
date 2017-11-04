@@ -215,12 +215,43 @@ class TextureDrawInfo {
 	public set color(v : Float32Array) {
 		this._color = v;
 	}
-	
+
+	private _rotation : Float32Array;
+	public get rotation() : Float32Array {
+		return this._rotation;
+	}
+	public set rotation(v : Float32Array) {
+		this._rotation = v;
+	}
+
+	private _scale : Float32Array;
+	public get scale() : Float32Array {
+		return this._scale;
+	}
+	public set scale(v : Float32Array) {
+		this._scale = v;
+	}
+
+	private _vivid : Float32Array;
+	public get vivid() : Float32Array {
+		return this._vivid;
+	}
+	public set vivid(v : Float32Array) {
+		this._vivid = v;
+	}
+
+	private _polygonCount : number;
+	public get polygonCount() : number {
+		return this._polygonCount;
+	}
+	public set polygonCount(v : number) {
+		this._polygonCount = v;
+	}
+
 }
 
 class TextureRender implements IDrawable {
 
-	
 	private _textureDrawInfo : TextureDrawInfo;
 	public get textureDrawInfo() : TextureDrawInfo {
 		return this._textureDrawInfo;
@@ -282,20 +313,12 @@ class TextureRender implements IDrawable {
 		if (uniformLocation.editColor) {
 			gl.uniform4fv(uniformLocation.editColor, this._textureDrawInfo.color);
 		}
-
-		//gl.uniform2fv(uniformLocation.vividParams, view.getVividEffectParameters());
-
-		// エフェクト切り替え
-		//gl.uniform1i(uniformLocation.effectType, view.getSelectedEffectType());
+		if (uniformLocation.vividParams) {
+			gl.uniform2fv(uniformLocation.vividParams, this._textureDrawInfo.vivid);
+		}
 		gl.uniform1i(uniformLocation.effectType, this._textureDrawInfo.effectType);
-
-		// let scale = view.getScale();
-		// gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'scale'), scale.x, scale.y, scale.z);
-		gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'scale'), 1, 1, 1);
-
-		// let rotation = view.getRotation();
-		// gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'rotation'), rotation.x, rotation.y, rotation.z);
-		gl.vertexAttrib3f(gl.getAttribLocation(this.program, 'rotation'), 1, 1, 1);
+		gl.vertexAttrib3fv(gl.getAttribLocation(this.program, 'scale'), this._textureDrawInfo.scale);
+		gl.vertexAttrib3fv(gl.getAttribLocation(this.program, 'rotation'), this._textureDrawInfo.rotation);
 
 		const tex_w = 512.0;
 		const tex_h = 512.0;
@@ -307,9 +330,9 @@ class TextureRender implements IDrawable {
 		];
 
 		// 遊び要素として、ただポリゴン数を後ろから削るだけ
-		// for (let i = 0; i < 4 - view.getPolygonCount(); i++) {
-		// 	texCoords.pop();
-		// }
+		for (let i = 0; i < 4 - this._textureDrawInfo.polygonCount; i++) {
+			texCoords.pop();
+		}
 
 		// 頂点バッファ更新
 		let vertices = [];
@@ -449,35 +472,186 @@ class TextureRender implements IDrawable {
 	private m_Processing: boolean = false;
 }
 
-class MainView
+
+class ArrayUtils
 {
-	fps: HTMLParagraphElement;
+	public static toHTMLElements<T extends Element>(array: Array<T> | HTMLCollectionOf<T>): Array<HTMLElement> {
+		let result: Array<HTMLElement> = [];
+		for(let i = 0; i < array.length; i++) {
+			let item: Element = array[i];
+			result.push(item as HTMLElement);
+		}
+		return result;
+	}
+
+	public static pushAll<T>(src: Array<T>, dst: Array<T>): void {
+		src.forEach(x => dst.push(x));
+	}
+}
+
+class ViewBase
+{
+	public getById<T extends HTMLElement>(id: string): T {
+		return document.getElementById(id) as T;
+	}
+}
+
+class MainView extends ViewBase
+{
+	fpsLabel: HTMLParagraphElement;
 	canvas: HTMLCanvasElement;
 	effectSelector: HTMLSelectElement;
-	color: Array<HTMLInputElement>;
-
-	public setFps(value: string): void {
-		this.fps.innerText = value;
+	color: Array<HTMLInputElement> = [];
+	colorLabels: Array<HTMLLabelElement> = [];
+	rotation: Array<HTMLInputElement> = [];
+	rotationLabels: Array<HTMLLabelElement> = [];
+	scale: Array<HTMLInputElement> = [];
+	scaleLabels: Array<HTMLLabelElement> = [];
+	vivid: Array<HTMLInputElement> = [];
+	vividLabels: Array<HTMLLabelElement> = [];
+	polygonCount: HTMLInputElement;
+	polygonCountLabel: HTMLLabelElement;
+	
+	public setFpsLabel(value: string): void {
+		this.fpsLabel.innerText = value;
 	}
 
-	public getColor(): Float32Array {
-		return new Float32Array(this.color.map(x => parseInt(x.value)));
+	public getColorValue(): Float32Array {
+		return new Float32Array(this.color.map(x => x.valueAsNumber));
 	}
 
-	public getEffectType(): number {
+	public getEffectTypeValue(): number {
 		return parseInt(this.effectSelector.options[this.effectSelector.selectedIndex].value);
 	}
 
+	public getRotationValue(): Float32Array {
+		return new Float32Array(this.rotation.map(x => x.valueAsNumber));
+	}
+
+	public getScaleValue(): Float32Array {
+		return new Float32Array(this.scale.map(x => x.valueAsNumber));
+	}
+
+	public getVividValue(): Float32Array {
+		return new Float32Array(this.vivid.map(x => x.valueAsNumber));
+	}
+
+	public getPolygonCountValue(): number {
+		return this.polygonCount.valueAsNumber;
+	}
+
 	constructor() {
-		this.fps = document.getElementById("fps") as HTMLParagraphElement;
-		this.canvas = document.getElementById("canvas") as HTMLCanvasElement;
-		this.effectSelector = document.getElementById("effectSelector") as HTMLSelectElement;
-		this.color = [
-			document.getElementById("slider_color_r") as HTMLInputElement,
-			document.getElementById("slider_color_g") as HTMLInputElement,
-			document.getElementById("slider_color_b") as HTMLInputElement,
-			document.getElementById("slider_color_a") as HTMLInputElement,
-		];
+		super();
+
+		this.fpsLabel = this.getById("fps");
+		this.canvas = this.getById("canvas");
+		this.effectSelector = this.getById("effectSelector");
+		this.effectSelector.onchange = () => { this.onEffectTypeChanged(this.effectSelector); };
+
+		ArrayUtils.pushAll(
+			[
+				this.getById("slider_color_r"),
+				this.getById("slider_color_g"),
+				this.getById("slider_color_b"),
+				this.getById("slider_color_a"),
+			],
+			this.color
+		);
+		ArrayUtils.pushAll(
+			[
+				this.getById("label_color_r_value"),
+				this.getById("label_color_g_value"),
+				this.getById("label_color_b_value"),
+				this.getById("label_color_a_value"),
+			],
+			this.colorLabels
+		);
+		this.color.forEach((x, i) => { x.oninput = () => this.onColorChanged(x, i); });
+
+		ArrayUtils.pushAll(
+			[
+				this.getById("slider_rotation_x"),
+				this.getById("slider_rotation_y"),
+				this.getById("slider_rotation_z"),
+			],
+			this.rotation
+		);
+		ArrayUtils.pushAll(
+			[
+				this.getById("label_rotation_x"),
+				this.getById("label_rotation_y"),
+				this.getById("label_rotation_z"),
+			],
+			this.rotationLabels
+		);
+		this.rotation.forEach((x, i) => { x.oninput = () => this.onRotationChanged(x, i); });
+
+		ArrayUtils.pushAll(
+			[
+				this.getById("slider_scale_x"),
+				this.getById("slider_scale_y"),
+				this.getById("slider_scale_z"),
+			],
+			this.scale
+		);
+		ArrayUtils.pushAll(
+			[
+				this.getById("label_scale_x"),
+				this.getById("label_scale_y"),
+				this.getById("label_scale_z"),
+			],
+			this.scaleLabels
+		);
+		this.scale.forEach((x, i) => { x.oninput = () => this.onScaleChanged(x, i); });
+
+		ArrayUtils.pushAll(
+			[
+				this.getById("slider_vivid_k1"),
+				this.getById("slider_vivid_k2"),
+			],
+			this.vivid
+		);
+		ArrayUtils.pushAll(
+			[
+				this.getById("label_vivid_k1_value"),
+				this.getById("label_vivid_k2_value"),
+			],
+			this.vividLabels
+		);
+		this.vivid.forEach((x, i) => { x.oninput = () => this.onVividChanged(x, i); });
+
+		this.polygonCount = this.getById("slider_polygon");
+		this.polygonCount.onchange = () => { this.onPolygonCountChanged(this.polygonCount); };
+		this.polygonCountLabel = this.getById("label_polygon");
+	}
+
+	private onEffectTypeChanged(sender: HTMLSelectElement) {
+		let elems = ArrayUtils.toHTMLElements(document.getElementsByClassName("vivid_params"));
+		if (sender.selectedIndex == 16) {
+			elems.forEach(x => x.style.visibility = "visible");
+		}
+		else {
+			elems.forEach(x => x.style.visibility = "collapse");
+		}
+	}
+
+	private onColorChanged(sender: HTMLInputElement, index: number) {
+		this.colorLabels[index].innerText = sender.value.toString();
+	}
+
+	private onRotationChanged(sender: HTMLInputElement, index: number) {
+		this.rotationLabels[index].innerText = sender.value.toString();
+	}
+
+	private onScaleChanged(sender: HTMLInputElement, index: number) {
+		this.scaleLabels[index].innerText = sender.value.toString();
+	}
+
+	private onVividChanged(sender: HTMLInputElement, index: number) {
+		this.vividLabels[index].innerText = sender.value.toString();
+	}
+
+	private onPolygonCountChanged(sender: HTMLInputElement) {
 	}
 }
 
@@ -523,15 +697,19 @@ function main2()
 		frameCount++;
 
 		if (elapsed >= 1000) {
-			view.setFps(frameCount + " FPS");
+			view.setFpsLabel(frameCount + " FPS");
 			frameCount = 0;
 			elapsed -= 1000.0;
 		}
 
 		textureRender.textureDrawInfo.width = view.canvas.width;
 		textureRender.textureDrawInfo.height = view.canvas.height;
-		textureRender.textureDrawInfo.effectType = view.getEffectType();
-		textureRender.textureDrawInfo.color = view.getColor();
+		textureRender.textureDrawInfo.effectType = view.getEffectTypeValue();
+		textureRender.textureDrawInfo.color = view.getColorValue();
+		textureRender.textureDrawInfo.rotation = view.getRotationValue();
+		textureRender.textureDrawInfo.scale = view.getScaleValue();
+		textureRender.textureDrawInfo.vivid = view.getVividValue();
+		textureRender.textureDrawInfo.polygonCount = view.getPolygonCountValue();
 		
 		gfx.render();
 
