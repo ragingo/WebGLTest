@@ -1,5 +1,8 @@
 attribute vec3 position;
+attribute vec4 color;
 attribute vec2 texCoord;
+attribute vec3 scale;
+attribute vec3 rotation;
 varying   vec2 vTextureCoord;
 
 /* 単位行列
@@ -100,5 +103,14 @@ mat4 mat4_rotation_z(float rad) {
 void main() {
 	vTextureCoord = texCoord;
 
-	gl_Position = vec4(position, 1.0);
+	vec3 rotation2 = (rotation * 2.0 * 3.14) / 360.0;
+
+	mat4 mat_result =
+		mat4_identity() * 
+		mat4_scale(scale) *
+		mat4_rotation_x(rotation2.x) *
+		mat4_rotation_y(rotation2.y) *
+		mat4_rotation_z(rotation2.z);
+
+	gl_Position = mat_result * vec4(position, 1.0);
 }

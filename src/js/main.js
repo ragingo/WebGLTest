@@ -191,6 +191,7 @@ class MainFrame {
         }
         this.m_Gfx.pushRenderTarget(new DefaultDraw());
         this.m_Gfx.pushRenderTarget(this.m_TextureRender);
+        this.m_Gfx.pushRenderTarget(new SubTextureRender());
     }
     onUpdate() {
         this.m_TextureRender.textureDrawInfo.width = this.m_View.canvas.width;
