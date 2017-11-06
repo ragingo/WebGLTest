@@ -41,7 +41,6 @@ class ShaderProgram {
             console.log(this.gl.getProgramInfoLog(this.program));
             return false;
         }
-        this.gl.useProgram(this.program);
         return true;
     }
     getProgram() {
@@ -206,6 +205,7 @@ class TextureRender {
             return;
         }
         let gl = this.gl;
+        gl.useProgram(this.program);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -311,8 +311,6 @@ class TextureRender {
         });
     }
     onEndDraw() {
-        let gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     async loadShader() {
         if (this.m_Processing) {
@@ -394,7 +392,8 @@ class SubTextureRender {
             return;
         }
         let gl = this.gl;
-        gl.activeTexture(gl.TEXTURE1);
+        gl.useProgram(this.program);
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -471,8 +470,6 @@ class SubTextureRender {
         });
     }
     onEndDraw() {
-        let gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D, null);
     }
     async loadShader() {
         if (this.m_Processing) {

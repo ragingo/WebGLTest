@@ -63,8 +63,6 @@ class ShaderProgram {
 			return false;
 		}
 
-		this.gl.useProgram(this.program);
-
 		return true;
 	}
 
@@ -171,7 +169,6 @@ class DefaultDraw implements IDrawable {
 	}
 
 	onEndDraw(): void {
-
 	}
 
 	private gl: WebGLRenderingContext;
@@ -291,6 +288,8 @@ class TextureRender implements IDrawable {
 
 		let gl = this.gl;
 
+		gl.useProgram(this.program);
+
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -409,8 +408,6 @@ class TextureRender implements IDrawable {
 	}
 
 	onEndDraw(): void {
-		let gl = this.gl;
-		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	private async loadShader(): Promise<boolean> {
@@ -515,7 +512,9 @@ class SubTextureRender implements IDrawable {
 
 		let gl = this.gl;
 
-		gl.activeTexture(gl.TEXTURE1);
+		gl.useProgram(this.program);
+
+		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -600,8 +599,6 @@ class SubTextureRender implements IDrawable {
 	}
 
 	onEndDraw(): void {
-		let gl = this.gl;
-		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	private async loadShader(): Promise<boolean> {
