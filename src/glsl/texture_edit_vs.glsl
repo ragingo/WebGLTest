@@ -1,9 +1,8 @@
 attribute vec3 position;
-attribute vec4 color;
 attribute vec2 texCoord;
-attribute vec3 scale;
-attribute vec3 rotation;
-varying   vec2 vTextureCoord;
+uniform vec3 scale;
+uniform vec3 rotation;
+varying vec2 vTextureCoord;
 
 /* 単位行列
  *    |c1|c2|c3|c4|

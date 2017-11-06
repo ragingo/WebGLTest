@@ -297,6 +297,8 @@ class TextureRender implements IDrawable {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 		let uniformLocation = {
+			scale: gl.getUniformLocation(this.program, 'scale'),
+			rotatoin: gl.getUniformLocation(this.program, 'rotation'),
 			sampler: gl.getUniformLocation(this.program, 'uSampler'),
 			effectType: gl.getUniformLocation(this.program, 'effectType'),
 			textureSize: gl.getUniformLocation(this.program, 'textureSize'),
@@ -307,6 +309,12 @@ class TextureRender implements IDrawable {
 		// テクスチャ登録
 		gl.uniform1i(uniformLocation.sampler, 0);
 
+		if (uniformLocation.scale) {
+			gl.uniform3fv(uniformLocation.scale, this._textureDrawInfo.scale);
+		}
+		if (uniformLocation.rotatoin) {
+			gl.uniform3fv(uniformLocation.rotatoin, this._textureDrawInfo.rotation);
+		}
 		if (uniformLocation.textureSize){
 			gl.uniform2fv(uniformLocation.textureSize, [this._textureDrawInfo.width, this._textureDrawInfo.height]);
 		}
@@ -317,8 +325,6 @@ class TextureRender implements IDrawable {
 			gl.uniform2fv(uniformLocation.vividParams, this._textureDrawInfo.vivid);
 		}
 		gl.uniform1i(uniformLocation.effectType, this._textureDrawInfo.effectType);
-		gl.vertexAttrib3fv(gl.getAttribLocation(this.program, 'scale'), this._textureDrawInfo.scale);
-		gl.vertexAttrib3fv(gl.getAttribLocation(this.program, 'rotation'), this._textureDrawInfo.rotation);
 
 		const tex_w = 512.0;
 		const tex_h = 512.0;
