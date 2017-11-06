@@ -26,9 +26,9 @@ void main() {
 		gl_FragColor = texture2D(uSampler, uv);
 	}
 	// "C" を切り取り
-	// TODO: A と C の間を埋める(B の位置に C を移動する)
-	else if (includes(uv, 24.0, 8.0, 32.0, 16.0)) {
-		gl_FragColor = texture2D(uSampler, uv);
+	// ※ B の位置の場合、そこから横へ8px右へずらした C を参照して返す
+	else if (includes(uv, 16.0, 8.0, 24.0, 16.0)) {
+		gl_FragColor = texture2D(uSampler, vec2(uv.x + (8.0/512.0), uv.y));
 	}
 	else {
 		gl_FragColor = vec4(0.0);
