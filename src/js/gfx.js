@@ -54,6 +54,8 @@ class Graphics {
     }
     init(w, h) {
         this.gl.viewport(0, 0, w, h);
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.depthFunc(this.gl.LEQUAL);
         return true;
@@ -398,50 +400,21 @@ class SubTextureRender {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
-        const tex_w = 512.0;
-        const tex_h = 512.0;
-        let texCoords = [
-            { left: 0, top: 0, width: 128, height: 128 },
-            { left: 0, top: 128, width: 128, height: 128 },
-            { left: 128, top: 0, width: 128, height: 128 },
-            { left: 128, top: 128, width: 128, height: 128 },
-        ];
         let vertices = [];
-        for (let i = 0; i < texCoords.length; i++) {
-            let tc = texCoords[i];
-            let tmp_pos = {
-                left: (tc.left / tex_w) * 2.0 - 1.0,
-                top: (tc.top / tex_h) * 2.0 - 1.0,
-                width: (tc.width / tex_w) * 2.0 - 1.0,
-                height: (tc.height / tex_h) * 2.0 - 1.0,
-                right: ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
-                bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
-            };
-            let tmp_texCoord = {
-                left: tc.left / tex_w,
-                top: tc.top / tex_h,
-                width: tc.width / tex_w,
-                height: tc.height / tex_h,
-                right: (tc.left + tc.width) / tex_w,
-                bottom: (tc.top + tc.height) / tex_h,
-            };
-            let pos = [
-                tmp_pos.left, -tmp_pos.bottom, 0,
-                tmp_pos.right, -tmp_pos.bottom, 0,
-                tmp_pos.left, -tmp_pos.top, 0,
-                tmp_pos.right, -tmp_pos.top, 0,
-            ];
-            let texCoord = [
-                tmp_texCoord.left, tmp_texCoord.bottom,
-                tmp_texCoord.right, tmp_texCoord.bottom,
-                tmp_texCoord.left, tmp_texCoord.top,
-                tmp_texCoord.right, tmp_texCoord.top,
-            ];
-            vertices.push({
-                pos: pos,
-                texCoord: texCoord,
-            });
-        }
+        vertices.push({
+            pos: [
+                -1, -1, 0,
+                1, -1, 0,
+                -1, 1, 0,
+                1, 1, 0
+            ],
+            texCoord: [
+                0, 1,
+                1, 1,
+                0, 0,
+                1, 0
+            ]
+        });
         let indexData = [
             0, 1, 2,
             1, 3, 2,
@@ -476,8 +449,8 @@ class SubTextureRender {
             return false;
         }
         this.m_Processing = true;
-        let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
-        let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
+        let vs = await HttpUtil.getText("./glsl/texture_slice_vs.glsl");
+        let fs = await HttpUtil.getText("./glsl/texture_slice_fs.glsl");
         if (!vs) {
             console.log("vs code not found.");
             return false;
