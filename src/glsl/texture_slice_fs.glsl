@@ -17,9 +17,24 @@ bool includes(vec2 uv, float left, float top, float right, float bottom)
 	return false;
 }
 
+struct GlyphInfo {
+	float left;
+	float top;
+	float right;
+	float bottom;
+};
+
 vec4 getCharacter(vec2 uv, float left, float top, float right, float bottom)
 {
 	if (includes(uv, left, top, right, bottom)) {
+		return texture2D(uSampler, uv);
+	}
+	return vec4(0.0);
+}
+
+vec4 getCharacter(vec2 uv, GlyphInfo g)
+{
+	if (includes(uv, g.left, g.top, g.right, g.bottom)) {
 		return texture2D(uSampler, uv);
 	}
 	return vec4(0.0);
@@ -29,10 +44,20 @@ void main() {
 
 	vec2 uv = vTextureCoord;
 
-	vec4 charA = getCharacter(vec2(uv.x + (0.0/512.0), uv.y),  8.0,  8.0, 16.0, 16.0);
-	vec4 charC = getCharacter(vec2(uv.x + (8.0/512.0), uv.y), 24.0,  8.0, 32.0, 16.0);
+	const int kGlyphCount = 2;
+	GlyphInfo glyphs[kGlyphCount];
+	glyphs[0] = GlyphInfo( 8.0,  8.0, 16.0, 16.0); // A
+	glyphs[1] = GlyphInfo(24.0,  8.0, 32.0, 16.0); // C
 
-	vec4 result = charA + charC;
+	float x_offset = 0.0;
+	vec4 result = vec4(0.0);
+
+	for (int i = 0; i < kGlyphCount; i++) {
+		vec2 offset = vec2(uv.x + x_offset, uv.y);
+		GlyphInfo g = glyphs[i];
+		result += getCharacter(offset, g);
+		x_offset += (8.0/512.0);
+	}
 
 	gl_FragColor = result;
 }
