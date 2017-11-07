@@ -17,21 +17,22 @@ bool includes(vec2 uv, float left, float top, float right, float bottom)
 	return false;
 }
 
+vec4 getCharacter(vec2 uv, float left, float top, float right, float bottom)
+{
+	if (includes(uv, left, top, right, bottom)) {
+		return texture2D(uSampler, uv);
+	}
+	return vec4(0.0);
+}
+
 void main() {
 
 	vec2 uv = vTextureCoord;
 
-	// "A" を切り取り
-	if (includes(uv, 8.0, 8.0, 16.0, 16.0)) {
-		gl_FragColor = texture2D(uSampler, uv);
-	}
-	// "C" を切り取り
-	// ※ B の位置の場合、そこから横へ8px右へずらした C を参照して返す
-	else if (includes(uv, 16.0, 8.0, 24.0, 16.0)) {
-		gl_FragColor = texture2D(uSampler, vec2(uv.x + (8.0/512.0), uv.y));
-	}
-	else {
-		gl_FragColor = vec4(0.0);
-	}
+	vec4 charA = getCharacter(vec2(uv.x + (0.0/512.0), uv.y),  8.0,  8.0, 16.0, 16.0);
+	vec4 charC = getCharacter(vec2(uv.x + (8.0/512.0), uv.y), 24.0,  8.0, 32.0, 16.0);
 
+	vec4 result = charA + charC;
+
+	gl_FragColor = result;
 }
