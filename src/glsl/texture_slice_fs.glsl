@@ -59,5 +59,11 @@ void main() {
 		x_offset += (8.0/512.0);
 	}
 
-	gl_FragColor = result;
+	// 文字テクスチャの背景を消したい・・・
+	vec4 result2 = vec4(0.0);
+	if (result.r > 0.0 && result.g > 0.0 && result.b > 0.0) {
+		result2 = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+	gl_FragColor = vec4(result.rgb + result2.rgb, result.a);
 }

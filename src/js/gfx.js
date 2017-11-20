@@ -366,7 +366,6 @@ class TextureRender {
 class SubTextureRender {
     constructor() {
         this.m_TextureLoaded = false;
-        this.m_ShaderLoaded = false;
         this.m_Processing = false;
     }
     getContext() {
@@ -376,61 +375,83 @@ class SubTextureRender {
         this.gl = gl;
     }
     onBeginDraw() {
-        if (!this.m_ShaderLoaded) {
-            this.loadShader().then(r => {
-                if (r) {
-                    this.m_ShaderLoaded = true;
-                    this.m_Processing = false;
-                }
-            });
-        }
         if (!this.m_TextureLoaded) {
             this.loadTexture().then(r2 => {
             });
         }
     }
     onDraw() {
-        if (!this.m_TextureLoaded) {
+        if (this.m_Sprite) {
+        }
+    }
+    onEndDraw() {
+    }
+    async loadTexture() {
+        if (this.m_Processing) {
+            return false;
+        }
+        this.m_Processing = true;
+        let img = new Image();
+        img.onload = () => {
+            let tex = Graphics.createTexture(this.gl, img);
+            if (!tex) {
+                console.log("texture is null.");
+                return;
+            }
+            this.m_Sprite = new Sprite();
+            this.m_Sprite.texture = tex;
+            this.m_Sprite.initialize();
+            this.m_TextureLoaded = true;
+            this.m_Processing = false;
+            console.log("texture loaded.");
+        };
+        img.src = "./res/smile_basic_font_table.png";
+        return true;
+    }
+}
+class Sprite {
+    constructor() {
+        this.m_ShaderLoaded = false;
+        this.m_ShaderLoading = false;
+        this.m_Processing = false;
+    }
+    initialize() {
+    }
+    draw(ctx) {
+        this.gl = ctx;
+        let gl = this.gl;
+        if (!this.m_ShaderLoaded && !this.m_ShaderLoading) {
+            this.m_ShaderLoading = true;
+            this.loadShader().then(r => {
+                if (r) {
+                    this.m_ShaderLoaded = true;
+                    this.m_ShaderLoading = false;
+                }
+            });
             return;
         }
-        let gl = this.gl;
+        if (!this.m_ShaderLoaded) {
+            return;
+        }
         gl.useProgram(this.program);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
-        let vertices = [];
-        vertices.push({
-            pos: [
-                -1, -1, 0,
-                1, -1, 0,
-                -1, 1, 0,
-                1, 1, 0
-            ],
-            texCoord: [
-                0, 1,
-                1, 1,
-                0, 0,
-                1, 0
-            ]
-        });
-        let indexData = [
-            0, 1, 2,
-            1, 3, 2,
-        ];
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
-        let that = this;
-        vertices.forEach((vertex) => {
+        if (this.m_MainTexture) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
+        }
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, Sprite.kIndices));
+        Sprite.kVertices.forEach((vertex) => {
             let vbo_array = [
                 {
                     buffer: Graphics.createVertexBuffer(gl, vertex.pos),
-                    location: gl.getAttribLocation(that.program, 'position'),
+                    location: gl.getAttribLocation(this.program, 'position'),
                     stride: 3
                 },
                 {
                     buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
-                    location: gl.getAttribLocation(that.program, 'texCoord'),
+                    location: gl.getAttribLocation(this.program, 'texCoord'),
                     stride: 2
                 },
             ];
@@ -439,18 +460,16 @@ class SubTextureRender {
                 gl.enableVertexAttribArray(item.location);
                 gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
             });
-            gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, Sprite.kIndices.length, gl.UNSIGNED_SHORT, 0);
         });
-    }
-    onEndDraw() {
     }
     async loadShader() {
         if (this.m_Processing) {
             return false;
         }
         this.m_Processing = true;
-        let vs = await HttpUtil.getText("./glsl/texture_slice_vs.glsl");
-        let fs = await HttpUtil.getText("./glsl/texture_slice_fs.glsl");
+        let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
+        let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
         if (!vs) {
             console.log("vs code not found.");
             return false;
@@ -472,24 +491,29 @@ class SubTextureRender {
         this.program = program;
         return true;
     }
-    async loadTexture() {
-        if (this.m_Processing) {
-            return false;
-        }
-        this.m_Processing = true;
-        let img = new Image();
-        img.onload = () => {
-            let tex = Graphics.createTexture(this.gl, img);
-            if (!tex) {
-                console.log("texture is null.");
-                return;
-            }
-            this.m_MainTexture = tex;
-            this.m_TextureLoaded = true;
-            this.m_Processing = false;
-            console.log("texture loaded.");
-        };
-        img.src = "./res/smile_basic_font_table.png";
-        return true;
+    get texture() {
+        return this.m_MainTexture;
+    }
+    set texture(texture) {
+        this.m_MainTexture = texture;
     }
 }
+Sprite.kVertices = [{
+        pos: [
+            -1, -1, 0,
+            1, -1, 0,
+            -1, 1, 0,
+            1, 1, 0
+        ],
+        texCoord: [
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 0
+        ]
+    }
+];
+Sprite.kIndices = [
+    0, 1, 2,
+    1, 3, 2,
+];

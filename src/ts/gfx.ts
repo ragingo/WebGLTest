@@ -1,3 +1,5 @@
+// /// <reference path="test.d.ts" />
+// import default_vs from "../glsl/default_vs.glsl!text";
 
 interface IDrawable {
 	getContext(): WebGLRenderingContext;
@@ -495,14 +497,6 @@ class SubTextureRender implements IDrawable {
 	}
 
 	onBeginDraw(): void {
-		if (!this.m_ShaderLoaded) {
-			this.loadShader().then(r => {
-				if (r) {
-					this.m_ShaderLoaded = true;
-					this.m_Processing = false;
-				}
-			});
-		}
 		if (!this.m_TextureLoaded) {
 			this.loadTexture().then(r2 => {
 			});
@@ -510,69 +504,107 @@ class SubTextureRender implements IDrawable {
 	}
 
 	onDraw(): void {
-		if (!this.m_TextureLoaded) {
+		if (this.m_Sprite) {
+			// this.m_Sprite.draw(this.gl);
+		}
+	}
+
+	onEndDraw(): void {
+	}
+
+	private async loadTexture(): Promise<boolean> {
+
+		if (this.m_Processing) {
+			return false;
+		}
+		this.m_Processing = true;
+
+		let img = new Image();
+		img.onload = () => {
+			let tex = Graphics.createTexture(this.gl, img);
+			if (!tex) {
+				console.log("texture is null.");
+				return;
+			}
+			this.m_Sprite = new Sprite();
+			this.m_Sprite.texture = tex;
+			this.m_Sprite.initialize();
+			this.m_TextureLoaded = true;
+			this.m_Processing = false;
+			console.log("texture loaded.");
+		};
+		img.src = "./res/smile_basic_font_table.png";
+
+		return true;
+	}
+
+	private gl: WebGLRenderingContext;
+	private m_TextureLoaded: boolean = false;
+	private m_Processing: boolean = false;
+	private m_Sprite: Sprite;
+}
+
+class Sprite
+{
+	constructor() {
+	}
+
+	public initialize(): void {
+	}
+
+	public draw(ctx: WebGLRenderingContext): void {
+
+		this.gl = ctx;
+		let gl = this.gl;
+
+		if (!this.m_ShaderLoaded && !this.m_ShaderLoading) {
+			this.m_ShaderLoading = true;
+			this.loadShader().then(r => {
+				if (r) {
+					this.m_ShaderLoaded = true;
+					this.m_ShaderLoading = false;
+				}
+			});
 			return;
 		}
 
-		let gl = this.gl;
+		if (!this.m_ShaderLoaded) {
+			return;
+		}
 
 		gl.useProgram(this.program);
 
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		if (this.m_MainTexture) {
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-		gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
+			gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
+		}
 
-		// 頂点バッファ更新
-		let vertices = [];
-		vertices.push({
-			pos: [
-				-1, -1, 0,
-				 1, -1, 0,
-				-1,  1, 0,
-				 1,  1, 0
-			],
-			texCoord: [
-				0, 1,
-				1, 1,
-				0, 0,
-				1, 0
-			]
-		});
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, Sprite.kIndices));
 
-		// インデックスバッファ生成 & 登録
-		let indexData = [
-			0, 1, 2,
-			1, 3, 2,
-		];
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
-
-		let that = this;
-		vertices.forEach((vertex) => {
+		Sprite.kVertices.forEach((vertex) => {
 			let vbo_array = [
 				{
 					buffer: Graphics.createVertexBuffer(gl, vertex.pos),
-					location: gl.getAttribLocation(that.program, 'position'),
+					location: gl.getAttribLocation(this.program, 'position'),
 					stride: 3
 				},
 				{
 					buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
-					location: gl.getAttribLocation(that.program, 'texCoord'),
+					location: gl.getAttribLocation(this.program, 'texCoord'),
 					stride: 2
 				},
 			];
-			vbo_array.forEach(function(item, idx) {
+			vbo_array.forEach(function (item, idx) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
 				gl.enableVertexAttribArray(item.location);
 				gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
 			});
-			gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+			gl.drawElements(gl.TRIANGLES, Sprite.kIndices.length, gl.UNSIGNED_SHORT, 0);
 		});
-	}
-
-	onEndDraw(): void {
 	}
 
 	private async loadShader(): Promise<boolean> {
@@ -582,8 +614,8 @@ class SubTextureRender implements IDrawable {
 		}
 		this.m_Processing = true;
 
-		let vs = await HttpUtil.getText("./glsl/texture_slice_vs.glsl");
-		let fs = await HttpUtil.getText("./glsl/texture_slice_fs.glsl");
+		let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
+		let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
 		if (!vs) {
 			console.log("vs code not found.");
 			return false;
@@ -608,36 +640,39 @@ class SubTextureRender implements IDrawable {
 		return true;
 	}
 
-	private async loadTexture(): Promise<boolean> {
-
-		if (this.m_Processing) {
-			return false;
-		}
-		this.m_Processing = true;
-
-		let img = new Image();
-		img.onload = () => {
-			let tex = Graphics.createTexture(this.gl, img);
-			if (!tex) {
-				console.log("texture is null.");
-				return;
-			}
-			this.m_MainTexture = tex;
-			this.m_TextureLoaded = true;
-			this.m_Processing = false;
-			console.log("texture loaded.");
-		};
-		img.src = "./res/smile_basic_font_table.png";
-
-		return true;
+	public get texture(): WebGLTexture {
+		return this.m_MainTexture;
 	}
+	public set texture(texture: WebGLTexture) {
+		this.m_MainTexture = texture;
+	}
+
+	private static kVertices = [{
+		pos: [
+			-1, -1, 0,
+			1, -1, 0,
+			-1, 1, 0,
+			1, 1, 0
+		],
+		texCoord: [
+			0, 1,
+			1, 1,
+			0, 0,
+			1, 0
+		]
+	}
+	];
+
+	private static kIndices = [
+		0, 1, 2,
+		1, 3, 2,
+	];
 
 	private gl: WebGLRenderingContext;
 	private program: WebGLProgram;
 	private m_MainTexture: WebGLTexture;
-	private m_TextureLoaded: boolean = false;
 	private m_ShaderLoaded: boolean = false;
+	private m_ShaderLoading: boolean = false;
 	private m_ShaderProgram: ShaderProgram;
-
-	private m_Processing: boolean = false;
+	private m_Processing:boolean = false;
 }
