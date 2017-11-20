@@ -505,7 +505,7 @@ class SubTextureRender implements IDrawable {
 
 	onDraw(): void {
 		if (this.m_Sprite) {
-			// this.m_Sprite.draw(this.gl);
+			this.m_Sprite.draw(this.gl);
 		}
 	}
 
@@ -583,9 +583,71 @@ class Sprite
 			gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
 		}
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, Sprite.kIndices));
+		// 9 slice これでいいのか・・・？
+		// TODO: 外から固定範囲を与える
+		const tex_w = 512.0;
+		const tex_h = 512.0;
+		let texCoords = [
+			{ left: 0, top: 0, width:     0, height:     0 },
+			{ left: 0, top: 0, width:     0, height:     0 },
+			{ left: 0, top: 0, width:     0, height:     0 },
 
-		Sprite.kVertices.forEach((vertex) => {
+			{ left: 0, top: 0, width: 100, height: tex_h },
+			{ left: 100, top: 0, width: tex_w-200, height: tex_h },
+			{ left: 412, top: 0, width:   100, height:   tex_h },
+
+			{ left: 0, top: 0, width:     0, height:     0 },
+			{ left: 0, top: 0, width:     0, height:     0 },
+			{ left: 0, top: 0, width:     0, height:     0 },
+		];
+
+		// 頂点バッファ更新
+		let vertices = [];
+		for (let i = 0; i < texCoords.length; i++) {
+			let tc = texCoords[i];
+			let tmp_pos = {
+				left: (tc.left / tex_w) * 2.0 - 1.0,
+				top: (tc.top / tex_h) * 2.0 - 1.0,
+				width: (tc.width / tex_w) * 2.0 - 1.0,
+				height: (tc.height / tex_h) * 2.0 - 1.0,
+				right: ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
+				bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
+			};
+			let tmp_texCoord = {
+				left: tc.left / tex_w,
+				top: tc.top / tex_h,
+				width: tc.width / tex_w,
+				height: tc.height / tex_h,
+				right: (tc.left + tc.width) / tex_w,
+				bottom: (tc.top + tc.height) / tex_h,
+			};
+			let pos = [
+				tmp_pos.left, -tmp_pos.bottom, 0,
+				tmp_pos.right, -tmp_pos.bottom, 0,
+				tmp_pos.left, -tmp_pos.top, 0,
+				tmp_pos.right, -tmp_pos.top, 0,
+			];
+			let texCoord = [
+				tmp_texCoord.left, tmp_texCoord.bottom,
+				tmp_texCoord.right, tmp_texCoord.bottom,
+				tmp_texCoord.left, tmp_texCoord.top,
+				tmp_texCoord.right, tmp_texCoord.top,
+			];
+			vertices.push({
+				pos: pos,
+				texCoord: texCoord,
+			});
+		}
+
+		// インデックスバッファ生成 & 登録
+		let indexData = [
+			0, 1, 2,
+			1, 3, 2,
+		];
+
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
+
+		vertices.forEach((vertex) => {
 			let vbo_array = [
 				{
 					buffer: Graphics.createVertexBuffer(gl, vertex.pos),
@@ -603,7 +665,7 @@ class Sprite
 				gl.enableVertexAttribArray(item.location);
 				gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
 			});
-			gl.drawElements(gl.TRIANGLES, Sprite.kIndices.length, gl.UNSIGNED_SHORT, 0);
+			gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
 		});
 	}
 
@@ -646,27 +708,6 @@ class Sprite
 	public set texture(texture: WebGLTexture) {
 		this.m_MainTexture = texture;
 	}
-
-	private static kVertices = [{
-		pos: [
-			-1, -1, 0,
-			1, -1, 0,
-			-1, 1, 0,
-			1, 1, 0
-		],
-		texCoord: [
-			0, 1,
-			1, 1,
-			0, 0,
-			1, 0
-		]
-	}
-	];
-
-	private static kIndices = [
-		0, 1, 2,
-		1, 3, 2,
-	];
 
 	private gl: WebGLRenderingContext;
 	private program: WebGLProgram;
