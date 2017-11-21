@@ -100,23 +100,22 @@ class Sprite {
 			{ left: 0, top: 0, width: 0, height: 0 }, // 9
 		];
 
+		const canvas_w = 512.0;
+		const canvas_h = 512.0;
+
 		// 頂点バッファ更新
 		let vertices = [];
 		for (let i = 0; i < texCoords.length; i++) {
 			let tc = texCoords[i];
 			let tmp_pos = {
-				left: (tc.left / tex_w) * 2.0 - 1.0,
-				top: (tc.top / tex_h) * 2.0 - 1.0,
-				width: (tc.width / tex_w) * 2.0 - 1.0,
-				height: (tc.height / tex_h) * 2.0 - 1.0,
-				right: ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
-				bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
+				left: (tc.left / canvas_w) * 2.0 - 1.0,
+				top: (tc.top / canvas_h) * 2.0 - 1.0,
+				right: ((tc.left + tc.width) / canvas_w) * 2.0 - 1.0,
+				bottom: ((tc.top + tc.height) / canvas_h) * 2.0 - 1.0,
 			};
 			let tmp_texCoord = {
 				left: tc.left / tex_w,
 				top: tc.top / tex_h,
-				width: tc.width / tex_w,
-				height: tc.height / tex_h,
 				right: (tc.left + tc.width) / tex_w,
 				bottom: (tc.top + tc.height) / tex_h,
 			};
