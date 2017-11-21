@@ -54,31 +54,50 @@ class Sprite {
 
 		gl.useProgram(this.program);
 
-		if (this.m_MainTexture) {
+		if (this.m_MainTexture && ctx.isTexture(this.m_MainTexture)) {
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
+
+			// NPOT の場合は filter は linear, wrap は clamp to edge にしないといけない
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 			gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
 		}
 
-		// 9 slice これでいいのか・・・？
-		// TODO: 外から固定範囲を与える
-		const tex_w = 512.0;
-		const tex_h = 512.0;
+		const tex_w = this.m_OriginalImage.naturalWidth;
+		const tex_h = this.m_OriginalImage.naturalHeight;
 		let texCoords = [
-			{ left: 0, top: 0, width: 0, height: 0 },
-			{ left: 0, top: 0, width: 0, height: 0 },
-			{ left: 0, top: 0, width: 0, height: 0 },
+			{ left: 0, top: 0, width: 0, height: 0 }, // 1
+			{ left: 0, top: 0, width: 0, height: 0 }, // 2
+			{ left: 0, top: 0, width: 0, height: 0 }, // 3
 
-			{ left: 0, top: 0, width: 100, height: tex_h },
-			{ left: 100, top: 0, width: tex_w - 200, height: tex_h },
-			{ left: 412, top: 0, width: 100, height: tex_h },
+			// A. OK
+			// { left: 0, top: 0, width: 0, height: 0 }, // 4
+			// { left: 0, top: 0, width: tex_w, height: tex_h }, // 5
 
-			{ left: 0, top: 0, width: 0, height: 0 },
-			{ left: 0, top: 0, width: 0, height: 0 },
-			{ left: 0, top: 0, width: 0, height: 0 },
+			// B. OK
+			// { left: 0, top: 0, width: 30, height: tex_h }, // 4
+			// { left: 30, top: 0, width: tex_w - 30, height: tex_h }, // 5
+
+			// C. OK
+			// { left: 0, top: 0, width: 30, height: tex_h }, // 4
+			// { left: 0, top: 0, width: 0, height: 0 }, // 5
+
+			// D. OK
+			// { left: 0, top: 0, width: 0, height: 0 }, // 4
+			// { left: 30, top: 0, width: tex_w - 30, height: tex_h }, // 5
+
+			// 通常 (A と同じ)
+			{ left: 0, top: 0, width: 0, height: 0 }, // 4
+			{ left: 0, top: 0, width: tex_w, height: tex_h }, // 5
+
+			{ left: 0, top: 0, width: 0, height: 0 }, // 6
+			{ left: 0, top: 0, width: 0, height: 0 }, // 7
+			{ left: 0, top: 0, width: 0, height: 0 }, // 8
+			{ left: 0, top: 0, width: 0, height: 0 }, // 9
 		];
 
 		// 頂点バッファ更新
@@ -149,6 +168,13 @@ class Sprite {
 		});
 	}
 
+	public get originalImage(): HTMLImageElement {
+		return this.m_OriginalImage;
+	}
+	public set originalImage(image: HTMLImageElement) {
+		this.m_OriginalImage = image;
+	}
+
 	public get texture(): WebGLTexture {
 		return this.m_MainTexture;
 	}
@@ -158,6 +184,7 @@ class Sprite {
 
 	private gl: WebGLRenderingContext;
 	private program: WebGLProgram;
+	private m_OriginalImage: HTMLImageElement;
 	private m_MainTexture: WebGLTexture;
 	private m_ShaderLoaded: boolean = false;
 	private m_ShaderProgram: ShaderProgram;

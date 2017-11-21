@@ -43,13 +43,14 @@ class SubTextureRender implements IDrawable {
 				return;
 			}
 			this.m_Sprite = new Sprite();
+			this.m_Sprite.originalImage = img;
 			this.m_Sprite.texture = tex;
 			this.m_Sprite.initialize();
 			this.m_TextureLoaded = true;
 			this.m_Processing = false;
 			console.log("texture loaded.");
 		};
-		img.src = "./res/smile_basic_font_table.png";
+		img.src = "./res/sm9_small.jpg";
 
 		return true;
 	}

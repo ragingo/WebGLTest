@@ -130,13 +130,14 @@ class SubTextureRender {
                 return;
             }
             this.m_Sprite = new Sprite();
+            this.m_Sprite.originalImage = img;
             this.m_Sprite.texture = tex;
             this.m_Sprite.initialize();
             this.m_TextureLoaded = true;
             this.m_Processing = false;
             console.log("texture loaded.");
         };
-        img.src = "./res/smile_basic_font_table.png";
+        img.src = "./res/sm9_small.jpg";
         return true;
     }
 }
@@ -434,7 +435,6 @@ class Graphics {
         let tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.generateMipmap(gl.TEXTURE_2D);
         gl.bindTexture(gl.TEXTURE_2D, null);
         return tex;
     }
@@ -564,22 +564,24 @@ class Sprite {
             return;
         }
         gl.useProgram(this.program);
-        if (this.m_MainTexture) {
+        if (this.m_MainTexture && ctx.isTexture(this.m_MainTexture)) {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
         }
-        const tex_w = 512.0;
-        const tex_h = 512.0;
+        const tex_w = this.m_OriginalImage.naturalWidth;
+        const tex_h = this.m_OriginalImage.naturalHeight;
         let texCoords = [
             { left: 0, top: 0, width: 0, height: 0 },
             { left: 0, top: 0, width: 0, height: 0 },
             { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 100, height: tex_h },
-            { left: 100, top: 0, width: tex_w - 200, height: tex_h },
-            { left: 412, top: 0, width: 100, height: tex_h },
+            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: tex_w, height: tex_h },
+            { left: 0, top: 0, width: 0, height: 0 },
             { left: 0, top: 0, width: 0, height: 0 },
             { left: 0, top: 0, width: 0, height: 0 },
             { left: 0, top: 0, width: 0, height: 0 },
@@ -645,6 +647,12 @@ class Sprite {
             });
             gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
         });
+    }
+    get originalImage() {
+        return this.m_OriginalImage;
+    }
+    set originalImage(image) {
+        this.m_OriginalImage = image;
     }
     get texture() {
         return this.m_MainTexture;
