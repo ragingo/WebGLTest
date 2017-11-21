@@ -439,6 +439,46 @@ class Graphics {
         return tex;
     }
 }
+class ShaderLoadResult {
+    constructor(success, vs = "", fs = "") {
+        this.m_success = success;
+        this.m_vs = vs;
+        this.m_fs = fs;
+    }
+    get success() {
+        return this.m_success;
+    }
+    get vs() {
+        return this.m_vs;
+    }
+    get fs() {
+        return this.m_fs;
+    }
+}
+class ShaderLoader {
+    static load(vs_path, fs_path, callback) {
+        ShaderLoader.loadAsync(vs_path, fs_path).then(r => {
+            if (r.success) {
+                if (callback) {
+                    callback(r.vs, r.fs);
+                }
+            }
+        });
+    }
+    static async loadAsync(vs_path, fs_path) {
+        let vs = await HttpUtil.getText(vs_path);
+        let fs = await HttpUtil.getText(fs_path);
+        if (!vs) {
+            console.log("vs code not found.");
+            return new ShaderLoadResult(false);
+        }
+        if (!fs) {
+            console.log("fs code not found.");
+            return new ShaderLoadResult(false);
+        }
+        return new ShaderLoadResult(true, vs, fs);
+    }
+}
 class ShaderProgram {
     constructor(gl) {
         this.gl = gl;
@@ -490,25 +530,37 @@ class ShaderProgram {
 class Sprite {
     constructor() {
         this.m_ShaderLoaded = false;
-        this.m_ShaderLoading = false;
-        this.m_Processing = false;
     }
     initialize() {
+        ShaderLoader.load("./glsl/default_vs.glsl", "./glsl/default_fs.glsl", (vs, fs) => {
+            this.m_VS = vs;
+            this.m_FS = fs;
+            this.m_ShaderLoaded = true;
+        });
+    }
+    compile() {
+        this.m_ShaderProgram = new ShaderProgram(this.gl);
+        if (!this.m_ShaderProgram.compile(this.m_VS, this.m_FS)) {
+            console.log("shader compile failed.");
+            return;
+        }
+        let program = this.m_ShaderProgram.getProgram();
+        if (!program) {
+            console.log("webgl program is null.");
+            return;
+        }
+        this.program = program;
     }
     draw(ctx) {
         this.gl = ctx;
         let gl = this.gl;
-        if (!this.m_ShaderLoaded && !this.m_ShaderLoading) {
-            this.m_ShaderLoading = true;
-            this.loadShader().then(r => {
-                if (r) {
-                    this.m_ShaderLoaded = true;
-                    this.m_ShaderLoading = false;
-                }
-            });
+        if (!this.m_ShaderLoaded) {
             return;
         }
-        if (!this.m_ShaderLoaded) {
+        if (!this.m_ShaderProgram) {
+            this.compile();
+        }
+        if (!this.program) {
             return;
         }
         gl.useProgram(this.program);
@@ -593,34 +645,6 @@ class Sprite {
             });
             gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
         });
-    }
-    async loadShader() {
-        if (this.m_Processing) {
-            return false;
-        }
-        this.m_Processing = true;
-        let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
-        let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
-        if (!vs) {
-            console.log("vs code not found.");
-            return false;
-        }
-        if (!fs) {
-            console.log("fs code not found.");
-            return false;
-        }
-        this.m_ShaderProgram = new ShaderProgram(this.gl);
-        if (!this.m_ShaderProgram.compile(vs, fs)) {
-            console.log("shader compile failed.");
-            return false;
-        }
-        let program = this.m_ShaderProgram.getProgram();
-        if (!program) {
-            console.log("webgl program is null.");
-            return false;
-        }
-        this.program = program;
-        return true;
     }
     get texture() {
         return this.m_MainTexture;

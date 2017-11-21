@@ -1,9 +1,38 @@
 
 class Sprite {
+
 	constructor() {
 	}
 
 	public initialize(): void {
+		ShaderLoader.load(
+			"./glsl/default_vs.glsl",
+			"./glsl/default_fs.glsl",
+			(vs: string, fs: string) => {
+				this.m_VS = vs;
+				this.m_FS = fs;
+				this.m_ShaderLoaded = true;
+			}
+		);
+	}
+
+	private compile() {
+
+		this.m_ShaderProgram = new ShaderProgram(this.gl);
+
+		if (!this.m_ShaderProgram.compile(this.m_VS, this.m_FS)) {
+			console.log("shader compile failed.");
+			return;
+		}
+
+		let program = this.m_ShaderProgram.getProgram();
+
+		if (!program) {
+			console.log("webgl program is null.");
+			return;
+		}
+
+		this.program = program;
 	}
 
 	public draw(ctx: WebGLRenderingContext): void {
@@ -11,18 +40,15 @@ class Sprite {
 		this.gl = ctx;
 		let gl = this.gl;
 
-		if (!this.m_ShaderLoaded && !this.m_ShaderLoading) {
-			this.m_ShaderLoading = true;
-			this.loadShader().then(r => {
-				if (r) {
-					this.m_ShaderLoaded = true;
-					this.m_ShaderLoading = false;
-				}
-			});
+		if (!this.m_ShaderLoaded) {
 			return;
 		}
 
-		if (!this.m_ShaderLoaded) {
+		if (!this.m_ShaderProgram) {
+			this.compile();
+		}
+
+		if (!this.program) {
 			return;
 		}
 
@@ -123,39 +149,6 @@ class Sprite {
 		});
 	}
 
-	private async loadShader(): Promise<boolean> {
-
-		if (this.m_Processing) {
-			return false;
-		}
-		this.m_Processing = true;
-
-		let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
-		let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
-		if (!vs) {
-			console.log("vs code not found.");
-			return false;
-		}
-		if (!fs) {
-			console.log("fs code not found.");
-			return false;
-		}
-
-		this.m_ShaderProgram = new ShaderProgram(this.gl);
-		if (!this.m_ShaderProgram.compile(vs, fs)) {
-			console.log("shader compile failed.");
-			return false;
-		}
-		let program = this.m_ShaderProgram.getProgram();
-		if (!program) {
-			console.log("webgl program is null.");
-			return false;
-		}
-		this.program = program;
-
-		return true;
-	}
-
 	public get texture(): WebGLTexture {
 		return this.m_MainTexture;
 	}
@@ -167,7 +160,7 @@ class Sprite {
 	private program: WebGLProgram;
 	private m_MainTexture: WebGLTexture;
 	private m_ShaderLoaded: boolean = false;
-	private m_ShaderLoading: boolean = false;
 	private m_ShaderProgram: ShaderProgram;
-	private m_Processing: boolean = false;
+	private m_VS: string;
+	private m_FS: string;
 }
