@@ -107,6 +107,10 @@ class Sprite {
 		let vertices = [];
 		for (let i = 0; i < texCoords.length; i++) {
 			let tc = texCoords[i];
+			if (tc.width == 0 || tc.height == 0) {
+				continue;
+			}
+
 			let tmp_pos = {
 				left: (tc.left / canvas_w) * 2.0 - 1.0,
 				top: (tc.top / canvas_h) * 2.0 - 1.0,
