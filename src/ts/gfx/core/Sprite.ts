@@ -94,14 +94,26 @@ class Sprite {
 				continue;
 			}
 
-			// if (i == 0 || i == 4 || i == 8) {
-			// 	continue;
-			// }
+			// 9分割の証明
+			if (i == 0 || i == 4 || i == 8) {
+				continue;
+			}
+
+			// 横方向への引き伸ばし
+			let pos_w = tc.width;
+			if (i == 1 || i == 4 || i == 7) {
+				pos_w *= 2;
+			}
+
+			let pos_l = tc.left;
+			if (i == 2 || i == 5 || i == 8) {
+				pos_l += (texCoords[i - 1].width);
+			}
 
 			let tmp_pos = {
-				left: (tc.left / canvas_w) * 2.0 - 1.0,
+				left: (pos_l / canvas_w) * 2.0 - 1.0,
 				top: (tc.top / canvas_h) * 2.0 - 1.0,
-				right: ((tc.left + tc.width) / canvas_w) * 2.0 - 1.0,
+				right: ((pos_l + pos_w) / canvas_w) * 2.0 - 1.0,
 				bottom: ((tc.top + tc.height) / canvas_h) * 2.0 - 1.0,
 			};
 			let tmp_texCoord = {
