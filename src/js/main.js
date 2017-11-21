@@ -1,136 +1,7 @@
 "use strict";
-class ViewBase {
-    getById(id) {
-        return document.getElementById(id);
-    }
-}
-class MainView extends ViewBase {
-    constructor() {
-        super();
-        this.color = [];
-        this.colorLabels = [];
-        this.rotation = [];
-        this.rotationLabels = [];
-        this.scale = [];
-        this.scaleLabels = [];
-        this.vivid = [];
-        this.vividLabels = [];
-        this.reset = this.getById("reset");
-        this.reset.onclick = () => { this.onResetClick(this.reset); };
-        this.fpsLabel = this.getById("fps");
-        this.canvas = this.getById("canvas");
-        this.effectSelector = this.getById("effectSelector");
-        this.effectSelector.onchange = () => { this.onEffectTypeChanged(this.effectSelector); };
-        ArrayUtil.pushAll([
-            this.getById("slider_color_r"),
-            this.getById("slider_color_g"),
-            this.getById("slider_color_b"),
-            this.getById("slider_color_a"),
-        ], this.color);
-        ArrayUtil.pushAll([
-            this.getById("label_color_r_value"),
-            this.getById("label_color_g_value"),
-            this.getById("label_color_b_value"),
-            this.getById("label_color_a_value"),
-        ], this.colorLabels);
-        this.color.forEach((x, i) => { x.oninput = () => this.onColorChanged(x, i); });
-        ArrayUtil.pushAll([
-            this.getById("slider_rotation_x"),
-            this.getById("slider_rotation_y"),
-            this.getById("slider_rotation_z"),
-        ], this.rotation);
-        ArrayUtil.pushAll([
-            this.getById("label_rotation_x"),
-            this.getById("label_rotation_y"),
-            this.getById("label_rotation_z"),
-        ], this.rotationLabels);
-        this.rotation.forEach((x, i) => { x.oninput = () => this.onRotationChanged(x, i); });
-        ArrayUtil.pushAll([
-            this.getById("slider_scale_x"),
-            this.getById("slider_scale_y"),
-            this.getById("slider_scale_z"),
-        ], this.scale);
-        ArrayUtil.pushAll([
-            this.getById("label_scale_x"),
-            this.getById("label_scale_y"),
-            this.getById("label_scale_z"),
-        ], this.scaleLabels);
-        this.scale.forEach((x, i) => { x.oninput = () => this.onScaleChanged(x, i); });
-        ArrayUtil.pushAll([
-            this.getById("slider_vivid_k1"),
-            this.getById("slider_vivid_k2"),
-        ], this.vivid);
-        ArrayUtil.pushAll([
-            this.getById("label_vivid_k1_value"),
-            this.getById("label_vivid_k2_value"),
-        ], this.vividLabels);
-        this.vivid.forEach((x, i) => { x.oninput = () => this.onVividChanged(x, i); });
-        this.polygonCount = this.getById("slider_polygon");
-        this.polygonCount.oninput = () => { this.onPolygonCountChanged(this.polygonCount); };
-        this.polygonCountLabel = this.getById("label_polygon");
-    }
-    setFpsLabel(value) {
-        this.fpsLabel.innerText = value;
-    }
-    getColorValue() {
-        return new Float32Array(this.color.map(x => x.valueAsNumber));
-    }
-    getEffectTypeValue() {
-        return parseInt(this.effectSelector.options[this.effectSelector.selectedIndex].value);
-    }
-    getRotationValue() {
-        return new Float32Array(this.rotation.map(x => x.valueAsNumber));
-    }
-    getScaleValue() {
-        return new Float32Array(this.scale.map(x => x.valueAsNumber));
-    }
-    getVividValue() {
-        return new Float32Array(this.vivid.map(x => x.valueAsNumber));
-    }
-    getPolygonCountValue() {
-        return this.polygonCount.valueAsNumber;
-    }
-    resetValues() {
-        this.rotation.forEach(x => x.value = x.defaultValue);
-        this.scale.forEach(x => x.value = x.defaultValue);
-        this.color.forEach(x => x.value = x.defaultValue);
-        this.effectSelector.value = "0";
-        this.vivid.forEach(x => x.value = x.defaultValue);
-        this.polygonCount.value = this.polygonCount.defaultValue;
-        this.rotation.forEach(x => x.oninput.call(null));
-        this.scale.forEach(x => x.oninput.call(null));
-        this.color.forEach(x => x.oninput.call(null));
-        this.effectSelector.onchange.call(null);
-        this.vivid.forEach(x => x.oninput.call(null));
-        this.polygonCount.oninput.call(null);
-    }
-    onResetClick(sender) {
-        this.resetValues();
-    }
-    onEffectTypeChanged(sender) {
-        let elems = ArrayUtil.toHTMLElements(document.getElementsByClassName("vivid_params"));
-        if (sender.selectedIndex == 16) {
-            elems.forEach(x => x.style.visibility = "visible");
-        }
-        else {
-            elems.forEach(x => x.style.visibility = "collapse");
-        }
-    }
-    onColorChanged(sender, index) {
-        this.colorLabels[index].innerText = sender.value.toString();
-    }
-    onRotationChanged(sender, index) {
-        this.rotationLabels[index].innerText = sender.value.toString();
-    }
-    onScaleChanged(sender, index) {
-        this.scaleLabels[index].innerText = sender.value.toString();
-    }
-    onVividChanged(sender, index) {
-        this.vividLabels[index].innerText = sender.value.toString();
-    }
-    onPolygonCountChanged(sender) {
-        this.polygonCountLabel.innerText = sender.value;
-    }
+function main() {
+    Application.registerAppFrame(new MainFrame());
+    Application.main();
 }
 class Application {
     static registerAppFrame(frame) {
@@ -205,108 +76,6 @@ class MainFrame {
         this.m_Gfx.render();
     }
 }
-function main() {
-    Application.registerAppFrame(new MainFrame());
-    Application.main();
-}
-class HttpUtil {
-    static async get(url, responseType) {
-        return new Promise(resolve => {
-            let xhr = new XMLHttpRequest();
-            xhr.addEventListener("loadend", function () {
-                if (xhr.readyState != 4) {
-                    console.log("not ready.");
-                    return;
-                }
-                if (xhr.status != 200) {
-                    console.log("http response status error.");
-                    return;
-                }
-                resolve(xhr);
-                console.log("request completed.(" + url + ")");
-            });
-            if (responseType) {
-                xhr.responseType = responseType;
-            }
-            xhr.open("GET", url);
-            xhr.send();
-            console.log("start http request. (" + url + ")");
-        });
-    }
-    static async getText(url) {
-        let xhr = await HttpUtil.get(url);
-        return new Promise(resolve => {
-            return resolve(xhr.responseText);
-        });
-    }
-    static async getRaw(url) {
-        let xhr = await HttpUtil.get(url);
-        return new Promise(resolve => {
-            return resolve(xhr.response);
-        });
-    }
-    static async getBinary(url) {
-        let xhr = await HttpUtil.get(url, "arraybuffer");
-        return new Promise(resolve => {
-            return resolve(xhr.response);
-        });
-    }
-}
-class DomUtil {
-    static getElems(key) {
-        if (!key) {
-            return null;
-        }
-        let result = [];
-        if (key[0] == '#') {
-            let elem = document.getElementById(key.substr(1));
-            if (elem) {
-                result.push(elem);
-            }
-        }
-        else if (key[0] == '.') {
-            let elems = document.getElementsByClassName(key.substr(1));
-            for (let i = 0; i < elems.length; i++) {
-                result.push(elems[i]);
-            }
-        }
-        else if (/^<[0-9a-zA-Z]+>$/.test(key)) {
-            let name = key.substring(1, key.length - 1);
-            let elems = document.getElementsByTagName(name);
-            for (let i = 0; i < elems.length; i++) {
-                result.push(elems[i]);
-            }
-        }
-        else {
-            let elems = document.getElementsByName(key);
-            for (let i = 0; i < elems.length; i++) {
-                result.push(elems[i]);
-            }
-        }
-        return result;
-    }
-    ;
-    static getElem(key) {
-        let elems = DomUtil.getElems(key);
-        if (elems && elems.length > 0) {
-            return elems[0];
-        }
-        return null;
-    }
-}
-class ArrayUtil {
-    static toHTMLElements(array) {
-        let result = [];
-        for (let i = 0; i < array.length; i++) {
-            let item = array[i];
-            result.push(item);
-        }
-        return result;
-    }
-    static pushAll(src, dst) {
-        src.forEach(x => dst.push(x));
-    }
-}
 class DefaultDraw {
     getContext() {
         return this.gl;
@@ -322,251 +91,6 @@ class DefaultDraw {
     onDraw() {
     }
     onEndDraw() {
-    }
-}
-class Graphics {
-    constructor(gl) {
-        this.m_DrawTagets = [];
-        this.gl = gl;
-    }
-    init(w, h) {
-        this.gl.viewport(0, 0, w, h);
-        this.gl.enable(this.gl.BLEND);
-        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-        this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.depthFunc(this.gl.LEQUAL);
-        return true;
-    }
-    prepare() {
-        return true;
-    }
-    render() {
-        this.m_DrawTagets.forEach((elem, i) => {
-            elem.setContext(this.gl);
-            elem.onBeginDraw();
-        });
-        this.m_DrawTagets.forEach((elem, i) => {
-            elem.onDraw();
-        });
-        this.m_DrawTagets.forEach((elem, i) => {
-            elem.onEndDraw();
-        });
-        this.gl.flush();
-    }
-    pushRenderTarget(d) {
-        this.m_DrawTagets.push(d);
-    }
-    static createVertexBuffer(gl, data) {
-        let buf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        return buf;
-    }
-    static createIndexBuffer(gl, data) {
-        let buf = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-        return buf;
-    }
-    static createTexture(gl, img) {
-        let tex = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        return tex;
-    }
-}
-class ShaderProgram {
-    constructor(gl) {
-        this.gl = gl;
-    }
-    compileVS(src) {
-        let vs = this.gl.createShader(this.gl.VERTEX_SHADER);
-        if (!this.compileShader(vs, src)) {
-            return false;
-        }
-        this.gl.attachShader(this.program, vs);
-        return true;
-    }
-    compileFS(src) {
-        let vs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-        if (!this.compileShader(vs, src)) {
-            return false;
-        }
-        this.gl.attachShader(this.program, vs);
-        return true;
-    }
-    compileShader(shader, src) {
-        this.gl.shaderSource(shader, src);
-        this.gl.compileShader(shader);
-        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-            console.log(this.gl.getShaderInfoLog(shader));
-            return false;
-        }
-        return true;
-    }
-    compile(vs, fs) {
-        this.program = this.gl.createProgram();
-        if (!this.compileVS(vs)) {
-            return false;
-        }
-        if (!this.compileFS(fs)) {
-            return false;
-        }
-        this.gl.linkProgram(this.program);
-        if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
-            console.log(this.gl.getProgramInfoLog(this.program));
-            return false;
-        }
-        return true;
-    }
-    getProgram() {
-        return this.program;
-    }
-}
-class Sprite {
-    constructor() {
-        this.m_ShaderLoaded = false;
-        this.m_ShaderLoading = false;
-        this.m_Processing = false;
-    }
-    initialize() {
-    }
-    draw(ctx) {
-        this.gl = ctx;
-        let gl = this.gl;
-        if (!this.m_ShaderLoaded && !this.m_ShaderLoading) {
-            this.m_ShaderLoading = true;
-            this.loadShader().then(r => {
-                if (r) {
-                    this.m_ShaderLoaded = true;
-                    this.m_ShaderLoading = false;
-                }
-            });
-            return;
-        }
-        if (!this.m_ShaderLoaded) {
-            return;
-        }
-        gl.useProgram(this.program);
-        if (this.m_MainTexture) {
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
-        }
-        const tex_w = 512.0;
-        const tex_h = 512.0;
-        let texCoords = [
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 100, height: tex_h },
-            { left: 100, top: 0, width: tex_w - 200, height: tex_h },
-            { left: 412, top: 0, width: 100, height: tex_h },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-        ];
-        let vertices = [];
-        for (let i = 0; i < texCoords.length; i++) {
-            let tc = texCoords[i];
-            let tmp_pos = {
-                left: (tc.left / tex_w) * 2.0 - 1.0,
-                top: (tc.top / tex_h) * 2.0 - 1.0,
-                width: (tc.width / tex_w) * 2.0 - 1.0,
-                height: (tc.height / tex_h) * 2.0 - 1.0,
-                right: ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
-                bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
-            };
-            let tmp_texCoord = {
-                left: tc.left / tex_w,
-                top: tc.top / tex_h,
-                width: tc.width / tex_w,
-                height: tc.height / tex_h,
-                right: (tc.left + tc.width) / tex_w,
-                bottom: (tc.top + tc.height) / tex_h,
-            };
-            let pos = [
-                tmp_pos.left, -tmp_pos.bottom, 0,
-                tmp_pos.right, -tmp_pos.bottom, 0,
-                tmp_pos.left, -tmp_pos.top, 0,
-                tmp_pos.right, -tmp_pos.top, 0,
-            ];
-            let texCoord = [
-                tmp_texCoord.left, tmp_texCoord.bottom,
-                tmp_texCoord.right, tmp_texCoord.bottom,
-                tmp_texCoord.left, tmp_texCoord.top,
-                tmp_texCoord.right, tmp_texCoord.top,
-            ];
-            vertices.push({
-                pos: pos,
-                texCoord: texCoord,
-            });
-        }
-        let indexData = [
-            0, 1, 2,
-            1, 3, 2,
-        ];
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
-        vertices.forEach((vertex) => {
-            let vbo_array = [
-                {
-                    buffer: Graphics.createVertexBuffer(gl, vertex.pos),
-                    location: gl.getAttribLocation(this.program, 'position'),
-                    stride: 3
-                },
-                {
-                    buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
-                    location: gl.getAttribLocation(this.program, 'texCoord'),
-                    stride: 2
-                },
-            ];
-            vbo_array.forEach(function (item, idx) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
-                gl.enableVertexAttribArray(item.location);
-                gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
-            });
-            gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
-        });
-    }
-    async loadShader() {
-        if (this.m_Processing) {
-            return false;
-        }
-        this.m_Processing = true;
-        let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
-        let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
-        if (!vs) {
-            console.log("vs code not found.");
-            return false;
-        }
-        if (!fs) {
-            console.log("fs code not found.");
-            return false;
-        }
-        this.m_ShaderProgram = new ShaderProgram(this.gl);
-        if (!this.m_ShaderProgram.compile(vs, fs)) {
-            console.log("shader compile failed.");
-            return false;
-        }
-        let program = this.m_ShaderProgram.getProgram();
-        if (!program) {
-            console.log("webgl program is null.");
-            return false;
-        }
-        this.program = program;
-        return true;
-    }
-    get texture() {
-        return this.m_MainTexture;
-    }
-    set texture(texture) {
-        this.m_MainTexture = texture;
     }
 }
 class SubTextureRender {
@@ -858,5 +382,481 @@ class TextureRender {
         };
         img.src = "./res/Lenna.png";
         return true;
+    }
+}
+class Graphics {
+    constructor(gl) {
+        this.m_DrawTagets = [];
+        this.gl = gl;
+    }
+    init(w, h) {
+        this.gl.viewport(0, 0, w, h);
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.depthFunc(this.gl.LEQUAL);
+        return true;
+    }
+    prepare() {
+        return true;
+    }
+    render() {
+        this.m_DrawTagets.forEach((elem, i) => {
+            elem.setContext(this.gl);
+            elem.onBeginDraw();
+        });
+        this.m_DrawTagets.forEach((elem, i) => {
+            elem.onDraw();
+        });
+        this.m_DrawTagets.forEach((elem, i) => {
+            elem.onEndDraw();
+        });
+        this.gl.flush();
+    }
+    pushRenderTarget(d) {
+        this.m_DrawTagets.push(d);
+    }
+    static createVertexBuffer(gl, data) {
+        let buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        return buf;
+    }
+    static createIndexBuffer(gl, data) {
+        let buf = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        return buf;
+    }
+    static createTexture(gl, img) {
+        let tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        return tex;
+    }
+}
+class ShaderProgram {
+    constructor(gl) {
+        this.gl = gl;
+    }
+    compileVS(src) {
+        let vs = this.gl.createShader(this.gl.VERTEX_SHADER);
+        if (!this.compileShader(vs, src)) {
+            return false;
+        }
+        this.gl.attachShader(this.program, vs);
+        return true;
+    }
+    compileFS(src) {
+        let vs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+        if (!this.compileShader(vs, src)) {
+            return false;
+        }
+        this.gl.attachShader(this.program, vs);
+        return true;
+    }
+    compileShader(shader, src) {
+        this.gl.shaderSource(shader, src);
+        this.gl.compileShader(shader);
+        if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+            console.log(this.gl.getShaderInfoLog(shader));
+            return false;
+        }
+        return true;
+    }
+    compile(vs, fs) {
+        this.program = this.gl.createProgram();
+        if (!this.compileVS(vs)) {
+            return false;
+        }
+        if (!this.compileFS(fs)) {
+            return false;
+        }
+        this.gl.linkProgram(this.program);
+        if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+            console.log(this.gl.getProgramInfoLog(this.program));
+            return false;
+        }
+        return true;
+    }
+    getProgram() {
+        return this.program;
+    }
+}
+class Sprite {
+    constructor() {
+        this.m_ShaderLoaded = false;
+        this.m_ShaderLoading = false;
+        this.m_Processing = false;
+    }
+    initialize() {
+    }
+    draw(ctx) {
+        this.gl = ctx;
+        let gl = this.gl;
+        if (!this.m_ShaderLoaded && !this.m_ShaderLoading) {
+            this.m_ShaderLoading = true;
+            this.loadShader().then(r => {
+                if (r) {
+                    this.m_ShaderLoaded = true;
+                    this.m_ShaderLoading = false;
+                }
+            });
+            return;
+        }
+        if (!this.m_ShaderLoaded) {
+            return;
+        }
+        gl.useProgram(this.program);
+        if (this.m_MainTexture) {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.m_MainTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
+        }
+        const tex_w = 512.0;
+        const tex_h = 512.0;
+        let texCoords = [
+            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: 100, height: tex_h },
+            { left: 100, top: 0, width: tex_w - 200, height: tex_h },
+            { left: 412, top: 0, width: 100, height: tex_h },
+            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: 0, height: 0 },
+        ];
+        let vertices = [];
+        for (let i = 0; i < texCoords.length; i++) {
+            let tc = texCoords[i];
+            let tmp_pos = {
+                left: (tc.left / tex_w) * 2.0 - 1.0,
+                top: (tc.top / tex_h) * 2.0 - 1.0,
+                width: (tc.width / tex_w) * 2.0 - 1.0,
+                height: (tc.height / tex_h) * 2.0 - 1.0,
+                right: ((tc.left + tc.width) / tex_w) * 2.0 - 1.0,
+                bottom: ((tc.top + tc.height) / tex_h) * 2.0 - 1.0,
+            };
+            let tmp_texCoord = {
+                left: tc.left / tex_w,
+                top: tc.top / tex_h,
+                width: tc.width / tex_w,
+                height: tc.height / tex_h,
+                right: (tc.left + tc.width) / tex_w,
+                bottom: (tc.top + tc.height) / tex_h,
+            };
+            let pos = [
+                tmp_pos.left, -tmp_pos.bottom, 0,
+                tmp_pos.right, -tmp_pos.bottom, 0,
+                tmp_pos.left, -tmp_pos.top, 0,
+                tmp_pos.right, -tmp_pos.top, 0,
+            ];
+            let texCoord = [
+                tmp_texCoord.left, tmp_texCoord.bottom,
+                tmp_texCoord.right, tmp_texCoord.bottom,
+                tmp_texCoord.left, tmp_texCoord.top,
+                tmp_texCoord.right, tmp_texCoord.top,
+            ];
+            vertices.push({
+                pos: pos,
+                texCoord: texCoord,
+            });
+        }
+        let indexData = [
+            0, 1, 2,
+            1, 3, 2,
+        ];
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
+        vertices.forEach((vertex) => {
+            let vbo_array = [
+                {
+                    buffer: Graphics.createVertexBuffer(gl, vertex.pos),
+                    location: gl.getAttribLocation(this.program, 'position'),
+                    stride: 3
+                },
+                {
+                    buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
+                    location: gl.getAttribLocation(this.program, 'texCoord'),
+                    stride: 2
+                },
+            ];
+            vbo_array.forEach(function (item, idx) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
+                gl.enableVertexAttribArray(item.location);
+                gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
+            });
+            gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+        });
+    }
+    async loadShader() {
+        if (this.m_Processing) {
+            return false;
+        }
+        this.m_Processing = true;
+        let vs = await HttpUtil.getText("./glsl/default_vs.glsl");
+        let fs = await HttpUtil.getText("./glsl/default_fs.glsl");
+        if (!vs) {
+            console.log("vs code not found.");
+            return false;
+        }
+        if (!fs) {
+            console.log("fs code not found.");
+            return false;
+        }
+        this.m_ShaderProgram = new ShaderProgram(this.gl);
+        if (!this.m_ShaderProgram.compile(vs, fs)) {
+            console.log("shader compile failed.");
+            return false;
+        }
+        let program = this.m_ShaderProgram.getProgram();
+        if (!program) {
+            console.log("webgl program is null.");
+            return false;
+        }
+        this.program = program;
+        return true;
+    }
+    get texture() {
+        return this.m_MainTexture;
+    }
+    set texture(texture) {
+        this.m_MainTexture = texture;
+    }
+}
+class HttpUtil {
+    static async get(url, responseType) {
+        return new Promise(resolve => {
+            let xhr = new XMLHttpRequest();
+            xhr.addEventListener("loadend", function () {
+                if (xhr.readyState != 4) {
+                    console.log("not ready.");
+                    return;
+                }
+                if (xhr.status != 200) {
+                    console.log("http response status error.");
+                    return;
+                }
+                resolve(xhr);
+                console.log("request completed.(" + url + ")");
+            });
+            if (responseType) {
+                xhr.responseType = responseType;
+            }
+            xhr.open("GET", url);
+            xhr.send();
+            console.log("start http request. (" + url + ")");
+        });
+    }
+    static async getText(url) {
+        let xhr = await HttpUtil.get(url);
+        return new Promise(resolve => {
+            return resolve(xhr.responseText);
+        });
+    }
+    static async getRaw(url) {
+        let xhr = await HttpUtil.get(url);
+        return new Promise(resolve => {
+            return resolve(xhr.response);
+        });
+    }
+    static async getBinary(url) {
+        let xhr = await HttpUtil.get(url, "arraybuffer");
+        return new Promise(resolve => {
+            return resolve(xhr.response);
+        });
+    }
+}
+class DomUtil {
+    static getElems(key) {
+        if (!key) {
+            return null;
+        }
+        let result = [];
+        if (key[0] == '#') {
+            let elem = document.getElementById(key.substr(1));
+            if (elem) {
+                result.push(elem);
+            }
+        }
+        else if (key[0] == '.') {
+            let elems = document.getElementsByClassName(key.substr(1));
+            for (let i = 0; i < elems.length; i++) {
+                result.push(elems[i]);
+            }
+        }
+        else if (/^<[0-9a-zA-Z]+>$/.test(key)) {
+            let name = key.substring(1, key.length - 1);
+            let elems = document.getElementsByTagName(name);
+            for (let i = 0; i < elems.length; i++) {
+                result.push(elems[i]);
+            }
+        }
+        else {
+            let elems = document.getElementsByName(key);
+            for (let i = 0; i < elems.length; i++) {
+                result.push(elems[i]);
+            }
+        }
+        return result;
+    }
+    ;
+    static getElem(key) {
+        let elems = DomUtil.getElems(key);
+        if (elems && elems.length > 0) {
+            return elems[0];
+        }
+        return null;
+    }
+}
+class ArrayUtil {
+    static toHTMLElements(array) {
+        let result = [];
+        for (let i = 0; i < array.length; i++) {
+            let item = array[i];
+            result.push(item);
+        }
+        return result;
+    }
+    static pushAll(src, dst) {
+        src.forEach(x => dst.push(x));
+    }
+}
+class ViewBase {
+    getById(id) {
+        return document.getElementById(id);
+    }
+}
+class MainView extends ViewBase {
+    constructor() {
+        super();
+        this.color = [];
+        this.colorLabels = [];
+        this.rotation = [];
+        this.rotationLabels = [];
+        this.scale = [];
+        this.scaleLabels = [];
+        this.vivid = [];
+        this.vividLabels = [];
+        this.reset = this.getById("reset");
+        this.reset.onclick = () => { this.onResetClick(this.reset); };
+        this.fpsLabel = this.getById("fps");
+        this.canvas = this.getById("canvas");
+        this.effectSelector = this.getById("effectSelector");
+        this.effectSelector.onchange = () => { this.onEffectTypeChanged(this.effectSelector); };
+        ArrayUtil.pushAll([
+            this.getById("slider_color_r"),
+            this.getById("slider_color_g"),
+            this.getById("slider_color_b"),
+            this.getById("slider_color_a"),
+        ], this.color);
+        ArrayUtil.pushAll([
+            this.getById("label_color_r_value"),
+            this.getById("label_color_g_value"),
+            this.getById("label_color_b_value"),
+            this.getById("label_color_a_value"),
+        ], this.colorLabels);
+        this.color.forEach((x, i) => { x.oninput = () => this.onColorChanged(x, i); });
+        ArrayUtil.pushAll([
+            this.getById("slider_rotation_x"),
+            this.getById("slider_rotation_y"),
+            this.getById("slider_rotation_z"),
+        ], this.rotation);
+        ArrayUtil.pushAll([
+            this.getById("label_rotation_x"),
+            this.getById("label_rotation_y"),
+            this.getById("label_rotation_z"),
+        ], this.rotationLabels);
+        this.rotation.forEach((x, i) => { x.oninput = () => this.onRotationChanged(x, i); });
+        ArrayUtil.pushAll([
+            this.getById("slider_scale_x"),
+            this.getById("slider_scale_y"),
+            this.getById("slider_scale_z"),
+        ], this.scale);
+        ArrayUtil.pushAll([
+            this.getById("label_scale_x"),
+            this.getById("label_scale_y"),
+            this.getById("label_scale_z"),
+        ], this.scaleLabels);
+        this.scale.forEach((x, i) => { x.oninput = () => this.onScaleChanged(x, i); });
+        ArrayUtil.pushAll([
+            this.getById("slider_vivid_k1"),
+            this.getById("slider_vivid_k2"),
+        ], this.vivid);
+        ArrayUtil.pushAll([
+            this.getById("label_vivid_k1_value"),
+            this.getById("label_vivid_k2_value"),
+        ], this.vividLabels);
+        this.vivid.forEach((x, i) => { x.oninput = () => this.onVividChanged(x, i); });
+        this.polygonCount = this.getById("slider_polygon");
+        this.polygonCount.oninput = () => { this.onPolygonCountChanged(this.polygonCount); };
+        this.polygonCountLabel = this.getById("label_polygon");
+    }
+    setFpsLabel(value) {
+        this.fpsLabel.innerText = value;
+    }
+    getColorValue() {
+        return new Float32Array(this.color.map(x => x.valueAsNumber));
+    }
+    getEffectTypeValue() {
+        return parseInt(this.effectSelector.options[this.effectSelector.selectedIndex].value);
+    }
+    getRotationValue() {
+        return new Float32Array(this.rotation.map(x => x.valueAsNumber));
+    }
+    getScaleValue() {
+        return new Float32Array(this.scale.map(x => x.valueAsNumber));
+    }
+    getVividValue() {
+        return new Float32Array(this.vivid.map(x => x.valueAsNumber));
+    }
+    getPolygonCountValue() {
+        return this.polygonCount.valueAsNumber;
+    }
+    resetValues() {
+        this.rotation.forEach(x => x.value = x.defaultValue);
+        this.scale.forEach(x => x.value = x.defaultValue);
+        this.color.forEach(x => x.value = x.defaultValue);
+        this.effectSelector.value = "0";
+        this.vivid.forEach(x => x.value = x.defaultValue);
+        this.polygonCount.value = this.polygonCount.defaultValue;
+        this.rotation.forEach(x => x.oninput.call(null));
+        this.scale.forEach(x => x.oninput.call(null));
+        this.color.forEach(x => x.oninput.call(null));
+        this.effectSelector.onchange.call(null);
+        this.vivid.forEach(x => x.oninput.call(null));
+        this.polygonCount.oninput.call(null);
+    }
+    onResetClick(sender) {
+        this.resetValues();
+    }
+    onEffectTypeChanged(sender) {
+        let elems = ArrayUtil.toHTMLElements(document.getElementsByClassName("vivid_params"));
+        if (sender.selectedIndex == 16) {
+            elems.forEach(x => x.style.visibility = "visible");
+        }
+        else {
+            elems.forEach(x => x.style.visibility = "collapse");
+        }
+    }
+    onColorChanged(sender, index) {
+        this.colorLabels[index].innerText = sender.value.toString();
+    }
+    onRotationChanged(sender, index) {
+        this.rotationLabels[index].innerText = sender.value.toString();
+    }
+    onScaleChanged(sender, index) {
+        this.scaleLabels[index].innerText = sender.value.toString();
+    }
+    onVividChanged(sender, index) {
+        this.vividLabels[index].innerText = sender.value.toString();
+    }
+    onPolygonCountChanged(sender) {
+        this.polygonCountLabel.innerText = sender.value;
     }
 }
