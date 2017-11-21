@@ -70,34 +70,17 @@ class Sprite {
 		const tex_w = this.m_OriginalImage.naturalWidth;
 		const tex_h = this.m_OriginalImage.naturalHeight;
 		let texCoords = [
-			{ left: 0, top: 0, width: 0, height: 0 }, // 1
-			{ left: 0, top: 0, width: 0, height: 0 }, // 2
-			{ left: 0, top: 0, width: 0, height: 0 }, // 3
+			{ left: 0, top: 0, width: 20, height: 20 }, // 0
+			{ left: 20, top: 0, width: tex_w - 40, height: 20 }, // 1
+			{ left: tex_w - 20, top: 0, width: 20, height: 20 }, // 2
 
-			// A. OK
-			// { left: 0, top: 0, width: 0, height: 0 }, // 4
-			// { left: 0, top: 0, width: tex_w, height: tex_h }, // 5
+			{ left: 0, top: 20, width: 20, height: tex_h - 40 }, // 3
+			{ left: 20, top: 20, width: tex_w - 40, height: tex_h - 40 }, // 4
+			{ left: tex_w - 20, top: 20, width: 20, height: tex_h - 40 }, // 5
 
-			// B. OK
-			// { left: 0, top: 0, width: 30, height: tex_h }, // 4
-			// { left: 30, top: 0, width: tex_w - 30, height: tex_h }, // 5
-
-			// C. OK
-			// { left: 0, top: 0, width: 30, height: tex_h }, // 4
-			// { left: 0, top: 0, width: 0, height: 0 }, // 5
-
-			// D. OK
-			// { left: 0, top: 0, width: 0, height: 0 }, // 4
-			// { left: 30, top: 0, width: tex_w - 30, height: tex_h }, // 5
-
-			// 通常 (A と同じ)
-			{ left: 0, top: 0, width: 0, height: 0 }, // 4
-			{ left: 0, top: 0, width: tex_w, height: tex_h }, // 5
-
-			{ left: 0, top: 0, width: 0, height: 0 }, // 6
-			{ left: 0, top: 0, width: 0, height: 0 }, // 7
-			{ left: 0, top: 0, width: 0, height: 0 }, // 8
-			{ left: 0, top: 0, width: 0, height: 0 }, // 9
+			{ left: 0, top: tex_h - 20, width: 20, height: 20 }, // 6
+			{ left: 20, top: tex_h - 20, width: tex_w - 40, height: 20 }, // 7
+			{ left: tex_w - 20, top: tex_h - 20, width: 20, height: 20 }, // 8
 		];
 
 		const canvas_w = 512.0;
@@ -110,6 +93,10 @@ class Sprite {
 			if (tc.width == 0 || tc.height == 0) {
 				continue;
 			}
+
+			// if (i == 0 || i == 4 || i == 8) {
+			// 	continue;
+			// }
 
 			let tmp_pos = {
 				left: (tc.left / canvas_w) * 2.0 - 1.0,

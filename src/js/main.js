@@ -576,15 +576,15 @@ class Sprite {
         const tex_w = this.m_OriginalImage.naturalWidth;
         const tex_h = this.m_OriginalImage.naturalHeight;
         let texCoords = [
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: tex_w, height: tex_h },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
-            { left: 0, top: 0, width: 0, height: 0 },
+            { left: 0, top: 0, width: 20, height: 20 },
+            { left: 20, top: 0, width: tex_w - 40, height: 20 },
+            { left: tex_w - 20, top: 0, width: 20, height: 20 },
+            { left: 0, top: 20, width: 20, height: tex_h - 40 },
+            { left: 20, top: 20, width: tex_w - 40, height: tex_h - 40 },
+            { left: tex_w - 20, top: 20, width: 20, height: tex_h - 40 },
+            { left: 0, top: tex_h - 20, width: 20, height: 20 },
+            { left: 20, top: tex_h - 20, width: tex_w - 40, height: 20 },
+            { left: tex_w - 20, top: tex_h - 20, width: 20, height: 20 },
         ];
         const canvas_w = 512.0;
         const canvas_h = 512.0;
