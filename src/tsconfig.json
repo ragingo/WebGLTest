@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "es6",
+        "module": "amd",
         "target": "es2017",
         //"declaration": true,
         "experimentalDecorators": true,
@@ -13,7 +13,8 @@
         //"noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "outDir": "js"
+        "outDir": "js",
+        "outFile": "./js/main.js"
     },
     "exclude": [
         "node_modules",
