@@ -165,7 +165,7 @@ class Sprite {
 		// インデックスバッファ生成 & 登録
 		let indexData = [
 			0, 1, 2,
-			1, 3, 2,
+			1, 2, 3,
 		];
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
