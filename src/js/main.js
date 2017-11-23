@@ -575,17 +575,32 @@ class Sprite {
         }
         const tex_w = this.m_OriginalImage.naturalWidth;
         const tex_h = this.m_OriginalImage.naturalHeight;
-        let texCoords = [
-            { left: 0, top: 0, width: 20, height: 20 },
-            { left: 20, top: 0, width: tex_w - 40, height: 20 },
-            { left: tex_w - 20, top: 0, width: 20, height: 20 },
-            { left: 0, top: 20, width: 20, height: tex_h - 40 },
-            { left: 20, top: 20, width: tex_w - 40, height: tex_h - 40 },
-            { left: tex_w - 20, top: 20, width: 20, height: tex_h - 40 },
-            { left: 0, top: tex_h - 20, width: 20, height: 20 },
-            { left: 20, top: tex_h - 20, width: tex_w - 40, height: 20 },
-            { left: tex_w - 20, top: tex_h - 20, width: 20, height: 20 },
-        ];
+        let texCoords = [];
+        {
+            this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
+        }
+        if (this.m_SliceBorder.length != 4) {
+            return;
+        }
+        {
+            let left_w = this.m_SliceBorder[0];
+            let top_h = this.m_SliceBorder[1];
+            let right_w = this.m_SliceBorder[2];
+            let bottom_h = this.m_SliceBorder[3];
+            let center_block_w = tex_w - (left_w + right_w);
+            let center_block_h = tex_h - (top_h + bottom_h);
+            let right_block_l = tex_w - right_w;
+            let bottom_block_t = tex_h - bottom_h;
+            texCoords.push({ left: 0, top: 0, width: left_w, height: top_h });
+            texCoords.push({ left: left_w, top: 0, width: center_block_w, height: top_h });
+            texCoords.push({ left: right_block_l, top: 0, width: right_w, height: top_h });
+            texCoords.push({ left: 0, top: top_h, width: left_w, height: center_block_h });
+            texCoords.push({ left: left_w, top: top_h, width: center_block_w, height: center_block_h });
+            texCoords.push({ left: right_block_l, top: top_h, width: right_w, height: center_block_h });
+            texCoords.push({ left: 0, top: bottom_block_t, width: left_w, height: bottom_h });
+            texCoords.push({ left: left_w, top: bottom_block_t, width: center_block_w, height: bottom_h });
+            texCoords.push({ left: right_block_l, top: bottom_block_t, width: right_w, height: bottom_h });
+        }
         const canvas_w = 512.0;
         const canvas_h = 512.0;
         let vertices = [];
@@ -594,21 +609,10 @@ class Sprite {
             if (tc.width == 0 || tc.height == 0) {
                 continue;
             }
-            if (i == 0 || i == 4 || i == 8) {
-                continue;
-            }
-            let pos_w = tc.width;
-            if (i == 1 || i == 4 || i == 7) {
-                pos_w *= 2;
-            }
-            let pos_l = tc.left;
-            if (i == 2 || i == 5 || i == 8) {
-                pos_l += (texCoords[i - 1].width);
-            }
             let tmp_pos = {
-                left: (pos_l / canvas_w) * 2.0 - 1.0,
+                left: (tc.left / canvas_w) * 2.0 - 1.0,
                 top: (tc.top / canvas_h) * 2.0 - 1.0,
-                right: ((pos_l + pos_w) / canvas_w) * 2.0 - 1.0,
+                right: ((tc.left + tc.width) / canvas_w) * 2.0 - 1.0,
                 bottom: ((tc.top + tc.height) / canvas_h) * 2.0 - 1.0,
             };
             let tmp_texCoord = {
@@ -657,7 +661,12 @@ class Sprite {
                 gl.enableVertexAttribArray(item.location);
                 gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
             });
-            gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+            let draw_mode = gl.TRIANGLES;
+            let is_debug_mode = false;
+            if (is_debug_mode) {
+                draw_mode = gl.LINE_STRIP;
+            }
+            gl.drawElements(draw_mode, indexData.length, gl.UNSIGNED_SHORT, 0);
         });
     }
     get originalImage() {
