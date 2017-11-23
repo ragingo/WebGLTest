@@ -603,7 +603,8 @@ class Sprite {
         }
         const canvas_w = 512.0;
         const canvas_h = 512.0;
-        let vertices = [];
+        let vertices_pos = [];
+        let vertices_uv = [];
         for (let i = 0; i < texCoords.length; i++) {
             let tc = texCoords[i];
             if (tc.width == 0 || tc.height == 0) {
@@ -633,41 +634,41 @@ class Sprite {
                 tmp_texCoord.left, tmp_texCoord.top,
                 tmp_texCoord.right, tmp_texCoord.top,
             ];
-            vertices.push({
-                pos: pos,
-                texCoord: texCoord,
+            pos.forEach(v => vertices_pos.push(v));
+            texCoord.forEach(v => vertices_uv.push(v));
+        }
+        let indexData = [];
+        for (let i = 0; i < 9; i++) {
+            [0, 1, 2, 1, 3, 2]
+                .map(v => v + (4 * i))
+                .forEach(v => {
+                indexData.push(v);
             });
         }
-        let indexData = [
-            0, 1, 2,
-            1, 2, 3,
-        ];
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
-        vertices.forEach((vertex) => {
-            let vbo_array = [
-                {
-                    buffer: Graphics.createVertexBuffer(gl, vertex.pos),
-                    location: gl.getAttribLocation(this.program, 'position'),
-                    stride: 3
-                },
-                {
-                    buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
-                    location: gl.getAttribLocation(this.program, 'texCoord'),
-                    stride: 2
-                },
-            ];
-            vbo_array.forEach(function (item, idx) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
-                gl.enableVertexAttribArray(item.location);
-                gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
-            });
-            let draw_mode = gl.TRIANGLES;
-            let is_debug_mode = false;
-            if (is_debug_mode) {
-                draw_mode = gl.LINE_STRIP;
-            }
-            gl.drawElements(draw_mode, indexData.length, gl.UNSIGNED_SHORT, 0);
+        let vbo_array = [
+            {
+                buffer: Graphics.createVertexBuffer(gl, vertices_pos),
+                location: gl.getAttribLocation(this.program, 'position'),
+                stride: 3
+            },
+            {
+                buffer: Graphics.createVertexBuffer(gl, vertices_uv),
+                location: gl.getAttribLocation(this.program, 'texCoord'),
+                stride: 2
+            },
+        ];
+        vbo_array.forEach(function (item, idx) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
+            gl.enableVertexAttribArray(item.location);
+            gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
         });
+        let draw_mode = gl.TRIANGLES;
+        let is_debug_mode = false;
+        if (is_debug_mode) {
+            draw_mode = gl.LINE_STRIP;
+        }
+        gl.drawElements(draw_mode, indexData.length, gl.UNSIGNED_SHORT, 0);
     }
     get originalImage() {
         return this.m_OriginalImage;
