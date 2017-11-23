@@ -530,6 +530,7 @@ class ShaderProgram {
 class Sprite {
     constructor() {
         this.m_ShaderLoaded = false;
+        this.m_Width = 0;
     }
     initialize() {
         ShaderLoader.load("./glsl/default_vs.glsl", "./glsl/default_fs.glsl", (vs, fs) => {
@@ -575,9 +576,10 @@ class Sprite {
         }
         const tex_w = this.m_OriginalImage.naturalWidth;
         const tex_h = this.m_OriginalImage.naturalHeight;
-        let texCoords = [];
+        let coords = [];
         {
             this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
+            this.m_Width = 400;
         }
         if (this.m_SliceBorder.length != 4) {
             return;
@@ -587,26 +589,28 @@ class Sprite {
             let top_h = this.m_SliceBorder[1];
             let right_w = this.m_SliceBorder[2];
             let bottom_h = this.m_SliceBorder[3];
-            let center_block_w = tex_w - (left_w + right_w);
+            let center_block_w = this.m_Width - (left_w + right_w);
             let center_block_h = tex_h - (top_h + bottom_h);
-            let right_block_l = tex_w - right_w;
+            let right_block_l = this.m_Width - right_w;
             let bottom_block_t = tex_h - bottom_h;
-            texCoords.push({ left: 0, top: 0, width: left_w, height: top_h });
-            texCoords.push({ left: left_w, top: 0, width: center_block_w, height: top_h });
-            texCoords.push({ left: right_block_l, top: 0, width: right_w, height: top_h });
-            texCoords.push({ left: 0, top: top_h, width: left_w, height: center_block_h });
-            texCoords.push({ left: left_w, top: top_h, width: center_block_w, height: center_block_h });
-            texCoords.push({ left: right_block_l, top: top_h, width: right_w, height: center_block_h });
-            texCoords.push({ left: 0, top: bottom_block_t, width: left_w, height: bottom_h });
-            texCoords.push({ left: left_w, top: bottom_block_t, width: center_block_w, height: bottom_h });
-            texCoords.push({ left: right_block_l, top: bottom_block_t, width: right_w, height: bottom_h });
+            let uv_center_block_w = tex_w - (left_w + right_w);
+            let uv_right_block_l = tex_w - right_w;
+            coords.push({ left: 0, top: 0, width: left_w, height: top_h, uv_w: left_w, uv_l: 0 });
+            coords.push({ left: left_w, top: 0, width: center_block_w, height: top_h, uv_w: uv_center_block_w, uv_l: left_w });
+            coords.push({ left: right_block_l, top: 0, width: right_w, height: top_h, uv_w: right_w, uv_l: uv_right_block_l });
+            coords.push({ left: 0, top: top_h, width: left_w, height: center_block_h, uv_w: left_w, uv_l: 0 });
+            coords.push({ left: left_w, top: top_h, width: center_block_w, height: center_block_h, uv_w: uv_center_block_w, uv_l: left_w });
+            coords.push({ left: right_block_l, top: top_h, width: right_w, height: center_block_h, uv_w: right_w, uv_l: uv_right_block_l });
+            coords.push({ left: 0, top: bottom_block_t, width: left_w, height: bottom_h, uv_w: left_w, uv_l: 0 });
+            coords.push({ left: left_w, top: bottom_block_t, width: center_block_w, height: bottom_h, uv_w: uv_center_block_w, uv_l: left_w });
+            coords.push({ left: right_block_l, top: bottom_block_t, width: right_w, height: bottom_h, uv_w: right_w, uv_l: uv_right_block_l });
         }
         const canvas_w = 512.0;
         const canvas_h = 512.0;
         let vertices_pos = [];
         let vertices_uv = [];
-        for (let i = 0; i < texCoords.length; i++) {
-            let tc = texCoords[i];
+        for (let i = 0; i < coords.length; i++) {
+            let tc = coords[i];
             if (tc.width == 0 || tc.height == 0) {
                 continue;
             }
@@ -617,9 +621,9 @@ class Sprite {
                 bottom: ((tc.top + tc.height) / canvas_h) * 2.0 - 1.0,
             };
             let tmp_texCoord = {
-                left: tc.left / tex_w,
+                left: tc.uv_l / tex_w,
                 top: tc.top / tex_h,
-                right: (tc.left + tc.width) / tex_w,
+                right: (tc.uv_l + tc.uv_w) / tex_w,
                 bottom: (tc.top + tc.height) / tex_h,
             };
             let pos = [
@@ -664,7 +668,7 @@ class Sprite {
             gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
         });
         let draw_mode = gl.TRIANGLES;
-        let is_debug_mode = false;
+        let is_debug_mode = true;
         if (is_debug_mode) {
             draw_mode = gl.LINE_STRIP;
         }
