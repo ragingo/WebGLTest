@@ -137,7 +137,7 @@ class SubTextureRender {
             this.m_Processing = false;
             console.log("texture loaded.");
         };
-        img.src = "./res/sm9_small.jpg";
+        img.src = "./res/sm9_small_256x256.jpg";
         return true;
     }
 }
@@ -531,6 +531,7 @@ class Sprite {
     constructor() {
         this.m_ShaderLoaded = false;
         this.m_Width = 0;
+        this.m_Height = 0;
     }
     initialize() {
         ShaderLoader.load("./glsl/default_vs.glsl", "./glsl/default_fs.glsl", (vs, fs) => {
@@ -576,10 +577,17 @@ class Sprite {
         }
         const tex_w = this.m_OriginalImage.naturalWidth;
         const tex_h = this.m_OriginalImage.naturalHeight;
-        let coords = [];
+        let positions = [];
+        let texcoords = [];
         {
             this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
-            this.m_Width = 400;
+            this.m_Width = 130;
+            this.m_Height = 100;
+            this.m_Crop = new CropInfo();
+            this.m_Crop.left = 0;
+            this.m_Crop.top = 0;
+            this.m_Crop.width = 130;
+            this.m_Crop.height = 100;
         }
         if (this.m_SliceBorder.length != 4) {
             return;
@@ -589,57 +597,61 @@ class Sprite {
             let top_h = this.m_SliceBorder[1];
             let right_w = this.m_SliceBorder[2];
             let bottom_h = this.m_SliceBorder[3];
-            let center_block_w = this.m_Width - (left_w + right_w);
-            let center_block_h = tex_h - (top_h + bottom_h);
-            let right_block_l = this.m_Width - right_w;
-            let bottom_block_t = tex_h - bottom_h;
-            let uv_center_block_w = tex_w - (left_w + right_w);
-            let uv_right_block_l = tex_w - right_w;
-            coords.push({ left: 0, top: 0, width: left_w, height: top_h, uv_w: left_w, uv_l: 0 });
-            coords.push({ left: left_w, top: 0, width: center_block_w, height: top_h, uv_w: uv_center_block_w, uv_l: left_w });
-            coords.push({ left: right_block_l, top: 0, width: right_w, height: top_h, uv_w: right_w, uv_l: uv_right_block_l });
-            coords.push({ left: 0, top: top_h, width: left_w, height: center_block_h, uv_w: left_w, uv_l: 0 });
-            coords.push({ left: left_w, top: top_h, width: center_block_w, height: center_block_h, uv_w: uv_center_block_w, uv_l: left_w });
-            coords.push({ left: right_block_l, top: top_h, width: right_w, height: center_block_h, uv_w: right_w, uv_l: uv_right_block_l });
-            coords.push({ left: 0, top: bottom_block_t, width: left_w, height: bottom_h, uv_w: left_w, uv_l: 0 });
-            coords.push({ left: left_w, top: bottom_block_t, width: center_block_w, height: bottom_h, uv_w: uv_center_block_w, uv_l: left_w });
-            coords.push({ left: right_block_l, top: bottom_block_t, width: right_w, height: bottom_h, uv_w: right_w, uv_l: uv_right_block_l });
+            let pos_cb_w = this.m_Width - (left_w + right_w);
+            let pos_cb_h = this.m_Height - (top_h + bottom_h);
+            let pos_rb_l = this.m_Width - right_w;
+            let pos_bb_t = this.m_Height - bottom_h;
+            let tc_cb_w = this.m_Crop.width - (left_w + right_w);
+            let tc_cb_h = this.m_Crop.height - (top_h + bottom_h);
+            let tc_rb_l = this.m_Crop.width - right_w;
+            let tc_bb_t = this.m_Crop.height - bottom_h;
+            positions.push({ left: 0, top: 0, width: left_w, height: top_h });
+            positions.push({ left: left_w, top: 0, width: pos_cb_w, height: top_h });
+            positions.push({ left: pos_rb_l, top: 0, width: right_w, height: top_h });
+            positions.push({ left: 0, top: top_h, width: left_w, height: pos_cb_h });
+            positions.push({ left: left_w, top: top_h, width: pos_cb_w, height: pos_cb_h });
+            positions.push({ left: pos_rb_l, top: top_h, width: right_w, height: pos_cb_h });
+            positions.push({ left: 0, top: pos_bb_t, width: left_w, height: bottom_h });
+            positions.push({ left: left_w, top: pos_bb_t, width: pos_cb_w, height: bottom_h });
+            positions.push({ left: pos_rb_l, top: pos_bb_t, width: right_w, height: bottom_h });
+            texcoords.push({ left: 0, top: 0, width: left_w, height: top_h });
+            texcoords.push({ left: left_w, top: 0, width: tc_cb_w, height: top_h });
+            texcoords.push({ left: tc_rb_l, top: 0, width: right_w, height: top_h });
+            texcoords.push({ left: 0, top: top_h, width: left_w, height: tc_cb_h });
+            texcoords.push({ left: left_w, top: top_h, width: tc_cb_w, height: tc_cb_h });
+            texcoords.push({ left: tc_rb_l, top: top_h, width: right_w, height: tc_cb_h });
+            texcoords.push({ left: 0, top: tc_bb_t, width: left_w, height: bottom_h });
+            texcoords.push({ left: left_w, top: tc_bb_t, width: tc_cb_w, height: bottom_h });
+            texcoords.push({ left: tc_rb_l, top: tc_bb_t, width: right_w, height: bottom_h });
         }
         const canvas_w = 512.0;
         const canvas_h = 512.0;
         let vertices_pos = [];
         let vertices_uv = [];
-        for (let i = 0; i < coords.length; i++) {
-            let tc = coords[i];
-            if (tc.width == 0 || tc.height == 0) {
-                continue;
-            }
-            let tmp_pos = {
-                left: (tc.left / canvas_w) * 2.0 - 1.0,
-                top: (tc.top / canvas_h) * 2.0 - 1.0,
-                right: ((tc.left + tc.width) / canvas_w) * 2.0 - 1.0,
-                bottom: ((tc.top + tc.height) / canvas_h) * 2.0 - 1.0,
+        for (let i = 0; i < positions.length; i++) {
+            let screen_pos = positions[i];
+            let world_pos = this.screenToWorld(new Coordinate(screen_pos.left / canvas_w, screen_pos.top / canvas_h, (screen_pos.left + screen_pos.width) / canvas_w, (screen_pos.top + screen_pos.height) / canvas_h));
+            [
+                world_pos.left, world_pos.bottom, 0,
+                world_pos.right, world_pos.bottom, 0,
+                world_pos.left, world_pos.top, 0,
+                world_pos.right, world_pos.top, 0,
+            ].forEach(v => vertices_pos.push(v));
+        }
+        for (let i = 0; i < texcoords.length; i++) {
+            let screen_tc = texcoords[i];
+            let uv_tc = {
+                left: screen_tc.left / tex_w,
+                top: screen_tc.top / tex_h,
+                right: (screen_tc.left + screen_tc.width) / tex_w,
+                bottom: (screen_tc.top + screen_tc.height) / tex_h,
             };
-            let tmp_texCoord = {
-                left: tc.uv_l / tex_w,
-                top: tc.top / tex_h,
-                right: (tc.uv_l + tc.uv_w) / tex_w,
-                bottom: (tc.top + tc.height) / tex_h,
-            };
-            let pos = [
-                tmp_pos.left, -tmp_pos.bottom, 0,
-                tmp_pos.right, -tmp_pos.bottom, 0,
-                tmp_pos.left, -tmp_pos.top, 0,
-                tmp_pos.right, -tmp_pos.top, 0,
-            ];
-            let texCoord = [
-                tmp_texCoord.left, tmp_texCoord.bottom,
-                tmp_texCoord.right, tmp_texCoord.bottom,
-                tmp_texCoord.left, tmp_texCoord.top,
-                tmp_texCoord.right, tmp_texCoord.top,
-            ];
-            pos.forEach(v => vertices_pos.push(v));
-            texCoord.forEach(v => vertices_uv.push(v));
+            [
+                uv_tc.left, uv_tc.bottom,
+                uv_tc.right, uv_tc.bottom,
+                uv_tc.left, uv_tc.top,
+                uv_tc.right, uv_tc.top,
+            ].forEach(v => vertices_uv.push(v));
         }
         let indexData = [];
         for (let i = 0; i < 9; i++) {
@@ -668,7 +680,7 @@ class Sprite {
             gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
         });
         let draw_mode = gl.TRIANGLES;
-        let is_debug_mode = true;
+        let is_debug_mode = false;
         if (is_debug_mode) {
             draw_mode = gl.LINE_STRIP;
         }
@@ -685,6 +697,72 @@ class Sprite {
     }
     set texture(texture) {
         this.m_MainTexture = texture;
+    }
+    screenToWorld(coord) {
+        let world = new Coordinate();
+        world.left = coord.left * 2.0 - 1.0;
+        world.top = -(coord.top * 2.0 - 1.0);
+        world.right = coord.right * 2.0 - 1.0;
+        world.bottom = -(coord.bottom * 2.0 - 1.0);
+        return world;
+    }
+}
+class CropInfo {
+    get left() {
+        return this._left;
+    }
+    set left(v) {
+        this._left = v;
+    }
+    get top() {
+        return this._top;
+    }
+    set top(v) {
+        this._top = v;
+    }
+    get width() {
+        return this._width;
+    }
+    set width(v) {
+        this._width = v;
+    }
+    get height() {
+        return this._height;
+    }
+    set height(v) {
+        this._height = v;
+    }
+}
+class Coordinate {
+    get left() {
+        return this._left;
+    }
+    set left(v) {
+        this._left = v;
+    }
+    get top() {
+        return this._top;
+    }
+    set top(v) {
+        this._top = v;
+    }
+    get right() {
+        return this._right;
+    }
+    set right(v) {
+        this._right = v;
+    }
+    get bottom() {
+        return this._bottom;
+    }
+    set bottom(v) {
+        this._bottom = v;
+    }
+    constructor(left = 0, top = 0, right = 0, bottom = 0) {
+        this._left = left;
+        this._top = top;
+        this._right = right;
+        this._bottom = bottom;
     }
 }
 class ArrayUtil {

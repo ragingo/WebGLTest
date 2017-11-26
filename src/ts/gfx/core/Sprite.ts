@@ -70,12 +70,20 @@ class Sprite {
 		const tex_w = this.m_OriginalImage.naturalWidth;
 		const tex_h = this.m_OriginalImage.naturalHeight;
 
-		let coords = [];
+		let positions = [];
+		let texcoords = [];
 
 		{
 			// debug
 			this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
-			this.m_Width = 400;
+			this.m_Width = 130;
+			this.m_Height = 100;
+
+			this.m_Crop = new CropInfo();
+			this.m_Crop.left = 0;
+			this.m_Crop.top = 0;
+			this.m_Crop.width = 130;
+			this.m_Crop.height = 100;
 		}
 
 		if (this.m_SliceBorder.length != 4) {
@@ -88,13 +96,15 @@ class Sprite {
 			let right_w = this.m_SliceBorder[2];
 			let bottom_h = this.m_SliceBorder[3];
 
-			let center_block_w = this.m_Width - (left_w + right_w);
-			let center_block_h = tex_h - (top_h + bottom_h);
-			let right_block_l = this.m_Width - right_w;
-			let bottom_block_t = tex_h - bottom_h;
+			let pos_cb_w = this.m_Width - (left_w + right_w);
+			let pos_cb_h = this.m_Height - (top_h + bottom_h);
+			let pos_rb_l = this.m_Width - right_w;
+			let pos_bb_t = this.m_Height - bottom_h;
 
-			let uv_center_block_w = tex_w - (left_w + right_w);
-			let uv_right_block_l = tex_w - right_w;
+			let tc_cb_w = this.m_Crop.width - (left_w + right_w);
+			let tc_cb_h = this.m_Crop.height - (top_h + bottom_h);
+			let tc_rb_l = this.m_Crop.width - right_w;
+			let tc_bb_t = this.m_Crop.height - bottom_h;
 
 			/**
 			 * 0 1 2
@@ -102,26 +112,31 @@ class Sprite {
 			 * 6 7 8
 			 */
 
-			// 0: r1 c1
-			coords.push({ left: 0, top: 0, width: left_w, height: top_h, uv_w: left_w, uv_l: 0 });
-			// 1: r1 c2
-			coords.push({ left: left_w, top: 0, width: center_block_w, height: top_h, uv_w: uv_center_block_w, uv_l: left_w });
-			// 2: r1 c3
-			coords.push({ left: right_block_l, top: 0, width: right_w, height: top_h, uv_w: right_w, uv_l: uv_right_block_l });
+			 // 
+			positions.push({ left: 0, top: 0, width: left_w, height: top_h });
+			positions.push({ left: left_w, top: 0, width: pos_cb_w, height: top_h });
+			positions.push({ left: pos_rb_l, top: 0, width: right_w, height: top_h });
 
-			// 3: r2 c1
-			coords.push({ left: 0, top: top_h, width: left_w, height: center_block_h, uv_w: left_w, uv_l: 0 });
-			// 4: r2 c2
-			coords.push({ left: left_w, top: top_h, width: center_block_w, height: center_block_h, uv_w: uv_center_block_w, uv_l: left_w });
-			// 5: r2 c3
-			coords.push({ left: right_block_l, top: top_h, width: right_w, height: center_block_h, uv_w: right_w, uv_l: uv_right_block_l });
+			positions.push({ left: 0, top: top_h, width: left_w, height: pos_cb_h });
+			positions.push({ left: left_w, top: top_h, width: pos_cb_w, height: pos_cb_h });
+			positions.push({ left: pos_rb_l, top: top_h, width: right_w, height: pos_cb_h });
 
-			// 6: r3 c1
-			coords.push({ left: 0, top: bottom_block_t, width: left_w, height: bottom_h, uv_w: left_w, uv_l: 0 });
-			// 7: r3 c2
-			coords.push({ left: left_w, top: bottom_block_t, width: center_block_w, height: bottom_h, uv_w: uv_center_block_w, uv_l: left_w });
-			// 8: r3 c3
-			coords.push({ left: right_block_l, top: bottom_block_t, width: right_w, height: bottom_h, uv_w: right_w, uv_l: uv_right_block_l });
+			positions.push({ left: 0, top: pos_bb_t, width: left_w, height: bottom_h });
+			positions.push({ left: left_w, top: pos_bb_t, width: pos_cb_w, height: bottom_h });
+			positions.push({ left: pos_rb_l, top: pos_bb_t, width: right_w, height: bottom_h });
+
+			// 
+			texcoords.push({ left: 0, top: 0, width: left_w, height: top_h });
+			texcoords.push({ left: left_w, top: 0, width: tc_cb_w, height: top_h });
+			texcoords.push({ left: tc_rb_l, top: 0, width: right_w, height: top_h });
+
+			texcoords.push({ left: 0, top: top_h, width: left_w, height: tc_cb_h });
+			texcoords.push({ left: left_w, top: top_h, width: tc_cb_w, height: tc_cb_h });
+			texcoords.push({ left: tc_rb_l, top: top_h, width: right_w, height: tc_cb_h });
+
+			texcoords.push({ left: 0, top: tc_bb_t, width: left_w, height: bottom_h });
+			texcoords.push({ left: left_w, top: tc_bb_t, width: tc_cb_w, height: bottom_h });
+			texcoords.push({ left: tc_rb_l, top: tc_bb_t, width: right_w, height: bottom_h });
 		}
 
 
@@ -131,39 +146,41 @@ class Sprite {
 		// 頂点バッファ更新
 		let vertices_pos: Array<number> = [];
 		let vertices_uv: Array<number> = [];
-		for (let i = 0; i < coords.length; i++) {
-			let tc = coords[i];
-			if (tc.width == 0 || tc.height == 0) {
-				continue;
-			}
 
-			let tmp_pos = {
-				left: (tc.left / canvas_w) * 2.0 - 1.0,
-				top: (tc.top / canvas_h) * 2.0 - 1.0,
-				right: ((tc.left + tc.width) / canvas_w) * 2.0 - 1.0,
-				bottom: ((tc.top + tc.height) / canvas_h) * 2.0 - 1.0,
-			};
-			let tmp_texCoord = {
-				left: tc.uv_l / tex_w,
-				top: tc.top / tex_h,
-				right: (tc.uv_l + tc.uv_w) / tex_w,
-				bottom: (tc.top + tc.height) / tex_h,
-			};
-			let pos = [
-				tmp_pos.left, -tmp_pos.bottom, 0,
-				tmp_pos.right, -tmp_pos.bottom, 0,
-				tmp_pos.left, -tmp_pos.top, 0,
-				tmp_pos.right, -tmp_pos.top, 0,
-			];
-			let texCoord = [
-				tmp_texCoord.left, tmp_texCoord.bottom,
-				tmp_texCoord.right, tmp_texCoord.bottom,
-				tmp_texCoord.left, tmp_texCoord.top,
-				tmp_texCoord.right, tmp_texCoord.top,
-			];
+		for (let i = 0; i < positions.length; i++) {
+			let screen_pos = positions[i];
 
-			pos.forEach(v => vertices_pos.push(v));
-			texCoord.forEach(v => vertices_uv.push(v));
+			let world_pos =
+				this.screenToWorld(new Coordinate(
+					screen_pos.left / canvas_w,
+					screen_pos.top / canvas_h,
+					(screen_pos.left + screen_pos.width) / canvas_w,
+					(screen_pos.top + screen_pos.height) / canvas_h
+				));
+
+			[
+				world_pos.left, world_pos.bottom, 0,
+				world_pos.right, world_pos.bottom, 0,
+				world_pos.left, world_pos.top, 0,
+				world_pos.right, world_pos.top, 0,
+			].forEach(v => vertices_pos.push(v));
+		}
+
+		for (let i = 0; i < texcoords.length; i++) {
+			let screen_tc = texcoords[i];
+			let uv_tc = {
+				left: screen_tc.left / tex_w,
+				top: screen_tc.top / tex_h,
+				right: (screen_tc.left + screen_tc.width) / tex_w,
+				bottom: (screen_tc.top + screen_tc.height) / tex_h,
+			};
+
+			[
+				uv_tc.left, uv_tc.bottom,
+				uv_tc.right, uv_tc.bottom,
+				uv_tc.left, uv_tc.top,
+				uv_tc.right, uv_tc.top,
+			].forEach(v => vertices_uv.push(v));
 		}
 
 		// インデックスバッファ生成 & 登録
@@ -198,7 +215,7 @@ class Sprite {
 		});
 
 		let draw_mode = gl.TRIANGLES;
-		let is_debug_mode = true;
+		let is_debug_mode = false;
 		if (is_debug_mode) {
 			draw_mode = gl.LINE_STRIP;
 		}
@@ -220,6 +237,15 @@ class Sprite {
 		this.m_MainTexture = texture;
 	}
 
+	private screenToWorld(coord: Coordinate): Coordinate {
+		let world: Coordinate = new Coordinate();
+		world.left = coord.left * 2.0 - 1.0;
+		world.top = -(coord.top * 2.0 - 1.0);
+		world.right = coord.right * 2.0 - 1.0;
+		world.bottom = -(coord.bottom * 2.0 - 1.0);
+		return world;
+	}
+
 	private gl: WebGLRenderingContext;
 	private program: WebGLProgram;
 	private m_OriginalImage: HTMLImageElement;
@@ -230,4 +256,6 @@ class Sprite {
 	private m_FS: string;
 	private m_SliceBorder: Float32Array;
 	private m_Width: number = 0;
+	private m_Height: number = 0;
+	private m_Crop: CropInfo;
 }

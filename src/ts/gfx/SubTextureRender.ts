@@ -50,7 +50,7 @@ class SubTextureRender implements IDrawable {
 			this.m_Processing = false;
 			console.log("texture loaded.");
 		};
-		img.src = "./res/sm9_small.jpg";
+		img.src = "./res/sm9_small_256x256.jpg";
 
 		return true;
 	}
