@@ -530,6 +530,8 @@ class ShaderProgram {
 class Sprite {
     constructor() {
         this.m_ShaderLoaded = false;
+        this.m_Left = 0;
+        this.m_Top = 0;
         this.m_Width = 0;
         this.m_Height = 0;
     }
@@ -581,6 +583,8 @@ class Sprite {
         let texcoords = [];
         {
             this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
+            this.m_Left = 100;
+            this.m_Top = 100;
             this.m_Width = 130;
             this.m_Height = 100;
             this.m_Crop = new CropInfo();
@@ -597,22 +601,26 @@ class Sprite {
             let top_h = this.m_SliceBorder[1];
             let right_w = this.m_SliceBorder[2];
             let bottom_h = this.m_SliceBorder[3];
+            let pos_lb_l = this.m_Left;
+            let pos_tb_t = this.m_Top;
+            let pos_cb_l = pos_lb_l + left_w;
+            let pos_cb_t = pos_tb_t + top_h;
             let pos_cb_w = this.m_Width - (left_w + right_w);
             let pos_cb_h = this.m_Height - (top_h + bottom_h);
-            let pos_rb_l = this.m_Width - right_w;
-            let pos_bb_t = this.m_Height - bottom_h;
+            let pos_rb_l = pos_lb_l + this.m_Width - right_w;
+            let pos_bb_t = pos_tb_t + this.m_Height - bottom_h;
             let tc_cb_w = this.m_Crop.width - (left_w + right_w);
             let tc_cb_h = this.m_Crop.height - (top_h + bottom_h);
             let tc_rb_l = this.m_Crop.width - right_w;
             let tc_bb_t = this.m_Crop.height - bottom_h;
-            positions.push({ left: 0, top: 0, width: left_w, height: top_h });
-            positions.push({ left: left_w, top: 0, width: pos_cb_w, height: top_h });
-            positions.push({ left: pos_rb_l, top: 0, width: right_w, height: top_h });
-            positions.push({ left: 0, top: top_h, width: left_w, height: pos_cb_h });
-            positions.push({ left: left_w, top: top_h, width: pos_cb_w, height: pos_cb_h });
-            positions.push({ left: pos_rb_l, top: top_h, width: right_w, height: pos_cb_h });
-            positions.push({ left: 0, top: pos_bb_t, width: left_w, height: bottom_h });
-            positions.push({ left: left_w, top: pos_bb_t, width: pos_cb_w, height: bottom_h });
+            positions.push({ left: pos_lb_l, top: pos_tb_t, width: left_w, height: top_h });
+            positions.push({ left: pos_cb_l, top: pos_tb_t, width: pos_cb_w, height: top_h });
+            positions.push({ left: pos_rb_l, top: pos_tb_t, width: right_w, height: top_h });
+            positions.push({ left: pos_lb_l, top: pos_cb_t, width: left_w, height: pos_cb_h });
+            positions.push({ left: pos_cb_l, top: pos_cb_t, width: pos_cb_w, height: pos_cb_h });
+            positions.push({ left: pos_rb_l, top: pos_cb_t, width: right_w, height: pos_cb_h });
+            positions.push({ left: pos_lb_l, top: pos_bb_t, width: left_w, height: bottom_h });
+            positions.push({ left: pos_cb_l, top: pos_bb_t, width: pos_cb_w, height: bottom_h });
             positions.push({ left: pos_rb_l, top: pos_bb_t, width: right_w, height: bottom_h });
             texcoords.push({ left: 0, top: 0, width: left_w, height: top_h });
             texcoords.push({ left: left_w, top: 0, width: tc_cb_w, height: top_h });
