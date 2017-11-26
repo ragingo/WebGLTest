@@ -33,6 +33,13 @@ class CropInfo {
 		this._height = v;
 	}
 
+	constructor(left: number = 0, top: number = 0, width: number = 0, height: number = 0) {
+		this._left = left;
+		this._top = top;
+		this._width = width;
+		this._height = height;
+	}
+
 }
 
 

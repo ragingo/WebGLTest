@@ -75,17 +75,32 @@ class Sprite {
 
 		{
 			// debug
-			this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
-			this.m_Left = 100;
-			this.m_Top = 100;
-			this.m_Width = 130;
-			this.m_Height = 100;
+			// this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
+			// this.m_Left = 100;
+			// this.m_Top = 100;
+			// this.m_Width = 130;
+			// this.m_Height = 100;
+			// this.m_ScaleX = 2;
+			// this.m_ScaleY = 2;
 
-			this.m_Crop = new CropInfo();
-			this.m_Crop.left = 0;
-			this.m_Crop.top = 0;
-			this.m_Crop.width = 130;
-			this.m_Crop.height = 100;
+			// this.m_Crop = new CropInfo();
+			// this.m_Crop.left = 0;
+			// this.m_Crop.top = 0;
+			// this.m_Crop.width = 130;
+			// this.m_Crop.height = 100;
+		}
+
+		if (this.m_Width == 0) {
+			this.m_Width = tex_w;
+		}
+		if (this.m_Height == 0) {
+			this.m_Height = tex_h;
+		}
+		if (this.m_Crop.width == 0) {
+			this.m_Crop.width = tex_w;
+		}
+		if (this.m_Crop.height == 0) {
+			this.m_Crop.height = tex_h;
 		}
 
 		if (this.m_SliceBorder.length != 4) {
@@ -98,14 +113,16 @@ class Sprite {
 			let right_w = this.m_SliceBorder[2];
 			let bottom_h = this.m_SliceBorder[3];
 
+			let scaled_w = this.m_Width * this.m_ScaleX;
+			let scaled_h = this.m_Height * this.m_ScaleY;
 			let pos_lb_l = this.m_Left;
 			let pos_tb_t = this.m_Top;
 			let pos_cb_l = pos_lb_l + left_w;
 			let pos_cb_t = pos_tb_t + top_h;
-			let pos_cb_w = this.m_Width - (left_w + right_w);
-			let pos_cb_h = this.m_Height - (top_h + bottom_h);
-			let pos_rb_l = pos_lb_l + this.m_Width - right_w;
-			let pos_bb_t = pos_tb_t + this.m_Height - bottom_h;
+			let pos_cb_w = scaled_w - (left_w + right_w);
+			let pos_cb_h = scaled_h - (top_h + bottom_h);
+			let pos_rb_l = pos_lb_l + scaled_w - right_w;
+			let pos_bb_t = pos_tb_t + scaled_h - bottom_h;
 
 			let tc_cb_w = this.m_Crop.width - (left_w + right_w);
 			let tc_cb_h = this.m_Crop.height - (top_h + bottom_h);
@@ -260,10 +277,71 @@ class Sprite {
 	private m_ShaderProgram: ShaderProgram;
 	private m_VS: string;
 	private m_FS: string;
-	private m_SliceBorder: Float32Array;
+	private m_SliceBorder: Array<number> = [0, 0, 0, 0];
 	private m_Left: number = 0;
 	private m_Top: number = 0;
 	private m_Width: number = 0;
 	private m_Height: number = 0;
 	private m_Crop: CropInfo;
+	private m_ScaleX: number = 1;
+	private m_ScaleY: number = 1;
+
+
+	
+	public get left() : number {
+		return this.m_Left;
+	}
+	public set left(v : number) {
+		this.m_Left = v;
+	}
+
+	public get top() : number {
+		return this.m_Top;
+	}
+	public set top(v : number) {
+		this.m_Top = v;
+	}
+
+	public get width() : number {
+		return this.m_Width;
+	}
+	public set width(v : number) {
+		this.m_Width = v;
+	}
+
+	public get height() : number {
+		return this.m_Height;
+	}
+	public set height(v : number) {
+		this.m_Height = v;
+	}
+
+	public get scaleX() : number {
+		return this.m_ScaleX;
+	}
+	public set scaleX(v : number) {
+		this.m_ScaleX = v;
+	}
+
+	public get scaleY() : number {
+		return this.m_ScaleY;
+	}
+	public set scaleY(v : number) {
+		this.m_ScaleY = v;
+	}
+
+	public get crop() : CropInfo {
+		return this.m_Crop;
+	}
+	public set crop(v : CropInfo) {
+		this.m_Crop = v;
+	}
+
+	public get sliceBorder() : Array<number> {
+		return this.m_SliceBorder;
+	}
+	public set sliceBorder(v: Array<number>) {
+		this.m_SliceBorder = v;
+	}
+
 }

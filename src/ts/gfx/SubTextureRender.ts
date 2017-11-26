@@ -20,9 +20,9 @@ class SubTextureRender implements IDrawable {
 	}
 
 	onDraw(): void {
-		if (this.m_Sprite) {
-			this.m_Sprite.draw(this.gl);
-		}
+		this.m_Sprites.forEach(x => {
+			x.draw(this.gl);
+		});
 	}
 
 	onEndDraw(): void {
@@ -42,10 +42,28 @@ class SubTextureRender implements IDrawable {
 				console.log("texture is null.");
 				return;
 			}
-			this.m_Sprite = new Sprite();
-			this.m_Sprite.originalImage = img;
-			this.m_Sprite.texture = tex;
-			this.m_Sprite.initialize();
+
+			for (let i = 0; i < 2; i++) {
+				let sprite = new Sprite();
+				sprite.originalImage = img;
+				sprite.texture = tex;
+				sprite.width = 130;
+				sprite.height = 100;
+				sprite.sliceBorder = [20, 20, 20, 20];
+				sprite.crop = new CropInfo(0, 0, 130, 100);
+				sprite.initialize();
+				if (i == 0) {
+					sprite.left = 10;
+					sprite.top = 10;
+				}
+				if (i == 1) {
+					sprite.left = 130;
+					sprite.top = 10;
+					sprite.scaleX = 2;
+					sprite.scaleY = 2;
+				}
+				this.m_Sprites.push(sprite);
+			}
 			this.m_TextureLoaded = true;
 			this.m_Processing = false;
 			console.log("texture loaded.");
@@ -58,5 +76,5 @@ class SubTextureRender implements IDrawable {
 	private gl: WebGLRenderingContext;
 	private m_TextureLoaded: boolean = false;
 	private m_Processing: boolean = false;
-	private m_Sprite: Sprite;
+	private m_Sprites: Array<Sprite> = [];
 }

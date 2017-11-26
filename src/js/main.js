@@ -97,6 +97,7 @@ class SubTextureRender {
     constructor() {
         this.m_TextureLoaded = false;
         this.m_Processing = false;
+        this.m_Sprites = [];
     }
     getContext() {
         return this.gl;
@@ -111,9 +112,9 @@ class SubTextureRender {
         }
     }
     onDraw() {
-        if (this.m_Sprite) {
-            this.m_Sprite.draw(this.gl);
-        }
+        this.m_Sprites.forEach(x => {
+            x.draw(this.gl);
+        });
     }
     onEndDraw() {
     }
@@ -129,10 +130,27 @@ class SubTextureRender {
                 console.log("texture is null.");
                 return;
             }
-            this.m_Sprite = new Sprite();
-            this.m_Sprite.originalImage = img;
-            this.m_Sprite.texture = tex;
-            this.m_Sprite.initialize();
+            for (let i = 0; i < 2; i++) {
+                let sprite = new Sprite();
+                sprite.originalImage = img;
+                sprite.texture = tex;
+                sprite.width = 130;
+                sprite.height = 100;
+                sprite.sliceBorder = [20, 20, 20, 20];
+                sprite.crop = new CropInfo(0, 0, 130, 100);
+                sprite.initialize();
+                if (i == 0) {
+                    sprite.left = 10;
+                    sprite.top = 10;
+                }
+                if (i == 1) {
+                    sprite.left = 130;
+                    sprite.top = 10;
+                    sprite.scaleX = 2;
+                    sprite.scaleY = 2;
+                }
+                this.m_Sprites.push(sprite);
+            }
             this.m_TextureLoaded = true;
             this.m_Processing = false;
             console.log("texture loaded.");
@@ -530,10 +548,13 @@ class ShaderProgram {
 class Sprite {
     constructor() {
         this.m_ShaderLoaded = false;
+        this.m_SliceBorder = [0, 0, 0, 0];
         this.m_Left = 0;
         this.m_Top = 0;
         this.m_Width = 0;
         this.m_Height = 0;
+        this.m_ScaleX = 1;
+        this.m_ScaleY = 1;
     }
     initialize() {
         ShaderLoader.load("./glsl/default_vs.glsl", "./glsl/default_fs.glsl", (vs, fs) => {
@@ -582,16 +603,18 @@ class Sprite {
         let positions = [];
         let texcoords = [];
         {
-            this.m_SliceBorder = new Float32Array([20, 20, 20, 20]);
-            this.m_Left = 100;
-            this.m_Top = 100;
-            this.m_Width = 130;
-            this.m_Height = 100;
-            this.m_Crop = new CropInfo();
-            this.m_Crop.left = 0;
-            this.m_Crop.top = 0;
-            this.m_Crop.width = 130;
-            this.m_Crop.height = 100;
+        }
+        if (this.m_Width == 0) {
+            this.m_Width = tex_w;
+        }
+        if (this.m_Height == 0) {
+            this.m_Height = tex_h;
+        }
+        if (this.m_Crop.width == 0) {
+            this.m_Crop.width = tex_w;
+        }
+        if (this.m_Crop.height == 0) {
+            this.m_Crop.height = tex_h;
         }
         if (this.m_SliceBorder.length != 4) {
             return;
@@ -601,14 +624,16 @@ class Sprite {
             let top_h = this.m_SliceBorder[1];
             let right_w = this.m_SliceBorder[2];
             let bottom_h = this.m_SliceBorder[3];
+            let scaled_w = this.m_Width * this.m_ScaleX;
+            let scaled_h = this.m_Height * this.m_ScaleY;
             let pos_lb_l = this.m_Left;
             let pos_tb_t = this.m_Top;
             let pos_cb_l = pos_lb_l + left_w;
             let pos_cb_t = pos_tb_t + top_h;
-            let pos_cb_w = this.m_Width - (left_w + right_w);
-            let pos_cb_h = this.m_Height - (top_h + bottom_h);
-            let pos_rb_l = pos_lb_l + this.m_Width - right_w;
-            let pos_bb_t = pos_tb_t + this.m_Height - bottom_h;
+            let pos_cb_w = scaled_w - (left_w + right_w);
+            let pos_cb_h = scaled_h - (top_h + bottom_h);
+            let pos_rb_l = pos_lb_l + scaled_w - right_w;
+            let pos_bb_t = pos_tb_t + scaled_h - bottom_h;
             let tc_cb_w = this.m_Crop.width - (left_w + right_w);
             let tc_cb_h = this.m_Crop.height - (top_h + bottom_h);
             let tc_rb_l = this.m_Crop.width - right_w;
@@ -714,6 +739,54 @@ class Sprite {
         world.bottom = -(coord.bottom * 2.0 - 1.0);
         return world;
     }
+    get left() {
+        return this.m_Left;
+    }
+    set left(v) {
+        this.m_Left = v;
+    }
+    get top() {
+        return this.m_Top;
+    }
+    set top(v) {
+        this.m_Top = v;
+    }
+    get width() {
+        return this.m_Width;
+    }
+    set width(v) {
+        this.m_Width = v;
+    }
+    get height() {
+        return this.m_Height;
+    }
+    set height(v) {
+        this.m_Height = v;
+    }
+    get scaleX() {
+        return this.m_ScaleX;
+    }
+    set scaleX(v) {
+        this.m_ScaleX = v;
+    }
+    get scaleY() {
+        return this.m_ScaleY;
+    }
+    set scaleY(v) {
+        this.m_ScaleY = v;
+    }
+    get crop() {
+        return this.m_Crop;
+    }
+    set crop(v) {
+        this.m_Crop = v;
+    }
+    get sliceBorder() {
+        return this.m_SliceBorder;
+    }
+    set sliceBorder(v) {
+        this.m_SliceBorder = v;
+    }
 }
 class CropInfo {
     get left() {
@@ -739,6 +812,12 @@ class CropInfo {
     }
     set height(v) {
         this._height = v;
+    }
+    constructor(left = 0, top = 0, width = 0, height = 0) {
+        this._left = left;
+        this._top = top;
+        this._width = width;
+        this._height = height;
     }
 }
 class Coordinate {
