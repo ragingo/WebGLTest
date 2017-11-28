@@ -142,12 +142,14 @@ class SubTextureRender {
                 if (i == 0) {
                     sprite.left = 10;
                     sprite.top = 10;
+                    sprite.showBorder = true;
                 }
                 if (i == 1) {
-                    sprite.left = 130;
+                    sprite.left = 150;
                     sprite.top = 10;
                     sprite.scaleX = 2;
                     sprite.scaleY = 2;
+                    sprite.showBorder = false;
                 }
                 this.m_Sprites.push(sprite);
             }
@@ -555,6 +557,7 @@ class Sprite {
         this.m_Height = 0;
         this.m_ScaleX = 1;
         this.m_ScaleY = 1;
+        this.m_ShowBorder = false;
     }
     initialize() {
         ShaderLoader.load("./glsl/default_vs.glsl", "./glsl/default_fs.glsl", (vs, fs) => {
@@ -588,6 +591,8 @@ class Sprite {
         if (!this.program) {
             return;
         }
+        const tex_w = this.m_OriginalImage.naturalWidth;
+        const tex_h = this.m_OriginalImage.naturalHeight;
         gl.useProgram(this.program);
         if (this.m_MainTexture && ctx.isTexture(this.m_MainTexture)) {
             gl.activeTexture(gl.TEXTURE0);
@@ -597,9 +602,14 @@ class Sprite {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
+            gl.uniform1i(gl.getUniformLocation(this.program, 'uShowBorder'), this.m_ShowBorder ? 1 : 0);
+            {
+                let loc = gl.getUniformLocation(this.program, 'uTextureSize');
+                if (loc) {
+                    gl.uniform2fv(loc, [tex_w, tex_h]);
+                }
+            }
         }
-        const tex_w = this.m_OriginalImage.naturalWidth;
-        const tex_h = this.m_OriginalImage.naturalHeight;
         let positions = [];
         let texcoords = [];
         {
@@ -786,6 +796,12 @@ class Sprite {
     }
     set sliceBorder(v) {
         this.m_SliceBorder = v;
+    }
+    get showBorder() {
+        return this.m_ShowBorder;
+    }
+    set showBorder(v) {
+        this.m_ShowBorder = v;
     }
 }
 class CropInfo {

@@ -52,6 +52,9 @@ class Sprite {
 			return;
 		}
 
+		const tex_w = this.m_OriginalImage.naturalWidth;
+		const tex_h = this.m_OriginalImage.naturalHeight;
+
 		gl.useProgram(this.program);
 
 		if (this.m_MainTexture && ctx.isTexture(this.m_MainTexture)) {
@@ -65,10 +68,15 @@ class Sprite {
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 			gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
+			gl.uniform1i(gl.getUniformLocation(this.program, 'uShowBorder'), this.m_ShowBorder ? 1 : 0);
+			{
+				let loc = gl.getUniformLocation(this.program, 'uTextureSize');
+				if (loc) {
+					gl.uniform2fv(loc, [tex_w, tex_h]);
+				}
+			}
 		}
 
-		const tex_w = this.m_OriginalImage.naturalWidth;
-		const tex_h = this.m_OriginalImage.naturalHeight;
 
 		let positions = [];
 		let texcoords = [];
@@ -285,7 +293,7 @@ class Sprite {
 	private m_Crop: CropInfo;
 	private m_ScaleX: number = 1;
 	private m_ScaleY: number = 1;
-
+	private m_ShowBorder: boolean = false;
 
 	
 	public get left() : number {
@@ -343,5 +351,13 @@ class Sprite {
 	public set sliceBorder(v: Array<number>) {
 		this.m_SliceBorder = v;
 	}
+
+	public get showBorder() : boolean {
+		return this.m_ShowBorder;
+	}
+	public set showBorder(v : boolean) {
+		this.m_ShowBorder = v;
+	}
+	
 
 }

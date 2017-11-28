@@ -55,12 +55,14 @@ class SubTextureRender implements IDrawable {
 				if (i == 0) {
 					sprite.left = 10;
 					sprite.top = 10;
+					sprite.showBorder = true;
 				}
 				if (i == 1) {
-					sprite.left = 130;
+					sprite.left = 150;
 					sprite.top = 10;
 					sprite.scaleX = 2;
 					sprite.scaleY = 2;
+					sprite.showBorder = false;
 				}
 				this.m_Sprites.push(sprite);
 			}
