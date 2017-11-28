@@ -43,19 +43,19 @@ class SubTextureRender implements IDrawable {
 				return;
 			}
 
-			for (let i = 0; i < 2; i++) {
+			for (let i = 0; i < 3; i++) {
 				let sprite = new Sprite();
-				sprite.originalImage = img;
-				sprite.texture = tex;
-				sprite.width = 130;
-				sprite.height = 100;
-				sprite.sliceBorder = [20, 20, 20, 20];
-				sprite.crop = new CropInfo(0, 0, 130, 100);
 				sprite.initialize();
 				if (i == 0) {
 					sprite.left = 10;
 					sprite.top = 10;
 					sprite.showBorder = true;
+					sprite.originalImage = img;
+					sprite.texture = tex;
+					sprite.width = 130;
+					sprite.height = 100;
+					sprite.sliceBorder = [20, 20, 20, 20];
+					sprite.crop = new CropInfo(0, 0, 130, 100);
 				}
 				if (i == 1) {
 					sprite.left = 150;
@@ -63,6 +63,21 @@ class SubTextureRender implements IDrawable {
 					sprite.scaleX = 2;
 					sprite.scaleY = 2;
 					sprite.showBorder = false;
+					sprite.originalImage = img;
+					sprite.texture = tex;
+					sprite.width = 130;
+					sprite.height = 100;
+					sprite.sliceBorder = [20, 20, 20, 20];
+					sprite.crop = new CropInfo(0, 0, 130, 100);
+				}
+				if (i == 2) {
+					sprite.left = 10;
+					sprite.top = 200;
+					sprite.width = 130;
+					sprite.height = 2;
+					sprite.sliceBorder = [0, 0, 0, 0];
+					sprite.crop = new CropInfo(0, 0, 0, 0);
+					sprite.showBorder = true;
 				}
 				this.m_Sprites.push(sprite);
 			}

@@ -130,19 +130,19 @@ class SubTextureRender {
                 console.log("texture is null.");
                 return;
             }
-            for (let i = 0; i < 2; i++) {
+            for (let i = 0; i < 3; i++) {
                 let sprite = new Sprite();
-                sprite.originalImage = img;
-                sprite.texture = tex;
-                sprite.width = 130;
-                sprite.height = 100;
-                sprite.sliceBorder = [20, 20, 20, 20];
-                sprite.crop = new CropInfo(0, 0, 130, 100);
                 sprite.initialize();
                 if (i == 0) {
                     sprite.left = 10;
                     sprite.top = 10;
                     sprite.showBorder = true;
+                    sprite.originalImage = img;
+                    sprite.texture = tex;
+                    sprite.width = 130;
+                    sprite.height = 100;
+                    sprite.sliceBorder = [20, 20, 20, 20];
+                    sprite.crop = new CropInfo(0, 0, 130, 100);
                 }
                 if (i == 1) {
                     sprite.left = 150;
@@ -150,6 +150,21 @@ class SubTextureRender {
                     sprite.scaleX = 2;
                     sprite.scaleY = 2;
                     sprite.showBorder = false;
+                    sprite.originalImage = img;
+                    sprite.texture = tex;
+                    sprite.width = 130;
+                    sprite.height = 100;
+                    sprite.sliceBorder = [20, 20, 20, 20];
+                    sprite.crop = new CropInfo(0, 0, 130, 100);
+                }
+                if (i == 2) {
+                    sprite.left = 10;
+                    sprite.top = 200;
+                    sprite.width = 130;
+                    sprite.height = 2;
+                    sprite.sliceBorder = [0, 0, 0, 0];
+                    sprite.crop = new CropInfo(0, 0, 0, 0);
+                    sprite.showBorder = true;
                 }
                 this.m_Sprites.push(sprite);
             }
@@ -549,6 +564,7 @@ class ShaderProgram {
 }
 class Sprite {
     constructor() {
+        this.m_OriginalImage = null;
         this.m_ShaderLoaded = false;
         this.m_SliceBorder = [0, 0, 0, 0];
         this.m_Left = 0;
@@ -591,8 +607,27 @@ class Sprite {
         if (!this.program) {
             return;
         }
-        const tex_w = this.m_OriginalImage.naturalWidth;
-        const tex_h = this.m_OriginalImage.naturalHeight;
+        let tex_w = 0;
+        let tex_h = 0;
+        if (this.m_OriginalImage) {
+            tex_w = this.m_OriginalImage.naturalWidth;
+            tex_h = this.m_OriginalImage.naturalHeight;
+        }
+        if (this.m_Width == 0) {
+            this.m_Width = tex_w;
+        }
+        if (this.m_Height == 0) {
+            this.m_Height = tex_h;
+        }
+        if (this.m_Crop.width == 0) {
+            this.m_Crop.width = tex_w;
+        }
+        if (this.m_Crop.height == 0) {
+            this.m_Crop.height = tex_h;
+        }
+        if (this.m_SliceBorder.length != 4) {
+            return;
+        }
         gl.useProgram(this.program);
         if (this.m_MainTexture && ctx.isTexture(this.m_MainTexture)) {
             gl.activeTexture(gl.TEXTURE0);
@@ -613,21 +648,6 @@ class Sprite {
         let positions = [];
         let texcoords = [];
         {
-        }
-        if (this.m_Width == 0) {
-            this.m_Width = tex_w;
-        }
-        if (this.m_Height == 0) {
-            this.m_Height = tex_h;
-        }
-        if (this.m_Crop.width == 0) {
-            this.m_Crop.width = tex_w;
-        }
-        if (this.m_Crop.height == 0) {
-            this.m_Crop.height = tex_h;
-        }
-        if (this.m_SliceBorder.length != 4) {
-            return;
         }
         {
             let left_w = this.m_SliceBorder[0];

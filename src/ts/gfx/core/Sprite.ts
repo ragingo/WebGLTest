@@ -52,8 +52,28 @@ class Sprite {
 			return;
 		}
 
-		const tex_w = this.m_OriginalImage.naturalWidth;
-		const tex_h = this.m_OriginalImage.naturalHeight;
+		let tex_w: number = 0;
+		let tex_h: number = 0;
+		if (this.m_OriginalImage) {
+			tex_w = this.m_OriginalImage.naturalWidth;
+			tex_h = this.m_OriginalImage.naturalHeight;
+		}
+		if (this.m_Width == 0) {
+			this.m_Width = tex_w;
+		}
+		if (this.m_Height == 0) {
+			this.m_Height = tex_h;
+		}
+		if (this.m_Crop.width == 0) {
+			this.m_Crop.width = tex_w;
+		}
+		if (this.m_Crop.height == 0) {
+			this.m_Crop.height = tex_h;
+		}
+
+		if (this.m_SliceBorder.length != 4) {
+			return;
+		}
 
 		gl.useProgram(this.program);
 
@@ -98,22 +118,6 @@ class Sprite {
 			// this.m_Crop.height = 100;
 		}
 
-		if (this.m_Width == 0) {
-			this.m_Width = tex_w;
-		}
-		if (this.m_Height == 0) {
-			this.m_Height = tex_h;
-		}
-		if (this.m_Crop.width == 0) {
-			this.m_Crop.width = tex_w;
-		}
-		if (this.m_Crop.height == 0) {
-			this.m_Crop.height = tex_h;
-		}
-
-		if (this.m_SliceBorder.length != 4) {
-			return;
-		}
 
 		{
 			let left_w = this.m_SliceBorder[0];
@@ -254,10 +258,10 @@ class Sprite {
 		gl.drawElements(draw_mode, indexData.length, gl.UNSIGNED_SHORT, 0);
 	}
 
-	public get originalImage(): HTMLImageElement {
+	public get originalImage(): HTMLImageElement | null {
 		return this.m_OriginalImage;
 	}
-	public set originalImage(image: HTMLImageElement) {
+	public set originalImage(image: HTMLImageElement | null) {
 		this.m_OriginalImage = image;
 	}
 
@@ -279,7 +283,7 @@ class Sprite {
 
 	private gl: WebGLRenderingContext;
 	private program: WebGLProgram;
-	private m_OriginalImage: HTMLImageElement;
+	private m_OriginalImage: HTMLImageElement | null = null;
 	private m_MainTexture: WebGLTexture;
 	private m_ShaderLoaded: boolean = false;
 	private m_ShaderProgram: ShaderProgram;
