@@ -1,21 +1,21 @@
 class SubTextureRender implements IDrawable {
   constructor() {}
 
-  getContext(): WebGLRenderingContext | null {
+  getContext() {
     return this.gl;
   }
 
-  setContext(gl: WebGLRenderingContext | null): void {
+  setContext(gl: WebGLRenderingContext | null) {
     this.gl = gl;
   }
 
-  onBeginDraw(): void {
+  onBeginDraw() {
     if (!this.m_TextureLoaded) {
       this.loadTexture().then((r2) => {});
     }
   }
 
-  onDraw(): void {
+  onDraw() {
     this.m_Sprites.forEach((x) => {
       if (!this.gl) {
         return;
@@ -24,27 +24,27 @@ class SubTextureRender implements IDrawable {
     });
   }
 
-  onEndDraw(): void {}
+  onEndDraw() {}
 
-  private async loadTexture(): Promise<boolean> {
+  private async loadTexture() {
     if (this.m_Processing) {
       return false;
     }
     this.m_Processing = true;
 
-    let img = new Image();
+    const img = new Image();
     img.onload = () => {
       if (!this.gl) {
         return;
       }
-      let tex = Graphics.createTexture(this.gl, img);
+      const tex = Graphics.createTexture(this.gl, img);
       if (!tex) {
         console.log('texture is null.');
         return;
       }
 
       for (let i = 0; i < 3; i++) {
-        let sprite = new Sprite();
+        const sprite = new Sprite();
         sprite.initialize();
         if (i == 0) {
           sprite.left = 10;
@@ -91,7 +91,7 @@ class SubTextureRender implements IDrawable {
   }
 
   private gl: WebGLRenderingContext | null = null;
-  private m_TextureLoaded: boolean = false;
-  private m_Processing: boolean = false;
-  private m_Sprites: Array<Sprite> = [];
+  private m_TextureLoaded = false;
+  private m_Processing = false;
+  private m_Sprites: Sprite[] = [];
 }

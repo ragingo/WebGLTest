@@ -1,16 +1,13 @@
 class ShaderProgram {
-  private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
 
-  constructor(gl: WebGLRenderingContext) {
-    this.gl = gl;
-  }
+  constructor(private gl: WebGLRenderingContext) {}
 
-  private compileVS(src: string): boolean {
+  private compileVS(src: string) {
     if (!this.program) {
       return false;
     }
-    let vs = this.gl.createShader(this.gl.VERTEX_SHADER);
+    const vs = this.gl.createShader(this.gl.VERTEX_SHADER);
     if (!vs || !this.compileShader(vs, src)) {
       return false;
     }
@@ -18,11 +15,11 @@ class ShaderProgram {
     return true;
   }
 
-  private compileFS(src: string): boolean {
+  private compileFS(src: string) {
     if (!this.program) {
       return false;
     }
-    let fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+    const fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     if (!fs || !this.compileShader(fs, src)) {
       return false;
     }
@@ -30,7 +27,7 @@ class ShaderProgram {
     return true;
   }
 
-  private compileShader(shader: WebGLShader | null, src: string): boolean {
+  private compileShader(shader: WebGLShader | null, src: string) {
     if (!shader) {
       return false;
     }
@@ -46,7 +43,7 @@ class ShaderProgram {
     return true;
   }
 
-  public compile(vs: string, fs: string): boolean {
+  public compile(vs: string, fs: string) {
     this.program = this.gl.createProgram();
     if (!this.program) {
       return false;
@@ -68,7 +65,7 @@ class ShaderProgram {
     return true;
   }
 
-  public getProgram(): WebGLProgram | null {
+  public getProgram() {
     return this.program;
   }
 }

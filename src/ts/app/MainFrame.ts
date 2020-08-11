@@ -2,16 +2,15 @@ class MainFrame implements IAppFrame {
   constructor() {
     this.m_View = new MainView();
     this.m_View.resetValues();
-
     this.m_TextureRender = new TextureRender();
   }
 
-  onFpsUpdate(fps: number): void {
+  onFpsUpdate(fps: number) {
     this.m_View.setFpsLabel(fps + 'FPS');
   }
 
-  onStart(): void {
-    let gl = this.m_View.canvas.getContext('webgl');
+  onStart() {
+    const gl = this.m_View.canvas.getContext('webgl');
     if (!gl) {
       console.log('webgl not supported.');
       return;
@@ -33,7 +32,7 @@ class MainFrame implements IAppFrame {
     this.m_Gfx.pushRenderTarget(this.m_TextureRender);
   }
 
-  onUpdate(): void {
+  onUpdate() {
     this.m_TextureRender.textureDrawInfo.width = this.m_View.canvas.width;
     this.m_TextureRender.textureDrawInfo.height = this.m_View.canvas.height;
     this.m_TextureRender.textureDrawInfo.effectType = this.m_View.getEffectTypeValue();

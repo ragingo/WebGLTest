@@ -1,8 +1,8 @@
 class Sprite {
   constructor() {}
 
-  public initialize(): void {
-    ShaderLoader.load('./glsl/default_vs.glsl', './glsl/default_fs.glsl', (vs: string, fs: string) => {
+  public initialize() {
+    ShaderLoader.load('./glsl/default_vs.glsl', './glsl/default_fs.glsl', (vs, fs) => {
       this.m_VS = vs;
       this.m_FS = fs;
       this.m_ShaderLoaded = true;
@@ -24,7 +24,7 @@ class Sprite {
       return;
     }
 
-    let program = this.m_ShaderProgram.getProgram();
+    const program = this.m_ShaderProgram.getProgram();
 
     if (!program) {
       console.log('webgl program is null.');
@@ -34,9 +34,9 @@ class Sprite {
     this.program = program;
   }
 
-  public draw(ctx: WebGLRenderingContext): void {
+  public draw(ctx: WebGLRenderingContext) {
     this.gl = ctx;
-    let gl = this.gl;
+    const gl = this.gl;
 
     if (!this.m_ShaderLoaded) {
       return;
@@ -50,8 +50,8 @@ class Sprite {
       return;
     }
 
-    let tex_w: number = 0;
-    let tex_h: number = 0;
+    let tex_w = 0;
+    let tex_h = 0;
     if (this.m_OriginalImage) {
       tex_w = this.m_OriginalImage.naturalWidth;
       tex_h = this.m_OriginalImage.naturalHeight;
@@ -88,15 +88,15 @@ class Sprite {
       gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
       gl.uniform1i(gl.getUniformLocation(this.program, 'uShowBorder'), this.m_ShowBorder ? 1 : 0);
       {
-        let loc = gl.getUniformLocation(this.program, 'uTextureSize');
+        const loc = gl.getUniformLocation(this.program, 'uTextureSize');
         if (loc) {
           gl.uniform2fv(loc, [tex_w, tex_h]);
         }
       }
     }
 
-    let positions = [];
-    let texcoords = [];
+    const positions = [];
+    const texcoords = [];
 
     {
       // debug
@@ -173,13 +173,13 @@ class Sprite {
     const canvas_h = 512.0;
 
     // 頂点バッファ更新
-    let vertices_pos: Array<number> = [];
-    let vertices_uv: Array<number> = [];
+    const vertices_pos: number[] = [];
+    const vertices_uv: number[] = [];
 
     for (let i = 0; i < positions.length; i++) {
       let screen_pos = positions[i];
 
-      let world_pos = this.screenToWorld(
+      const world_pos = this.screenToWorld(
         new Coordinate(
           screen_pos.left / canvas_w,
           screen_pos.top / canvas_h,
@@ -205,8 +205,8 @@ class Sprite {
     }
 
     for (let i = 0; i < texcoords.length; i++) {
-      let screen_tc = texcoords[i];
-      let uv_tc = {
+      const screen_tc = texcoords[i];
+      const uv_tc = {
         left: screen_tc.left / tex_w,
         top: screen_tc.top / tex_h,
         right: (screen_tc.left + screen_tc.width) / tex_w,
@@ -226,7 +226,7 @@ class Sprite {
     }
 
     // インデックスバッファ生成 & 登録
-    let indexData: Array<number> = [];
+    const indexData: number[] = [];
 
     for (let i = 0; i < 9; i++) {
       [0, 1, 2, 1, 3, 2]
@@ -238,7 +238,7 @@ class Sprite {
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
 
-    let vbo_array = [
+    const vbo_array = [
       {
         buffer: Graphics.createVertexBuffer(gl, vertices_pos),
         location: gl.getAttribLocation(this.program, 'position'),
@@ -265,14 +265,14 @@ class Sprite {
     gl.drawElements(draw_mode, indexData.length, gl.UNSIGNED_SHORT, 0);
   }
 
-  public get originalImage(): HTMLImageElement | null {
+  public get originalImage() {
     return this.m_OriginalImage;
   }
   public set originalImage(image: HTMLImageElement | null) {
     this.m_OriginalImage = image;
   }
 
-  public get texture(): WebGLTexture | null {
+  public get texture() {
     return this.m_MainTexture;
   }
   public set texture(texture: WebGLTexture | null) {
@@ -280,7 +280,7 @@ class Sprite {
   }
 
   private screenToWorld(coord: Coordinate): Coordinate {
-    let world: Coordinate = new Coordinate();
+    const world = new Coordinate();
     world.left = coord.left * 2.0 - 1.0;
     world.top = -(coord.top * 2.0 - 1.0);
     world.right = coord.right * 2.0 - 1.0;
@@ -296,73 +296,73 @@ class Sprite {
   private m_ShaderProgram: ShaderProgram | null = null;
   private m_VS: string | null = null;
   private m_FS: string | null = null;
-  private m_SliceBorder: Array<number> = [0, 0, 0, 0];
-  private m_Left: number = 0;
-  private m_Top: number = 0;
-  private m_Width: number = 0;
-  private m_Height: number = 0;
-  private m_Crop: CropInfo = new CropInfo();
-  private m_ScaleX: number = 1;
-  private m_ScaleY: number = 1;
-  private m_ShowBorder: boolean = false;
+  private m_SliceBorder = [0, 0, 0, 0];
+  private m_Left = 0;
+  private m_Top = 0;
+  private m_Width = 0;
+  private m_Height = 0;
+  private m_Crop = new CropInfo();
+  private m_ScaleX = 1;
+  private m_ScaleY = 1;
+  private m_ShowBorder = false;
 
-  public get left(): number {
+  public get left() {
     return this.m_Left;
   }
   public set left(v: number) {
     this.m_Left = v;
   }
 
-  public get top(): number {
+  public get top() {
     return this.m_Top;
   }
   public set top(v: number) {
     this.m_Top = v;
   }
 
-  public get width(): number {
+  public get width() {
     return this.m_Width;
   }
   public set width(v: number) {
     this.m_Width = v;
   }
 
-  public get height(): number {
+  public get height() {
     return this.m_Height;
   }
   public set height(v: number) {
     this.m_Height = v;
   }
 
-  public get scaleX(): number {
+  public get scaleX() {
     return this.m_ScaleX;
   }
   public set scaleX(v: number) {
     this.m_ScaleX = v;
   }
 
-  public get scaleY(): number {
+  public get scaleY() {
     return this.m_ScaleY;
   }
   public set scaleY(v: number) {
     this.m_ScaleY = v;
   }
 
-  public get crop(): CropInfo {
+  public get crop() {
     return this.m_Crop;
   }
   public set crop(v: CropInfo) {
     this.m_Crop = v;
   }
 
-  public get sliceBorder(): Array<number> {
+  public get sliceBorder() {
     return this.m_SliceBorder;
   }
-  public set sliceBorder(v: Array<number>) {
+  public set sliceBorder(v: number[]) {
     this.m_SliceBorder = v;
   }
 
-  public get showBorder(): boolean {
+  public get showBorder() {
     return this.m_ShowBorder;
   }
   public set showBorder(v: boolean) {

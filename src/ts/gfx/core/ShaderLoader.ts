@@ -1,27 +1,11 @@
 type ShaderLoadCompletedCallback = (vs: string, fs: string) => void;
 
 class ShaderLoadResult {
-  private m_success: boolean;
-  private m_vs: string;
-  private m_fs: string;
-  constructor(success: boolean, vs: string = '', fs: string = '') {
-    this.m_success = success;
-    this.m_vs = vs;
-    this.m_fs = fs;
-  }
-  public get success(): boolean {
-    return this.m_success;
-  }
-  public get vs(): string {
-    return this.m_vs;
-  }
-  public get fs(): string {
-    return this.m_fs;
-  }
+  constructor(public success: boolean, public vs: string = '', public fs: string = '') {}
 }
 
 class ShaderLoader {
-  public static load(vs_path: string, fs_path: string, callback: ShaderLoadCompletedCallback): void {
+  public static load(vs_path: string, fs_path: string, callback: ShaderLoadCompletedCallback) {
     ShaderLoader.loadAsync(vs_path, fs_path).then((r) => {
       if (r.success) {
         if (callback) {
@@ -31,9 +15,9 @@ class ShaderLoader {
     });
   }
 
-  private static async loadAsync(vs_path: string, fs_path: string): Promise<ShaderLoadResult> {
-    let vs = await HttpUtil.getText(vs_path);
-    let fs = await HttpUtil.getText(fs_path);
+  public static async loadAsync(vs_path: string, fs_path: string) {
+    let vs = await this.fetchShaderCode(vs_path);
+    let fs = await this.fetchShaderCode(fs_path);
 
     if (!vs) {
       console.log('vs code not found.');
@@ -46,5 +30,10 @@ class ShaderLoader {
     }
 
     return new ShaderLoadResult(true, vs, fs);
+  }
+
+  private static async fetchShaderCode(url: string) {
+    const res = await fetch(url);
+    return res.text();
   }
 }

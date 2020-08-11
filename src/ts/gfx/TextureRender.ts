@@ -184,29 +184,28 @@ class TextureRender implements IDrawable {
     }
     this.m_Processing = true;
 
-    let vs = await HttpUtil.getText('./glsl/texture_edit_vs.glsl');
-    let fs = await HttpUtil.getText('./glsl/texture_edit_fs.glsl');
-    if (!vs) {
-      console.log('vs code not found.');
+    const loader = await ShaderLoader.loadAsync('./glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
+    if (!loader.success) {
+      console.log('shader load failed.');
       return false;
     }
-    if (!fs) {
-      console.log('fs code not found.');
-      return false;
-    }
+
     if (!this.gl) {
       return false;
     }
+
     this.m_ShaderProgram = new ShaderProgram(this.gl);
-    if (!this.m_ShaderProgram.compile(vs, fs)) {
+    if (!this.m_ShaderProgram.compile(loader.vs, loader.fs)) {
       console.log('shader compile failed.');
       return false;
     }
+
     let program = this.m_ShaderProgram.getProgram();
     if (!program) {
       console.log('webgl program is null.');
       return false;
     }
+
     this.program = program;
 
     return true;

@@ -1,6 +1,6 @@
 class CropInfo {
   private _left: number;
-  public get left(): number {
+  public get left() {
     return this._left;
   }
   public set left(v: number) {
@@ -8,7 +8,7 @@ class CropInfo {
   }
 
   private _top: number;
-  public get top(): number {
+  public get top() {
     return this._top;
   }
   public set top(v: number) {
@@ -16,7 +16,7 @@ class CropInfo {
   }
 
   private _width: number;
-  public get width(): number {
+  public get width() {
     return this._width;
   }
   public set width(v: number) {
@@ -24,14 +24,14 @@ class CropInfo {
   }
 
   private _height: number;
-  public get height(): number {
+  public get height() {
     return this._height;
   }
   public set height(v: number) {
     this._height = v;
   }
 
-  constructor(left: number = 0, top: number = 0, width: number = 0, height: number = 0) {
+  constructor(left = 0, top = 0, width = 0, height = 0) {
     this._left = left;
     this._top = top;
     this._width = width;
@@ -41,7 +41,7 @@ class CropInfo {
 
 class Coordinate {
   private _left: number;
-  public get left(): number {
+  public get left() {
     return this._left;
   }
   public set left(v: number) {
@@ -49,7 +49,7 @@ class Coordinate {
   }
 
   private _top: number;
-  public get top(): number {
+  public get top() {
     return this._top;
   }
   public set top(v: number) {
@@ -57,7 +57,7 @@ class Coordinate {
   }
 
   private _right: number;
-  public get right(): number {
+  public get right() {
     return this._right;
   }
   public set right(v: number) {
@@ -65,14 +65,14 @@ class Coordinate {
   }
 
   private _bottom: number;
-  public get bottom(): number {
+  public get bottom() {
     return this._bottom;
   }
   public set bottom(v: number) {
     this._bottom = v;
   }
 
-  constructor(left: number = 0, top: number = 0, right: number = 0, bottom: number = 0) {
+  constructor(left = 0, top = 0, right = 0, bottom = 0) {
     this._left = left;
     this._top = top;
     this._right = right;

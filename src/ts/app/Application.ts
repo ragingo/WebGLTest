@@ -1,21 +1,21 @@
 class Application {
-  private static s_AppFrames: Array<IAppFrame> = [];
+  private static s_AppFrames: IAppFrame[] = [];
 
   public static registerAppFrame(frame: IAppFrame) {
     Application.s_AppFrames.push(frame);
   }
 
-  public static main(): void {
+  public static main() {
     Application.s_AppFrames.forEach((f) => {
       f.onStart();
     });
 
-    let frameCount: number = 0;
-    let now: number = 0.0;
-    let last: number = 0.0;
-    let elapsed: number = 0.0;
+    let frameCount = 0;
+    let now = 0.0;
+    let last = 0.0;
+    let elapsed = 0.0;
 
-    let frameRequestCallback = (time: number) => {
+    const frameRequestCallback = (time: number) => {
       now = time;
       elapsed += now - last;
       last = now;

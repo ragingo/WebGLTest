@@ -1,13 +1,13 @@
 class DefaultDraw implements IDrawable {
-  getContext(): WebGLRenderingContext | null {
+  getContext() {
     return this.gl;
   }
 
-  setContext(gl: WebGLRenderingContext | null): void {
+  setContext(gl: WebGLRenderingContext | null) {
     this.gl = gl;
   }
 
-  onBeginDraw(): void {
+  onBeginDraw() {
     if (!this.gl) {
       return;
     }
@@ -17,9 +17,9 @@ class DefaultDraw implements IDrawable {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
 
-  onDraw(): void {}
+  onDraw() {}
 
-  onEndDraw(): void {}
+  onEndDraw() {}
 
   private gl: WebGLRenderingContext | null = null;
 }
