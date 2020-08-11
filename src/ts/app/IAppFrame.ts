@@ -1,6 +1,5 @@
-
 interface IAppFrame {
-	onFpsUpdate(fps: number): void;
-	onStart(): void;
-	onUpdate(): void;
+  onFpsUpdate(fps: number): void;
+  onStart(): void;
+  onUpdate(): void;
 }
