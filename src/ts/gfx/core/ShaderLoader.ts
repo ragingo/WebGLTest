@@ -16,14 +16,13 @@ class ShaderLoader {
   }
 
   public static async loadAsync(vs_path: string, fs_path: string) {
-    let vs = await this.fetchShaderCode(vs_path);
-    let fs = await this.fetchShaderCode(fs_path);
-
+    const vs = await this.fetchShaderCode(vs_path);
     if (!vs) {
       console.log('vs code not found.');
       return new ShaderLoadResult(false);
     }
 
+    const fs = await this.fetchShaderCode(fs_path);
     if (!fs) {
       console.log('fs code not found.');
       return new ShaderLoadResult(false);

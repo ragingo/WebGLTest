@@ -1,10 +1,7 @@
 class Graphics {
-  private gl: WebGLRenderingContext;
-  private m_DrawTagets: IDrawable[] = [];
+  private drawTargets: IDrawable[] = [];
 
-  constructor(gl: WebGLRenderingContext) {
-    this.gl = gl;
-  }
+  constructor(private gl: WebGLRenderingContext) {}
 
   public init(width: number, height: number) {
     this.gl.viewport(0, 0, width, height);
@@ -26,18 +23,18 @@ class Graphics {
 
   public render() {
     // begin
-    this.m_DrawTagets.forEach((elem, i) => {
+    this.drawTargets.forEach((elem) => {
       elem.setContext(this.gl);
       elem.onBeginDraw();
     });
 
     // rendering
-    this.m_DrawTagets.forEach((elem, i) => {
+    this.drawTargets.forEach((elem) => {
       elem.onDraw();
     });
 
     // end
-    this.m_DrawTagets.forEach((elem, i) => {
+    this.drawTargets.forEach((elem) => {
       elem.onEndDraw();
     });
 
@@ -45,10 +42,10 @@ class Graphics {
   }
 
   public pushRenderTarget(d: IDrawable) {
-    this.m_DrawTagets.push(d);
+    this.drawTargets.push(d);
   }
 
-  public static createVertexBuffer(gl: WebGLRenderingContext, data: any[]) {
+  public static createVertexBuffer(gl: WebGLRenderingContext, data: number[]) {
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
@@ -56,7 +53,7 @@ class Graphics {
     return buf;
   }
 
-  public static createIndexBuffer(gl: WebGLRenderingContext, data: any[]) {
+  public static createIndexBuffer(gl: WebGLRenderingContext, data: number[]) {
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buf);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);

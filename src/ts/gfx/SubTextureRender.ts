@@ -1,4 +1,9 @@
 class SubTextureRender implements IDrawable {
+  private gl: WebGLRenderingContext | null = null;
+  private textureLoaded = false;
+  private isProcessing = false;
+  private sprites: Sprite[] = [];
+
   constructor() {}
 
   getContext() {
@@ -10,13 +15,13 @@ class SubTextureRender implements IDrawable {
   }
 
   onBeginDraw() {
-    if (!this.m_TextureLoaded) {
-      this.loadTexture().then((r2) => {});
+    if (!this.textureLoaded) {
+      this.loadTexture();
     }
   }
 
   onDraw() {
-    this.m_Sprites.forEach((x) => {
+    this.sprites.forEach((x) => {
       if (!this.gl) {
         return;
       }
@@ -27,10 +32,10 @@ class SubTextureRender implements IDrawable {
   onEndDraw() {}
 
   private async loadTexture() {
-    if (this.m_Processing) {
+    if (this.isProcessing) {
       return false;
     }
-    this.m_Processing = true;
+    this.isProcessing = true;
 
     const img = new Image();
     img.onload = () => {
@@ -79,19 +84,14 @@ class SubTextureRender implements IDrawable {
           sprite.crop = new CropInfo(0, 0, 0, 0);
           sprite.showBorder = true;
         }
-        this.m_Sprites.push(sprite);
+        this.sprites.push(sprite);
       }
-      this.m_TextureLoaded = true;
-      this.m_Processing = false;
+      this.textureLoaded = true;
+      this.isProcessing = false;
       console.log('texture loaded.');
     };
     img.src = './res/sm9_small_256x256.jpg';
 
     return true;
   }
-
-  private gl: WebGLRenderingContext | null = null;
-  private m_TextureLoaded = false;
-  private m_Processing = false;
-  private m_Sprites: Sprite[] = [];
 }

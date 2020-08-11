@@ -1,51 +1,52 @@
 class MainFrame implements IAppFrame {
+  private view: MainView;
+  private textureRender: TextureRender;
+  private gfx: Graphics | null = null;
+
   constructor() {
-    this.m_View = new MainView();
-    this.m_View.resetValues();
-    this.m_TextureRender = new TextureRender();
+    this.view = new MainView();
+    this.view.resetValues();
+    this.textureRender = new TextureRender();
   }
 
   onFpsUpdate(fps: number) {
-    this.m_View.setFpsLabel(fps + 'FPS');
+    this.view.setFpsLabel(fps + 'FPS');
   }
 
   onStart() {
-    const gl = this.m_View.canvas.getContext('webgl');
+    const gl = this.view.canvas.getContext('webgl');
     if (!gl) {
       console.log('webgl not supported.');
       return;
     }
 
-    this.m_Gfx = new Graphics(gl);
+    this.gfx = new Graphics(gl);
 
-    if (!this.m_Gfx.init(this.m_View.canvas.width, this.m_View.canvas.height)) {
+    if (!this.gfx.init(this.view.canvas.width, this.view.canvas.height)) {
       console.log('gfx init failed. ');
       return;
     }
 
-    if (!this.m_Gfx.prepare()) {
+    if (!this.gfx.prepare()) {
       console.log('gfx prepare failed. ');
       return;
     }
 
-    this.m_Gfx.pushRenderTarget(new DefaultDraw());
-    this.m_Gfx.pushRenderTarget(this.m_TextureRender);
+    this.gfx.pushRenderTarget(new DefaultDraw());
+    this.gfx.pushRenderTarget(this.textureRender);
   }
 
   onUpdate() {
-    this.m_TextureRender.textureDrawInfo.width = this.m_View.canvas.width;
-    this.m_TextureRender.textureDrawInfo.height = this.m_View.canvas.height;
-    this.m_TextureRender.textureDrawInfo.effectType = this.m_View.getEffectTypeValue();
-    this.m_TextureRender.textureDrawInfo.color = this.m_View.getColorValue();
-    this.m_TextureRender.textureDrawInfo.rotation = this.m_View.getRotationValue();
-    this.m_TextureRender.textureDrawInfo.scale = this.m_View.getScaleValue();
-    this.m_TextureRender.textureDrawInfo.vivid = this.m_View.getVividValue();
-    this.m_TextureRender.textureDrawInfo.polygonCount = this.m_View.getPolygonCountValue();
+    const drawInfo = this.textureRender.textureDrawInfo;
+    drawInfo.width = this.view.canvas.width;
+    drawInfo.height = this.view.canvas.height;
+    drawInfo.effectType = this.view.getEffectTypeValue();
+    drawInfo.color = this.view.getColorValue();
+    drawInfo.rotation = this.view.getRotationValue();
+    drawInfo.scale = this.view.getScaleValue();
+    drawInfo.vivid = this.view.getVividValue();
+    drawInfo.polygonCount = this.view.getPolygonCountValue();
 
-    this.m_Gfx?.render();
+    this.gfx?.render();
   }
-
-  private m_View: MainView;
-  private m_Gfx: Graphics | null = null;
-  private m_TextureRender: TextureRender;
 }

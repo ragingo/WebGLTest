@@ -58,6 +58,7 @@ class MainView extends ViewBase {
 
     this.fpsLabel = this.getById('fps');
     this.canvas = this.getById('canvas');
+
     this.effectSelector = this.getById('effectSelector');
     this.effectSelector.onchange = () => {
       this.onEffectTypeChanged(this.effectSelector);
@@ -84,7 +85,6 @@ class MainView extends ViewBase {
       this.getById('slider_rotation_y'),
       this.getById('slider_rotation_z')
     ];
-
     this.rotationLabels = [
       this.getById('label_rotation_x'),
       this.getById('label_rotation_y'),
@@ -95,7 +95,6 @@ class MainView extends ViewBase {
     });
 
     this.scale = [this.getById('slider_scale_x'), this.getById('slider_scale_y'), this.getById('slider_scale_z')];
-
     this.scaleLabels = [this.getById('label_scale_x'), this.getById('label_scale_y'), this.getById('label_scale_z')];
     this.scale.forEach((x, i) => {
       x.oninput = () => this.onScaleChanged(x, i);
@@ -135,7 +134,7 @@ class MainView extends ViewBase {
   }
 
   private onEffectTypeChanged(sender: HTMLSelectElement) {
-    let elems = Array.from(document.getElementsByClassName('vivid_params')).map((x) => x as HTMLElement);
+    const elems = Array.from(document.getElementsByClassName('vivid_params')).map((x) => x as HTMLElement);
     if (sender.selectedIndex == 16) {
       elems.forEach((x) => (x.style.visibility = 'visible'));
     } else {
