@@ -31,7 +31,6 @@ class MainFrame implements IAppFrame {
 
     this.m_Gfx.pushRenderTarget(new DefaultDraw());
     this.m_Gfx.pushRenderTarget(this.m_TextureRender);
-    this.m_Gfx.pushRenderTarget(new SubTextureRender());
   }
 
   onUpdate(): void {
