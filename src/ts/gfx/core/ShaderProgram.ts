@@ -1,29 +1,26 @@
 class ShaderProgram {
-  private program: WebGLProgram | null = null;
+  #program: WebGLProgram | null = null;
+  get program() {
+    return this.#program;
+  }
 
   constructor(private gl: WebGLRenderingContext) {}
 
-  private compileVS(src: string) {
-    if (!this.program) {
-      return false;
-    }
+  private compileVS(program: WebGLProgram, src: string) {
     const vs = this.gl.createShader(this.gl.VERTEX_SHADER);
     if (!vs || !this.compileShader(vs, src)) {
       return false;
     }
-    this.gl.attachShader(this.program, vs);
+    this.gl.attachShader(program, vs);
     return true;
   }
 
-  private compileFS(src: string) {
-    if (!this.program) {
-      return false;
-    }
+  private compileFS(program: WebGLProgram, src: string) {
     const fs = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     if (!fs || !this.compileShader(fs, src)) {
       return false;
     }
-    this.gl.attachShader(this.program, fs);
+    this.gl.attachShader(program, fs);
     return true;
   }
 
@@ -44,14 +41,14 @@ class ShaderProgram {
   }
 
   public compile(vs: string, fs: string) {
-    this.program = this.gl.createProgram();
+    this.#program = this.gl.createProgram();
     if (!this.program) {
       return false;
     }
-    if (!this.compileVS(vs)) {
+    if (!this.compileVS(this.program, vs)) {
       return false;
     }
-    if (!this.compileFS(fs)) {
+    if (!this.compileFS(this.program, fs)) {
       return false;
     }
 
@@ -63,9 +60,5 @@ class ShaderProgram {
     }
 
     return true;
-  }
-
-  public getProgram() {
-    return this.program;
   }
 }

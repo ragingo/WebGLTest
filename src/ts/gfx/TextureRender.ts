@@ -1,6 +1,5 @@
 class TextureRender implements IDrawable {
   private gl: WebGLRenderingContext | null = null;
-  private program: WebGLProgram | null = null;
   private texture: WebGLTexture | null = null;
   private textureLoaded = false;
   private isShaderLoaded = false;
@@ -38,26 +37,27 @@ class TextureRender implements IDrawable {
     if (!this.gl) {
       return;
     }
-    if (!this.program) {
+    if (!this.shaderProgram?.program) {
       return;
     }
 
     const gl = this.gl;
+    const program = this.shaderProgram.program;
 
-    gl.useProgram(this.program);
+    gl.useProgram(program);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     const uniformLocation = {
-      scale: gl.getUniformLocation(this.program, 'scale'),
-      rotatoin: gl.getUniformLocation(this.program, 'rotation'),
-      sampler: gl.getUniformLocation(this.program, 'uSampler'),
-      effectType: gl.getUniformLocation(this.program, 'effectType'),
-      textureSize: gl.getUniformLocation(this.program, 'textureSize'),
-      editColor: gl.getUniformLocation(this.program, 'editColor'),
-      vividParams: gl.getUniformLocation(this.program, 'vividParams')
+      scale: gl.getUniformLocation(program, 'scale'),
+      rotatoin: gl.getUniformLocation(program, 'rotation'),
+      sampler: gl.getUniformLocation(program, 'uSampler'),
+      effectType: gl.getUniformLocation(program, 'effectType'),
+      textureSize: gl.getUniformLocation(program, 'textureSize'),
+      editColor: gl.getUniformLocation(program, 'editColor'),
+      vividParams: gl.getUniformLocation(program, 'vividParams')
     };
 
     // テクスチャ登録
@@ -149,18 +149,18 @@ class TextureRender implements IDrawable {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
 
     vertices.forEach((vertex) => {
-      if (!this.program) {
+      if (!program) {
         return;
       }
       const vbo_array = [
         {
           buffer: Graphics.createVertexBuffer(gl, vertex.pos),
-          location: gl.getAttribLocation(this.program, 'position'),
+          location: gl.getAttribLocation(program, 'position'),
           stride: 3
         },
         {
           buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
-          location: gl.getAttribLocation(this.program, 'texCoord'),
+          location: gl.getAttribLocation(program, 'texCoord'),
           stride: 2
         }
       ];
@@ -197,8 +197,7 @@ class TextureRender implements IDrawable {
       return false;
     }
 
-    this.program = this.shaderProgram.getProgram();
-    if (!this.program) {
+    if (!this.shaderProgram.program) {
       console.log('webgl program is null.');
       return false;
     }

@@ -1,6 +1,5 @@
 class Sprite {
   private gl: WebGLRenderingContext | null = null;
-  private program: WebGLProgram | null = null;
   private shaderProgram: ShaderProgram | null = null;
   private vertexShader: string | null = null;
   private fragmentShader: string | null = null;
@@ -46,19 +45,14 @@ class Sprite {
       return;
     }
 
-    const program = this.shaderProgram.getProgram();
-
-    if (!program) {
+    if (!this.shaderProgram.program) {
       console.log('webgl program is null.');
       return;
     }
-
-    this.program = program;
   }
 
   public draw(ctx: WebGLRenderingContext) {
     this.gl = ctx;
-    const gl = this.gl;
 
     if (!this.isShaderLoaded) {
       return;
@@ -68,7 +62,7 @@ class Sprite {
       this.compile();
     }
 
-    if (!this.program) {
+    if (!this.shaderProgram?.program) {
       return;
     }
 
@@ -94,7 +88,10 @@ class Sprite {
       return;
     }
 
-    gl.useProgram(this.program);
+    const gl = this.gl;
+    const program = this.shaderProgram.program;
+
+    gl.useProgram(program);
 
     if (this.texture && ctx.isTexture(this.texture)) {
       gl.activeTexture(gl.TEXTURE0);
@@ -106,10 +103,10 @@ class Sprite {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-      gl.uniform1i(gl.getUniformLocation(this.program, 'uSampler'), 0);
-      gl.uniform1i(gl.getUniformLocation(this.program, 'uShowBorder'), this.showBorder ? 1 : 0);
+      gl.uniform1i(gl.getUniformLocation(program, 'uSampler'), 0);
+      gl.uniform1i(gl.getUniformLocation(program, 'uShowBorder'), this.showBorder ? 1 : 0);
       {
-        const loc = gl.getUniformLocation(this.program, 'uTextureSize');
+        const loc = gl.getUniformLocation(program, 'uTextureSize');
         if (loc) {
           gl.uniform2fv(loc, [tex_w, tex_h]);
         }
@@ -235,12 +232,12 @@ class Sprite {
     const vbo_array = [
       {
         buffer: Graphics.createVertexBuffer(gl, vertices_pos),
-        location: gl.getAttribLocation(this.program, 'position'),
+        location: gl.getAttribLocation(program, 'position'),
         stride: 3
       },
       {
         buffer: Graphics.createVertexBuffer(gl, vertices_uv),
-        location: gl.getAttribLocation(this.program, 'texCoord'),
+        location: gl.getAttribLocation(program, 'texCoord'),
         stride: 2
       }
     ];
