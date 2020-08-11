@@ -17,6 +17,12 @@ class Sprite {
 	}
 
 	private compile() {
+		if (!this.gl) {
+			return;
+		}
+		if (!this.m_VS || !this.m_FS) {
+			return;
+		}
 
 		this.m_ShaderProgram = new ShaderProgram(this.gl);
 
@@ -147,7 +153,7 @@ class Sprite {
 			 * 6 7 8
 			 */
 
-			 // 
+			 //
 			positions.push({ left: pos_lb_l, top: pos_tb_t, width: left_w, height: top_h });
 			positions.push({ left: pos_cb_l, top: pos_tb_t, width: pos_cb_w, height: top_h });
 			positions.push({ left: pos_rb_l, top: pos_tb_t, width: right_w, height: top_h });
@@ -160,7 +166,7 @@ class Sprite {
 			positions.push({ left: pos_cb_l, top: pos_bb_t, width: pos_cb_w, height: bottom_h });
 			positions.push({ left: pos_rb_l, top: pos_bb_t, width: right_w, height: bottom_h });
 
-			// 
+			//
 			texcoords.push({ left: 0, top: 0, width: left_w, height: top_h });
 			texcoords.push({ left: left_w, top: 0, width: tc_cb_w, height: top_h });
 			texcoords.push({ left: tc_rb_l, top: 0, width: right_w, height: top_h });
@@ -265,10 +271,10 @@ class Sprite {
 		this.m_OriginalImage = image;
 	}
 
-	public get texture(): WebGLTexture {
+	public get texture(): WebGLTexture | null {
 		return this.m_MainTexture;
 	}
-	public set texture(texture: WebGLTexture) {
+	public set texture(texture: WebGLTexture | null) {
 		this.m_MainTexture = texture;
 	}
 
@@ -281,25 +287,25 @@ class Sprite {
 		return world;
 	}
 
-	private gl: WebGLRenderingContext;
-	private program: WebGLProgram;
+	private gl: WebGLRenderingContext | null = null;
+	private program: WebGLProgram | null = null;
 	private m_OriginalImage: HTMLImageElement | null = null;
-	private m_MainTexture: WebGLTexture;
+	private m_MainTexture: WebGLTexture | null = null;
 	private m_ShaderLoaded: boolean = false;
-	private m_ShaderProgram: ShaderProgram;
-	private m_VS: string;
-	private m_FS: string;
+	private m_ShaderProgram: ShaderProgram | null = null;
+	private m_VS: string | null = null;
+	private m_FS: string | null = null;
 	private m_SliceBorder: Array<number> = [0, 0, 0, 0];
 	private m_Left: number = 0;
 	private m_Top: number = 0;
 	private m_Width: number = 0;
 	private m_Height: number = 0;
-	private m_Crop: CropInfo;
+	private m_Crop: CropInfo = new CropInfo();
 	private m_ScaleX: number = 1;
 	private m_ScaleY: number = 1;
 	private m_ShowBorder: boolean = false;
 
-	
+
 	public get left() : number {
 		return this.m_Left;
 	}
@@ -362,6 +368,6 @@ class Sprite {
 	public set showBorder(v : boolean) {
 		this.m_ShowBorder = v;
 	}
-	
+
 
 }

@@ -13,11 +13,11 @@ class TextureRender implements IDrawable {
 		this._textureDrawInfo = new TextureDrawInfo();
 	}
 
-	getContext(): WebGLRenderingContext {
+	getContext(): WebGLRenderingContext | null {
 		return this.gl;
 	}
 
-	setContext(gl: WebGLRenderingContext): void {
+	setContext(gl: WebGLRenderingContext | null): void {
 		this.gl = gl;
 	}
 
@@ -39,6 +39,12 @@ class TextureRender implements IDrawable {
 	onDraw(): void {
 
 		if (!this.m_TextureLoaded) {
+			return;
+		}
+		if (!this.gl) {
+			return;
+		}
+		if (!this.program) {
 			return;
 		}
 
@@ -140,17 +146,19 @@ class TextureRender implements IDrawable {
 		];
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
 
-		let that = this;
 		vertices.forEach((vertex) => {
+			if (!this.program) {
+				return;
+			}
 			let vbo_array = [
 				{
 					buffer: Graphics.createVertexBuffer(gl, vertex.pos),
-					location: gl.getAttribLocation(that.program, 'position'),
+					location: gl.getAttribLocation(this.program, 'position'),
 					stride: 3
 				},
 				{
 					buffer: Graphics.createVertexBuffer(gl, vertex.texCoord),
-					location: gl.getAttribLocation(that.program, 'texCoord'),
+					location: gl.getAttribLocation(this.program, 'texCoord'),
 					stride: 2
 				},
 			];
@@ -167,7 +175,6 @@ class TextureRender implements IDrawable {
 	}
 
 	private async loadShader(): Promise<boolean> {
-
 		if (this.m_Processing) {
 			return false;
 		}
@@ -183,7 +190,9 @@ class TextureRender implements IDrawable {
 			console.log("fs code not found.");
 			return false;
 		}
-
+		if (!this.gl) {
+			return false;
+		}
 		this.m_ShaderProgram = new ShaderProgram(this.gl);
 		if (!this.m_ShaderProgram.compile(vs, fs)) {
 			console.log("shader compile failed.");
@@ -208,6 +217,9 @@ class TextureRender implements IDrawable {
 
 		let img = new Image();
 		img.onload = () => {
+			if (!this.gl) {
+				return;
+			}
 			let tex = Graphics.createTexture(this.gl, img);
 			if (!tex) {
 				console.log("texture is null.");
@@ -223,12 +235,12 @@ class TextureRender implements IDrawable {
 		return true;
 	}
 
-	private gl: WebGLRenderingContext;
-	private program: WebGLProgram;
-	private m_MainTexture: WebGLTexture;
+	private gl: WebGLRenderingContext | null = null;
+	private program: WebGLProgram | null = null;
+	private m_MainTexture: WebGLTexture | null = null;
 	private m_TextureLoaded: boolean = false;
 	private m_ShaderLoaded: boolean = false;
-	private m_ShaderProgram: ShaderProgram;
+	private m_ShaderProgram: ShaderProgram | null = null;
 
 	private m_Processing: boolean = false;
 }

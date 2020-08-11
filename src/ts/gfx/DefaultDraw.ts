@@ -1,15 +1,18 @@
 
 class DefaultDraw implements IDrawable {
 
-	getContext(): WebGLRenderingContext {
+	getContext(): WebGLRenderingContext | null {
 		return this.gl;
 	}
 
-	setContext(gl: WebGLRenderingContext): void {
+	setContext(gl: WebGLRenderingContext | null): void {
 		this.gl = gl;
 	}
 
 	onBeginDraw(): void {
+		if (!this.gl) {
+			return;
+		}
 		// クリア
 		this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		this.gl.clearDepth(1.0);
@@ -23,6 +26,5 @@ class DefaultDraw implements IDrawable {
 	onEndDraw(): void {
 	}
 
-	private gl: WebGLRenderingContext;
-
+	private gl: WebGLRenderingContext | null = null;
 }

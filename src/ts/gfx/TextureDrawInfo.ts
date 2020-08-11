@@ -1,7 +1,7 @@
 
 class TextureDrawInfo {
 
-	private _width: number;
+	private _width: number = 0;
 	public get width(): number {
 		return this._width;
 	}
@@ -9,7 +9,7 @@ class TextureDrawInfo {
 		this._width = v;
 	}
 
-	private _height: number;
+	private _height: number = 0;
 	public get height(): number {
 		return this._height;
 	}
@@ -17,7 +17,7 @@ class TextureDrawInfo {
 		this._height = v;
 	}
 
-	private _effectType: number;
+	private _effectType: number = 0;
 	public get effectType(): number {
 		return this._effectType;
 	}
@@ -25,7 +25,7 @@ class TextureDrawInfo {
 		this._effectType = v;
 	}
 
-	private _color: Float32Array;
+	private _color: Float32Array = new Float32Array();
 	public get color(): Float32Array {
 		return this._color;
 	}
@@ -33,7 +33,7 @@ class TextureDrawInfo {
 		this._color = v;
 	}
 
-	private _rotation: Float32Array;
+	private _rotation: Float32Array = new Float32Array();
 	public get rotation(): Float32Array {
 		return this._rotation;
 	}
@@ -41,7 +41,7 @@ class TextureDrawInfo {
 		this._rotation = v;
 	}
 
-	private _scale: Float32Array;
+	private _scale: Float32Array = new Float32Array();
 	public get scale(): Float32Array {
 		return this._scale;
 	}
@@ -49,7 +49,7 @@ class TextureDrawInfo {
 		this._scale = v;
 	}
 
-	private _vivid: Float32Array;
+	private _vivid: Float32Array = new Float32Array();
 	public get vivid(): Float32Array {
 		return this._vivid;
 	}
@@ -57,7 +57,7 @@ class TextureDrawInfo {
 		this._vivid = v;
 	}
 
-	private _polygonCount: number;
+	private _polygonCount: number = 0;
 	public get polygonCount(): number {
 		return this._polygonCount;
 	}

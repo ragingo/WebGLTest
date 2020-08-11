@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es2017",
+        //"declaration": true,
+        "experimentalDecorators": true,
+        "newLine": "CRLF",
+        "forceConsistentCasingInFileNames": true,
+        "pretty": true,
+        "removeComments": true,
+        "strict": true,
+        //"noUnusedLocals": true,
+        //"noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "outDir": "js",
+        "outFile": "./dist/main.js"
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ]
+}

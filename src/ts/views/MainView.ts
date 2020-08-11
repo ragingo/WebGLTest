@@ -145,12 +145,12 @@ class MainView extends ViewBase {
 		this.vivid.forEach(x => x.value = x.defaultValue);
 		this.polygonCount.value = this.polygonCount.defaultValue;
 
-		this.rotation.forEach(x => x.oninput.call(null));
-		this.scale.forEach(x => x.oninput.call(null));
-		this.color.forEach(x => x.oninput.call(null));
-		this.effectSelector.onchange.call(null);
-		this.vivid.forEach(x => x.oninput.call(null));
-		this.polygonCount.oninput.call(null);
+		this.rotation.forEach(x => x.dispatchEvent(new Event('input')));
+		this.scale.forEach(x => x.dispatchEvent(new Event('input')));
+		this.color.forEach(x => x.dispatchEvent(new Event('input')));
+		this.effectSelector.dispatchEvent(new Event('change'))
+		this.vivid.forEach(x => x.dispatchEvent(new Event('input')));
+		this.polygonCount.dispatchEvent(new Event('input'))
 	}
 
 	private onResetClick(sender: HTMLElement) {

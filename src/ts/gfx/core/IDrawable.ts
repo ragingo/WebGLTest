@@ -1,7 +1,7 @@
 
 interface IDrawable {
-	getContext(): WebGLRenderingContext;
-	setContext(gl: WebGLRenderingContext): void;
+	getContext(): WebGLRenderingContext | null;
+	setContext(gl: WebGLRenderingContext | null): void;
 	onBeginDraw(): void;
 	onDraw(): void;
 	onEndDraw(): void;

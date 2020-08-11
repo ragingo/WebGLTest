@@ -1,0 +1,24 @@
+{
+  "name": "webgltest",
+  "version": "1.0.0",
+  "description": "WebGLTest",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write 'src/**/*.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ragingo/WebGLTest.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ragingo/WebGLTest/issues"
+  },
+  "homepage": "https://github.com/ragingo/WebGLTest#readme",
+  "devDependencies": {
+    "prettier": "^2.0.5",
+    "typescript": "^4.0.1-rc"
+  }
+}

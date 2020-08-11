@@ -4,11 +4,11 @@ class SubTextureRender implements IDrawable {
 	constructor() {
 	}
 
-	getContext(): WebGLRenderingContext {
+	getContext(): WebGLRenderingContext | null {
 		return this.gl;
 	}
 
-	setContext(gl: WebGLRenderingContext): void {
+	setContext(gl: WebGLRenderingContext | null): void {
 		this.gl = gl;
 	}
 
@@ -21,6 +21,9 @@ class SubTextureRender implements IDrawable {
 
 	onDraw(): void {
 		this.m_Sprites.forEach(x => {
+			if (!this.gl) {
+				return;
+			}
 			x.draw(this.gl);
 		});
 	}
@@ -37,6 +40,9 @@ class SubTextureRender implements IDrawable {
 
 		let img = new Image();
 		img.onload = () => {
+			if (!this.gl) {
+				return;
+			}
 			let tex = Graphics.createTexture(this.gl, img);
 			if (!tex) {
 				console.log("texture is null.");
@@ -90,7 +96,7 @@ class SubTextureRender implements IDrawable {
 		return true;
 	}
 
-	private gl: WebGLRenderingContext;
+	private gl: WebGLRenderingContext | null = null;
 	private m_TextureLoaded: boolean = false;
 	private m_Processing: boolean = false;
 	private m_Sprites: Array<Sprite> = [];

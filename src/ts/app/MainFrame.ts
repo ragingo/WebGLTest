@@ -46,10 +46,10 @@ class MainFrame implements IAppFrame {
 		this.m_TextureRender.textureDrawInfo.vivid = this.m_View.getVividValue();
 		this.m_TextureRender.textureDrawInfo.polygonCount = this.m_View.getPolygonCountValue();
 
-		this.m_Gfx.render();
+		this.m_Gfx?.render();
 	}
 
 	private m_View: MainView;
-	private m_Gfx: Graphics;
+	private m_Gfx: Graphics | null = null;
 	private m_TextureRender: TextureRender;
 }
