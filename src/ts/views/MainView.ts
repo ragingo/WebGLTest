@@ -5,20 +5,21 @@ class ViewBase {
 }
 
 class MainView extends ViewBase {
-  reset: HTMLButtonElement;
-  fpsLabel: HTMLParagraphElement;
-  canvas: HTMLCanvasElement;
-  effectSelector: HTMLSelectElement;
-  color: HTMLInputElement[] = [];
-  colorLabels: HTMLLabelElement[] = [];
-  rotation: HTMLInputElement[] = [];
-  rotationLabels: HTMLLabelElement[] = [];
-  scale: HTMLInputElement[] = [];
-  scaleLabels: HTMLLabelElement[] = [];
-  vivid: HTMLInputElement[] = [];
-  vividLabels: HTMLLabelElement[] = [];
-  polygonCount: HTMLInputElement;
-  polygonCountLabel: HTMLLabelElement;
+  private reset: HTMLButtonElement;
+  private fpsLabel: HTMLParagraphElement;
+  private effectSelector: HTMLSelectElement;
+  private color: HTMLInputElement[] = [];
+  private colorLabels: HTMLLabelElement[] = [];
+  private rotation: HTMLInputElement[] = [];
+  private rotationLabels: HTMLLabelElement[] = [];
+  private scale: HTMLInputElement[] = [];
+  private scaleLabels: HTMLLabelElement[] = [];
+  private vivid: HTMLInputElement[] = [];
+  private vividLabels: HTMLLabelElement[] = [];
+  private polygonCount: HTMLInputElement;
+  private polygonCountLabel: HTMLLabelElement;
+
+  public canvas: HTMLCanvasElement;
 
   public setFpsLabel(value: string) {
     this.fpsLabel.innerText = value;
@@ -52,9 +53,7 @@ class MainView extends ViewBase {
     super();
 
     this.reset = this.getById('reset');
-    this.reset.onclick = () => {
-      this.onResetClick(this.reset);
-    };
+    this.reset.onclick = this.onResetClick;
 
     this.fpsLabel = this.getById('fps');
     this.canvas = this.getById('canvas');
@@ -129,9 +128,9 @@ class MainView extends ViewBase {
     this.polygonCount.dispatchEvent(new Event('input'));
   }
 
-  private onResetClick(_: HTMLElement) {
+  private onResetClick = () => {
     this.resetValues();
-  }
+  };
 
   private onEffectTypeChanged(sender: HTMLSelectElement) {
     const elems = Array.from(document.getElementsByClassName('vivid_params')).map((x) => x as HTMLElement);
@@ -143,19 +142,19 @@ class MainView extends ViewBase {
   }
 
   private onColorChanged(sender: HTMLInputElement, index: number) {
-    this.colorLabels[index].innerText = sender.value.toString();
+    this.colorLabels[index].innerText = sender.value;
   }
 
   private onRotationChanged(sender: HTMLInputElement, index: number) {
-    this.rotationLabels[index].innerText = sender.value.toString();
+    this.rotationLabels[index].innerText = sender.value;
   }
 
   private onScaleChanged(sender: HTMLInputElement, index: number) {
-    this.scaleLabels[index].innerText = sender.value.toString();
+    this.scaleLabels[index].innerText = sender.value;
   }
 
   private onVividChanged(sender: HTMLInputElement, index: number) {
-    this.vividLabels[index].innerText = sender.value.toString();
+    this.vividLabels[index].innerText = sender.value;
   }
 
   private onPolygonCountChanged(sender: HTMLInputElement) {
