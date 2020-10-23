@@ -1,17 +1,21 @@
+import { CameraRender as CameraRender } from '../gfx/CameraRender';
 import { Graphics } from '../gfx/core/Graphics';
-import { TextureRender } from '../gfx/TextureRender';
+import { DefaultDraw } from '../gfx/DefaultDraw';
+// import { TextureRender } from '../gfx/TextureRender';
 import { MainView } from '../views/MainView';
 import { IAppFrame } from './IAppFrame';
 
 export class MainFrame implements IAppFrame {
   private view: MainView;
-  private textureRender: TextureRender;
+  // private textureRender: TextureRender;
+  private cameraRender: CameraRender;
   private gfx: Graphics | null = null;
 
   constructor() {
     this.view = new MainView();
     this.view.resetValues();
-    this.textureRender = new TextureRender();
+    // this.textureRender = new TextureRender();
+    this.cameraRender = new CameraRender();
   }
 
   onFpsUpdate(fps: number) {
@@ -38,11 +42,13 @@ export class MainFrame implements IAppFrame {
     }
 
     this.gfx.pushRenderTarget(new DefaultDraw());
-    this.gfx.pushRenderTarget(this.textureRender);
+    // this.gfx.pushRenderTarget(this.textureRender);
+    this.gfx.pushRenderTarget(this.cameraRender);
   }
 
   onUpdate() {
-    const drawInfo = this.textureRender.textureDrawInfo;
+    // const drawInfo = this.textureRender.textureDrawInfo;
+    const drawInfo = this.cameraRender.textureDrawInfo;
     drawInfo.width = this.view.canvas.width;
     drawInfo.height = this.view.canvas.height;
     drawInfo.effectType = this.view.getEffectTypeValue();
