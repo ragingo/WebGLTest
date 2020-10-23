@@ -1,4 +1,9 @@
-class Sprite {
+import { Graphics } from "./Graphics";
+import { ShaderLoader } from "./ShaderLoader";
+import { ShaderProgram } from "./ShaderProgram";
+import { CropInfo, Coordinate } from "./types";
+
+export class Sprite {
   private gl: WebGLRenderingContext | null = null;
   private shaderProgram: ShaderProgram | null = null;
   private vertexShader: string | null = null;

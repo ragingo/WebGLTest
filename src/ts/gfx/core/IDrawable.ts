@@ -1,4 +1,4 @@
-interface IDrawable {
+export interface IDrawable {
   getContext(): WebGLRenderingContext | null;
   setContext(gl: WebGLRenderingContext | null): void;
   onBeginDraw(): void;

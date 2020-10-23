@@ -1,4 +1,9 @@
-class MainFrame implements IAppFrame {
+import { Graphics } from '../gfx/core/Graphics';
+import { TextureRender } from '../gfx/TextureRender';
+import { MainView } from '../views/MainView';
+import { IAppFrame } from './IAppFrame';
+
+export class MainFrame implements IAppFrame {
   private view: MainView;
   private textureRender: TextureRender;
   private gfx: Graphics | null = null;

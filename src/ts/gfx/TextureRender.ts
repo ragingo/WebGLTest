@@ -1,4 +1,10 @@
-class TextureRender implements IDrawable {
+import { Graphics } from "./core/Graphics";
+import { IDrawable } from "./core/IDrawable";
+import { ShaderLoader } from "./core/ShaderLoader";
+import { ShaderProgram } from "./core/ShaderProgram";
+import { TextureDrawInfo } from "./TextureDrawInfo";
+
+export class TextureRender implements IDrawable {
   private gl: WebGLRenderingContext | null = null;
   private texture: WebGLTexture | null = null;
   private textureLoaded = false;

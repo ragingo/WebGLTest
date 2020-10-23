@@ -1,10 +1,10 @@
-type ShaderLoadCompletedCallback = (vs: string, fs: string) => void;
+export type ShaderLoadCompletedCallback = (vs: string, fs: string) => void;
 
-class ShaderLoadResult {
+export class ShaderLoadResult {
   constructor(public success: boolean, public vs: string = '', public fs: string = '') {}
 }
 
-class ShaderLoader {
+export class ShaderLoader {
   public static load(vs_path: string, fs_path: string, callback: ShaderLoadCompletedCallback) {
     ShaderLoader.loadAsync(vs_path, fs_path).then((r) => {
       if (r.success) {

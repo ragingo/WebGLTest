@@ -1,4 +1,9 @@
-class SubTextureRender implements IDrawable {
+import { Graphics } from "./core/Graphics";
+import { IDrawable } from "./core/IDrawable";
+import { Sprite } from "./core/Sprite";
+import { CropInfo } from "./core/types";
+
+export class SubTextureRender implements IDrawable {
   private gl: WebGLRenderingContext | null = null;
   private textureLoaded = false;
   private isProcessing = false;

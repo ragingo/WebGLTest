@@ -1,4 +1,6 @@
-class DefaultDraw implements IDrawable {
+import { IDrawable } from "./core/IDrawable";
+
+export class DefaultDraw implements IDrawable {
   getContext() {
     return this.gl;
   }

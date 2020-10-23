@@ -1,4 +1,4 @@
-class ShaderProgram {
+export class ShaderProgram {
   #program: WebGLProgram | null = null;
   get program() {
     return this.#program;

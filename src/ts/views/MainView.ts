@@ -4,7 +4,7 @@ class ViewBase {
   }
 }
 
-class MainView extends ViewBase {
+export class MainView extends ViewBase {
   private reset: HTMLButtonElement;
   private fpsLabel: HTMLParagraphElement;
   private effectSelector: HTMLSelectElement;

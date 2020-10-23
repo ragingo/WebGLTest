@@ -1,4 +1,6 @@
-class Graphics {
+import { IDrawable } from "./IDrawable";
+
+export class Graphics {
   private drawTargets: IDrawable[] = [];
 
   constructor(private gl: WebGLRenderingContext) {}

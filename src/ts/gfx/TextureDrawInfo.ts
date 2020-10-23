@@ -1,4 +1,4 @@
-class TextureDrawInfo {
+export class TextureDrawInfo {
   constructor(
     public width = 0,
     public height = 0,

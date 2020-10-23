@@ -1,4 +1,4 @@
-class Application {
+export class Application {
   private static s_AppFrames: IAppFrame[] = [];
 
   public static registerAppFrame(frame: IAppFrame) {
