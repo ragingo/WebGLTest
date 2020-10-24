@@ -6,11 +6,11 @@ import { TextureDrawInfo } from "./TextureDrawInfo";
 
 export class TextureRender implements IDrawable {
   private gl: WebGLRenderingContext | null = null;
-  private texture: WebGLTexture | null = null;
-  private textureLoaded = false;
   private isShaderLoaded = false;
   private shaderProgram: ShaderProgram | null = null;
   private isProcessing = false;
+
+  public texture: WebGLTexture | null = null;
 
   constructor(public readonly textureDrawInfo: TextureDrawInfo = new TextureDrawInfo()) {}
 
@@ -31,19 +31,16 @@ export class TextureRender implements IDrawable {
         }
       });
     }
-    if (!this.textureLoaded) {
-      this.loadTexture();
-    }
   }
 
   onDraw() {
-    if (!this.textureLoaded) {
-      return;
-    }
     if (!this.gl) {
       return;
     }
     if (!this.shaderProgram?.program) {
+      return;
+    }
+    if (!this.texture) {
       return;
     }
 
@@ -207,32 +204,6 @@ export class TextureRender implements IDrawable {
       console.log('webgl program is null.');
       return false;
     }
-
-    return true;
-  }
-
-  private async loadTexture(): Promise<boolean> {
-    if (this.isProcessing) {
-      return false;
-    }
-    this.isProcessing = true;
-
-    let img = new Image();
-    img.onload = () => {
-      if (!this.gl) {
-        return;
-      }
-      let tex = Graphics.createTexture(this.gl, img);
-      if (!tex) {
-        console.log('texture is null.');
-        return;
-      }
-      this.texture = tex;
-      this.textureLoaded = true;
-      this.isProcessing = false;
-      console.log('texture loaded.');
-    };
-    img.src = './res/Lenna.png';
 
     return true;
   }

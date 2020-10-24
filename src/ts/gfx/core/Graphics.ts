@@ -3,7 +3,7 @@ import { IDrawable } from "./IDrawable";
 export class Graphics {
   private drawTargets: IDrawable[] = [];
 
-  constructor(private gl: WebGLRenderingContext) {}
+  constructor(public readonly gl: WebGLRenderingContext) {}
 
   public init(width: number, height: number) {
     this.gl.viewport(0, 0, width, height);

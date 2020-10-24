@@ -1,3 +1,5 @@
+import { IAppFrame } from "./IAppFrame";
+
 export class Application {
   private static s_AppFrames: IAppFrame[] = [];
 
