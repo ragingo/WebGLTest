@@ -53,30 +53,44 @@ export class Camera {
 
   public async open() {
     const constrains: MediaStreamConstraints = {};
+
     if (this.cameraInit.video.allow) {
+      const status = await navigator.permissions.query({ name: 'camera' });
+      if (status.state !== 'granted') {
+        return;
+      }
+
       constrains.video = true;
-    } else if (this.cameraInit.video.input) {
-      constrains.video = {
-        width: this.cameraInit.video.input.width,
-        height: this.cameraInit.video.input.height,
-        frameRate: this.cameraInit.video.input.frameRate,
-      };
+
+      if (this.cameraInit.video.input) {
+        constrains.video = {
+          width: this.cameraInit.video.input.width,
+          height: this.cameraInit.video.input.height,
+          frameRate: this.cameraInit.video.input.frameRate,
+        };
+      }
     }
+
     if (this.cameraInit.audio.allow) {
-      constrains.audio = true;
+      const status = await navigator.permissions.query({ name: 'microphone' });
+      if (status.state === 'granted') {
+        constrains.audio = true;
+      }
     }
 
     this.stream = await navigator.mediaDevices.getUserMedia(constrains);
+
+    // 音を鳴らす
+    if (constrains.audio) {
+      const audioCtx = new AudioContext();
+      const audioSrc = audioCtx.createMediaStreamSource(this.stream);
+      audioSrc.connect(audioCtx.destination);
+    }
 
     const tracks = this.stream.getVideoTracks();
 
     // @ts-ignore
     this.videoTrackReader = new VideoTrackReader(tracks[0]);
-
-    // 音を鳴らす
-    const audioCtx = new AudioContext();
-    const audioSrc = audioCtx.createMediaStreamSource(this.stream);
-    audioSrc.connect(audioCtx.destination);
 
     // @ts-ignore
     this.videoDecoder = new VideoDecoder({
