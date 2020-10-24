@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "UMD",
-    "target": "es2017",
+    "target": "ES2019",
     //"declaration": true,
     "experimentalDecorators": true,
     "newLine": "CRLF",

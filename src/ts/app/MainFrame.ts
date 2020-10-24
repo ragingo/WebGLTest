@@ -1,6 +1,7 @@
 import { Graphics } from '../gfx/core/Graphics';
 import { DefaultDraw } from '../gfx/DefaultDraw';
 import { TextureRender } from '../gfx/TextureRender';
+import { Camera } from '../media/Camera';
 import { MainView } from '../views/MainView';
 import { IAppFrame } from './IAppFrame';
 
@@ -8,6 +9,7 @@ export class MainFrame implements IAppFrame {
   private view: MainView;
   private textureRender: TextureRender;
   private gfx: Graphics | null = null;
+  private camera = new Camera({ video: true, audio: false });
 
   constructor() {
     this.view = new MainView();
@@ -45,7 +47,7 @@ export class MainFrame implements IAppFrame {
     // });
 
     // TODO: error handling
-    this.prepareCamera();
+    this.camera.open();
   }
 
   onUpdate() {
@@ -98,57 +100,16 @@ export class MainFrame implements IAppFrame {
     });
   }
 
-  private videoTrackReader: any = {};
-  private videoEncoder: any = {};
-  private videoDecoder: any = {};
-  private frameQueue: any[] = [];
-
-  private async prepareCamera() {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    const tracks = stream.getVideoTracks();
-
-    // @ts-ignore
-    this.videoTrackReader = new VideoTrackReader(tracks[0]);
-
-    // @ts-ignore
-    this.videoDecoder = new VideoDecoder({
-      output: async (frame: any) => {
-        this.frameQueue.push(frame);
-      },
-      error: () => {}
-    });
-    this.videoDecoder.configure({
-      codec: 'vp8',
-      width: 512,
-      height: 512,
-    });
-
-    // @ts-ignore
-    this.videoEncoder = new VideoEncoder({
-      output: (chunk: any) => {
-        this.videoDecoder.decode(chunk);
-      },
-      error: () => {}
-    });
-
-    await this.videoEncoder.configure({
-      codec: 'vp8',
-      width: 640,
-      height: 480,
-      framerate: 30
-    });
-
-    this.videoTrackReader.start((frame: any) => {
-      this.videoEncoder.encode(frame);
-    });
-  }
-
   private async loadTextureFromCamera() {
-    if (!this.gfx || this.frameQueue.length === 0) {
+    if (!this.gfx) {
       return null;
     }
 
-    const frame = this.frameQueue.pop();
+    const frame = this.camera.getDecodedFrame();
+    if (!frame) {
+      return null;
+    }
+
     // https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagebitmapoptions
     const bmp = await frame.createImageBitmap({
       resizeWidth: 512,
