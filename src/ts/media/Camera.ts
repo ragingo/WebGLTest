@@ -73,6 +73,11 @@ export class Camera {
     // @ts-ignore
     this.videoTrackReader = new VideoTrackReader(tracks[0]);
 
+    // 音を鳴らす
+    const audioCtx = new AudioContext();
+    const audioSrc = audioCtx.createMediaStreamSource(this.stream);
+    audioSrc.connect(audioCtx.destination);
+
     // @ts-ignore
     this.videoDecoder = new VideoDecoder({
       output: async (frame: any) => {
