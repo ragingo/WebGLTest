@@ -4,6 +4,9 @@ import { ShaderLoader } from "./core/ShaderLoader";
 import { ShaderProgram } from "./core/ShaderProgram";
 import { TextureDrawInfo } from "./TextureDrawInfo";
 
+/**
+ * @deprecated
+ */
 export class TextureRender implements IDrawable {
   private gl: WebGLRenderingContext | null = null;
   private isShaderLoaded = false;

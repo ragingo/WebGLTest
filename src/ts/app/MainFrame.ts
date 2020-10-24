@@ -1,13 +1,13 @@
 import { Graphics } from '../gfx/core/Graphics';
+import { Sprite } from '../gfx/core/Sprite';
 import { DefaultDraw } from '../gfx/DefaultDraw';
-import { TextureRender } from '../gfx/TextureRender';
 import { Camera } from '../media/Camera';
 import { MainView } from '../views/MainView';
 import { IAppFrame } from './IAppFrame';
 
 export class MainFrame implements IAppFrame {
   private view: MainView;
-  private textureRender: TextureRender;
+  private defaultDraw = new DefaultDraw();
   private gfx: Graphics | null = null;
   private camera = new Camera({
     video: {
@@ -30,7 +30,6 @@ export class MainFrame implements IAppFrame {
   constructor() {
     this.view = new MainView();
     this.view.resetValues();
-    this.textureRender = new TextureRender();
   }
 
   onFpsUpdate(fps: number) {
@@ -56,11 +55,27 @@ export class MainFrame implements IAppFrame {
       return;
     }
 
-    this.gfx.pushRenderTarget(new DefaultDraw());
-    this.gfx.pushRenderTarget(this.textureRender);
-    // this.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
-    //   this.textureRender.texture = tex;
-    // });
+    this.gfx.pushRenderTarget(this.defaultDraw);
+
+    const backSprite = new Sprite();
+    backSprite.initialize();
+    backSprite.left = 0;
+    backSprite.top = 0;
+    backSprite.width = 512;
+    backSprite.height = 512;
+    this.defaultDraw.sprites.push(backSprite);
+
+    const frontSprite = new Sprite();
+    frontSprite.initialize();
+    frontSprite.left = 512 / 4;
+    frontSprite.top = 512 / 4;
+    frontSprite.width = 512 / 2;
+    frontSprite.height = 512 / 2;
+    this.defaultDraw.sprites.push(frontSprite);
+
+    this.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
+      backSprite.texture = tex;
+    });
 
     // TODO: error handling
     this.camera.open();
@@ -71,27 +86,25 @@ export class MainFrame implements IAppFrame {
       return;
     }
 
-    const drawInfo = this.textureRender.textureDrawInfo;
-    drawInfo.width = this.view.canvas.width;
-    drawInfo.height = this.view.canvas.height;
-    drawInfo.effectType = this.view.getEffectTypeValue();
-    drawInfo.color = this.view.getColorValue();
-    drawInfo.rotation = this.view.getRotationValue();
-    drawInfo.scale = this.view.getScaleValue();
-    drawInfo.vivid = this.view.getVividValue();
-    drawInfo.polygonCount = this.view.getPolygonCountValue();
-
     this.loadTextureFromCamera().then((tex) => {
       if (!tex) {
         return;
       }
-      this.textureRender.texture = tex;
+      this.defaultDraw.sprites[1].texture = tex;
+    });
+
+    this.defaultDraw.sprites.forEach((sprite) => {
+      sprite.color = this.view.getColorValue();
+      sprite.rotate = this.view.getRotationValue();
+      sprite.scale = this.view.getScaleValue();
+      sprite.vividParams = this.view.getVividValue();
+      sprite.effectType = this.view.getEffectTypeValue();
+      sprite.showBorder = true;
     });
 
     this.gfx.render();
   }
 
-  // @ts-expect-error
   private loadTextureFromImageFile(src: string) {
     return new Promise<WebGLTexture | null>((resolve) => {
       let img = new Image();

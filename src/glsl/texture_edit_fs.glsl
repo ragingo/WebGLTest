@@ -1,11 +1,23 @@
 precision mediump float;
 
 uniform sampler2D uSampler;
+uniform int       uShowBorder;
 uniform int       effectType;
 uniform vec2      textureSize;
 uniform vec4      editColor;
 uniform vec2      vividParams;
 varying vec2      vTextureCoord;
+
+bool isBorder(vec2 v) {
+	if (v.x <= (2.0 / textureSize.x) ||
+		v.x >= ((textureSize.x-2.0) / textureSize.x) ||
+		v.y <= (2.0 / textureSize.y) ||
+		v.y >= ((textureSize.y-2.0) / textureSize.y)
+	   ) {
+		return true;
+	}
+	return false;
+}
 
 // 外部指定の色を掛ける
 vec4 apply_edit_color(vec4 color) {
@@ -229,79 +241,84 @@ void main() {
 	color *= apply_edit_color(color);
 
 	if (effectType == 0) {
-		gl_FragColor = color;
+		// 何もしない
 	}
 
 	if (effectType == 1) {
-		gl_FragColor = grayscale(color);
+		color = grayscale(color);
 	}
 
 	if (effectType == 2) {
-		gl_FragColor = binarize(color, 0.1);
+		color = binarize(color, 0.1);
 	}
 
 	if (effectType == 3) {
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
-		gl_FragColor = laplacian4(pix);
+		color = laplacian4(pix);
 	}
 
 	if (effectType == 4) {
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
-		gl_FragColor = laplacian8(pix);
+		color = laplacian8(pix);
 	}
 
 	if (effectType == 5) {
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
-		gl_FragColor = roberts(pix);
+		color = roberts(pix);
 	}
 
 	if (effectType == 6) {
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
-		gl_FragColor = prewitt(pix);
+		color = prewitt(pix);
 	}
 
 	if (effectType == 7) {
-		gl_FragColor = reverse(color);
+		color = reverse(color);
 	}
 
 	if (effectType == 8) {
-		gl_FragColor = convert_colordepth(color, 8);
+		color = convert_colordepth(color, 8);
 	}
 
 	if (effectType == 9) {
-		gl_FragColor = convert_colordepth(color, 15);
+		color = convert_colordepth(color, 15);
 	}
 
 	if (effectType == 10) {
-		gl_FragColor = convert_colordepth(color, 16);
+		color = convert_colordepth(color, 16);
 	}
 
 	if (effectType == 11) {
-		gl_FragColor = convert_colordepth(color, 24);
+		color = convert_colordepth(color, 24);
 	}
 
 	if (effectType == 12) {
-		gl_FragColor = convert_colordepth(color, 32);
+		color = convert_colordepth(color, 32);
 	}
 
 	if (effectType == 13) {
-		gl_FragColor = circle(color);
+		color = circle(color);
 	}
 
 	if (effectType == 14) {
-		gl_FragColor = sphere(color);
+		color = sphere(color);
 	}
 
 	if (effectType == 15) {
-		gl_FragColor = sine_wave(color);
+		color = sine_wave(color);
 	}
 
 	if (effectType == 16) {
-		gl_FragColor = vivid(color, vividParams.x, vividParams.y);
+		color = vivid(color, vividParams.x, vividParams.y);
 	}
 
+	if (uShowBorder == 1 && isBorder(vTextureCoord)) {
+		color = vec4(0.0, 1.0, 0.0, 1.0);
+	}
+
+	gl_FragColor = color;
 }

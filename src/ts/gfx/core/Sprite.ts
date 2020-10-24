@@ -8,8 +8,6 @@ export class Sprite {
   private shaderProgram: ShaderProgram | null = null;
   private vertexShader: string | null = null;
   private fragmentShader: string | null = null;
-
-  public originalImage: HTMLImageElement | null = null;
   public texture: WebGLTexture | null = null;
 
   private isShaderLoaded() {
@@ -22,14 +20,17 @@ export class Sprite {
     public width = 0,
     public height = 0,
     public crop = new CropInfo(),
-    public scaleX = 1,
-    public scaleY = 1,
+    public scale: { x: number; y: number; z: number; } = { x: 1, y: 1, z: 1 },
+    public rotate: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 },
+    public color: { r: number; g: number; b: number; a: number; } = { r: 255, g: 255, b: 255, a: 255 },
+    public vividParams: { k1: number; k2: number } = { k1: 1, k2: 1 },
+    public effectType = 0,
     public sliceBorder = [0, 0, 0, 0],
-    public showBorder = false
+    public showBorder = false,
   ) {}
 
   public initialize() {
-    ShaderLoader.load('./glsl/default_vs.glsl', './glsl/default_fs.glsl', (vs, fs) => {
+    ShaderLoader.load('./glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl', (vs, fs) => {
       this.vertexShader = vs;
       this.fragmentShader = fs;
     });
@@ -71,18 +72,8 @@ export class Sprite {
       return;
     }
 
-    let tex_w = 0;
-    let tex_h = 0;
-    if (this.originalImage) {
-      tex_w = this.originalImage.naturalWidth;
-      tex_h = this.originalImage.naturalHeight;
-    }
-    if (this.width == 0) {
-      this.width = tex_w;
-    }
-    if (this.height == 0) {
-      this.height = tex_h;
-    }
+    const tex_w = this.width;
+    const tex_h = this.height;
     if (this.crop.width == 0) {
       this.crop.width = tex_w;
     }
@@ -108,13 +99,38 @@ export class Sprite {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-      gl.uniform1i(gl.getUniformLocation(program, 'uSampler'), 0);
-      gl.uniform1i(gl.getUniformLocation(program, 'uShowBorder'), this.showBorder ? 1 : 0);
-      {
-        const loc = gl.getUniformLocation(program, 'uTextureSize');
-        if (loc) {
-          gl.uniform2fv(loc, [tex_w, tex_h]);
-        }
+      const uniformLocation = {
+        scale: gl.getUniformLocation(program, 'scale'),
+        rotation: gl.getUniformLocation(program, 'rotation'),
+        sampler: gl.getUniformLocation(program, 'uSampler'),
+        effectType: gl.getUniformLocation(program, 'effectType'),
+        textureSize: gl.getUniformLocation(program, 'textureSize'),
+        editColor: gl.getUniformLocation(program, 'editColor'),
+        vividParams: gl.getUniformLocation(program, 'vividParams'),
+        showBorder: gl.getUniformLocation(program, 'uShowBorder'),
+      };
+
+      // テクスチャ登録
+      gl.uniform1i(uniformLocation.sampler, 0);
+
+      if (uniformLocation.scale) {
+        gl.uniform3fv(uniformLocation.scale, new Float32Array([this.scale.x, this.scale.y, this.scale.z]));
+      }
+      if (uniformLocation.rotation) {
+        gl.uniform3fv(uniformLocation.rotation, new Float32Array([this.rotate.x, this.rotate.y, this.rotate.z]));
+      }
+      if (uniformLocation.textureSize) {
+        gl.uniform2fv(uniformLocation.textureSize, [tex_w, tex_h]);
+      }
+      if (uniformLocation.editColor) {
+        gl.uniform4fv(uniformLocation.editColor, new Float32Array([this.color.r, this.color.g, this.color.b, this.color.a]));
+      }
+      if (uniformLocation.vividParams) {
+        gl.uniform2fv(uniformLocation.vividParams, new Float32Array([this.vividParams.k1, this.vividParams.k2]));
+      }
+      gl.uniform1i(uniformLocation.effectType, this.effectType);
+      if (uniformLocation.showBorder) {
+        gl.uniform1i(uniformLocation.showBorder, this.showBorder ? 1 : 0);
       }
     }
 
@@ -127,8 +143,8 @@ export class Sprite {
       const right_w = this.sliceBorder[2];
       const bottom_h = this.sliceBorder[3];
 
-      const scaled_w = this.width * this.scaleX;
-      const scaled_h = this.height * this.scaleY;
+      const scaled_w = this.width * this.scale.x;
+      const scaled_h = this.height * this.scale.y;
       const pos_lb_l = this.left;
       const pos_tb_t = this.top;
       const pos_cb_l = pos_lb_l + left_w;

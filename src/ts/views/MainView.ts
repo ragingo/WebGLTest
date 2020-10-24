@@ -1,10 +1,8 @@
-class ViewBase {
-  public getById<T extends HTMLElement>(id: string): T {
-    return document.getElementById(id) as T;
-  }
+const getById = <T extends HTMLElement>(id: string): T => {
+  return document.getElementById(id) as T;
 }
 
-export class MainView extends ViewBase {
+export class MainView {
   private reset: HTMLButtonElement;
   private fpsLabel: HTMLParagraphElement;
   private effectSelector: HTMLSelectElement;
@@ -16,8 +14,8 @@ export class MainView extends ViewBase {
   private scaleLabels: HTMLLabelElement[] = [];
   private vivid: HTMLInputElement[] = [];
   private vividLabels: HTMLLabelElement[] = [];
-  private polygonCount: HTMLInputElement;
-  private polygonCountLabel: HTMLLabelElement;
+  // private polygonCount: HTMLInputElement;
+  // private polygonCountLabel: HTMLLabelElement;
 
   public canvas: HTMLCanvasElement;
 
@@ -26,7 +24,13 @@ export class MainView extends ViewBase {
   }
 
   public getColorValue() {
-    return new Float32Array(this.color.map((x) => x.valueAsNumber));
+    const color = Array.from(this.color.map((x) => x.valueAsNumber));
+    return {
+      r: color[0],
+      g: color[1],
+      b: color[2],
+      a: color[3],
+    };
   }
 
   public getEffectTypeValue() {
@@ -34,82 +38,94 @@ export class MainView extends ViewBase {
   }
 
   public getRotationValue() {
-    return new Float32Array(this.rotation.map((x) => x.valueAsNumber));
+    const rotation = Array.from(this.rotation.map((x) => x.valueAsNumber));
+    return {
+      x: rotation[0],
+      y: rotation[1],
+      z: rotation[2],
+    };
   }
 
   public getScaleValue() {
-    return new Float32Array(this.scale.map((x) => x.valueAsNumber));
+    const scale = Array.from(this.scale.map((x) => x.valueAsNumber));
+    return {
+      x: scale[0],
+      y: scale[1],
+      z: scale[2],
+    };
   }
 
   public getVividValue() {
-    return new Float32Array(this.vivid.map((x) => x.valueAsNumber));
+    const vivid = Array.from(this.vivid.map((x) => x.valueAsNumber));
+    return {
+      k1: vivid[0],
+      k2: vivid[1],
+    };
   }
 
-  public getPolygonCountValue() {
-    return this.polygonCount.valueAsNumber;
-  }
+  // public getPolygonCountValue() {
+  //   return this.polygonCount.valueAsNumber;
+  // }
 
   constructor() {
-    super();
-
-    this.reset = this.getById('reset');
+    this.reset = getById('reset');
     this.reset.onclick = this.onResetClick;
 
-    this.fpsLabel = this.getById('fps');
-    this.canvas = this.getById('canvas');
+    this.fpsLabel = getById('fps');
+    this.canvas = getById('canvas');
 
-    this.effectSelector = this.getById('effectSelector');
+    this.effectSelector = getById('effectSelector');
     this.effectSelector.onchange = () => {
       this.onEffectTypeChanged(this.effectSelector);
     };
 
     this.color = [
-      this.getById('slider_color_r'),
-      this.getById('slider_color_g'),
-      this.getById('slider_color_b'),
-      this.getById('slider_color_a')
+      getById('slider_color_r'),
+      getById('slider_color_g'),
+      getById('slider_color_b'),
+      getById('slider_color_a')
     ];
     this.colorLabels = [
-      this.getById('label_color_r_value'),
-      this.getById('label_color_g_value'),
-      this.getById('label_color_b_value'),
-      this.getById('label_color_a_value')
+      getById('label_color_r_value'),
+      getById('label_color_g_value'),
+      getById('label_color_b_value'),
+      getById('label_color_a_value')
     ];
     this.color.forEach((x, i) => {
       x.oninput = () => this.onColorChanged(x, i);
     });
 
     this.rotation = [
-      this.getById('slider_rotation_x'),
-      this.getById('slider_rotation_y'),
-      this.getById('slider_rotation_z')
+      getById('slider_rotation_x'),
+      getById('slider_rotation_y'),
+      getById('slider_rotation_z')
     ];
     this.rotationLabels = [
-      this.getById('label_rotation_x'),
-      this.getById('label_rotation_y'),
-      this.getById('label_rotation_z')
+      getById('label_rotation_x'),
+      getById('label_rotation_y'),
+      getById('label_rotation_z')
     ];
     this.rotation.forEach((x, i) => {
       x.oninput = () => this.onRotationChanged(x, i);
     });
 
-    this.scale = [this.getById('slider_scale_x'), this.getById('slider_scale_y'), this.getById('slider_scale_z')];
-    this.scaleLabels = [this.getById('label_scale_x'), this.getById('label_scale_y'), this.getById('label_scale_z')];
+    this.scale = [getById('slider_scale_x'), getById('slider_scale_y'), getById('slider_scale_z')];
+    this.scaleLabels = [getById('label_scale_x'), getById('label_scale_y'), getById('label_scale_z')];
     this.scale.forEach((x, i) => {
       x.oninput = () => this.onScaleChanged(x, i);
     });
 
-    this.vivid = [this.getById('slider_vivid_k1'), this.getById('slider_vivid_k2')];
-    this.vividLabels = [this.getById('label_vivid_k1_value'), this.getById('label_vivid_k2_value')];
+    this.vivid = [getById('slider_vivid_k1'), getById('slider_vivid_k2')];
+    this.vividLabels = [getById('label_vivid_k1_value'), getById('label_vivid_k2_value')];
     this.vivid.forEach((x, i) => {
       x.oninput = () => this.onVividChanged(x, i);
     });
 
-    this.polygonCount = this.getById('slider_polygon');
-    this.polygonCount.oninput = () => {
-      this.onPolygonCountChanged(this.polygonCount);
-    };
-    this.polygonCountLabel = this.getById('label_polygon');
+    // this.polygonCount = getById('slider_polygon');
+    // this.polygonCount.oninput = () => {
+    //   this.onPolygonCountChanged(this.polygonCount);
+    // };
+    // this.polygonCountLabel = getById('label_polygon');
   }
 
   public resetValues() {
@@ -118,14 +134,14 @@ export class MainView extends ViewBase {
     this.color.forEach((x) => (x.value = x.defaultValue));
     this.effectSelector.value = '0';
     this.vivid.forEach((x) => (x.value = x.defaultValue));
-    this.polygonCount.value = this.polygonCount.defaultValue;
+    // this.polygonCount.value = this.polygonCount.defaultValue;
 
     this.rotation.forEach((x) => x.dispatchEvent(new Event('input')));
     this.scale.forEach((x) => x.dispatchEvent(new Event('input')));
     this.color.forEach((x) => x.dispatchEvent(new Event('input')));
     this.effectSelector.dispatchEvent(new Event('change'));
     this.vivid.forEach((x) => x.dispatchEvent(new Event('input')));
-    this.polygonCount.dispatchEvent(new Event('input'));
+    // this.polygonCount.dispatchEvent(new Event('input'));
   }
 
   private onResetClick = () => {
@@ -157,7 +173,7 @@ export class MainView extends ViewBase {
     this.vividLabels[index].innerText = sender.value;
   }
 
-  private onPolygonCountChanged(sender: HTMLInputElement) {
-    this.polygonCountLabel.innerText = sender.value;
-  }
+  // private onPolygonCountChanged(sender: HTMLInputElement) {
+  //   this.polygonCountLabel.innerText = sender.value;
+  // }
 }

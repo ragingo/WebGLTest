@@ -1,6 +1,9 @@
 import { IDrawable } from "./core/IDrawable";
+import { Sprite } from "./core/Sprite";
 
 export class DefaultDraw implements IDrawable {
+  public readonly sprites: Sprite[] = [];
+
   getContext() {
     return this.gl;
   }
@@ -19,7 +22,14 @@ export class DefaultDraw implements IDrawable {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
   }
 
-  onDraw() {}
+  onDraw() {
+    this.sprites.forEach((sprite) => {
+      if (!this.gl) {
+        return;
+      }
+      sprite.draw(this.gl);
+    })
+  }
 
   onEndDraw() {}
 
