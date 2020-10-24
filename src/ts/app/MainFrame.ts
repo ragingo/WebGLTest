@@ -11,11 +11,20 @@ export class MainFrame implements IAppFrame {
   private gfx: Graphics | null = null;
   private camera = new Camera({
     video: {
-      frameRate: 30,
-      width: 640,
-      height: 480
+      allow: true,
+      input: {
+        frameRate: 30,
+        width: 640,
+        height: 480
+      },
+      output: {
+        width: 512,
+        height: 512
+      }
     },
-    audio: false
+    audio: {
+      allow: true
+    }
   });
 
   constructor() {
@@ -112,16 +121,10 @@ export class MainFrame implements IAppFrame {
       return null;
     }
 
-    const frame = this.camera.consumeDecodedFrame();
-    if (!frame) {
+    const bmp = await this.camera.consumeDecodedFrameAsImageBitmap();
+    if (!bmp) {
       return null;
     }
-
-    // https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagebitmapoptions
-    const bmp = await frame.createImageBitmap({
-      resizeWidth: 512,
-      resizeHeight: 512
-    }) as ImageBitmap;
 
     const tex = Graphics.createTexture(this.gfx.gl, bmp);
     if (!tex) {
