@@ -9,7 +9,14 @@ export class MainFrame implements IAppFrame {
   private view: MainView;
   private textureRender: TextureRender;
   private gfx: Graphics | null = null;
-  private camera = new Camera({ video: true, audio: false });
+  private camera = new Camera({
+    video: {
+      frameRate: 30,
+      width: 640,
+      height: 480
+    },
+    audio: false
+  });
 
   constructor() {
     this.view = new MainView();
@@ -105,7 +112,7 @@ export class MainFrame implements IAppFrame {
       return null;
     }
 
-    const frame = this.camera.getDecodedFrame();
+    const frame = this.camera.consumeDecodedFrame();
     if (!frame) {
       return null;
     }
