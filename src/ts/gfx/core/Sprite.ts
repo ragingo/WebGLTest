@@ -19,6 +19,7 @@ export class Sprite {
     public top = 0,
     public width = 0,
     public height = 0,
+    public depth = 0,
     public crop = new CropInfo(),
     public scale: { x: number; y: number; z: number; } = { x: 1, y: 1, z: 1 },
     public rotate: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 },
@@ -213,16 +214,16 @@ export class Sprite {
         ...[
           world_pos.left,
           world_pos.bottom,
-          0,
+          this.depth,
           world_pos.right,
           world_pos.bottom,
-          0,
+          this.depth,
           world_pos.left,
           world_pos.top,
-          0,
+          this.depth,
           world_pos.right,
           world_pos.top,
-          0
+          this.depth
         ]
       );
     }

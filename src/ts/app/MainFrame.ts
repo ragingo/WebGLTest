@@ -63,6 +63,7 @@ export class MainFrame implements IAppFrame {
     backSprite.top = 0;
     backSprite.width = 512;
     backSprite.height = 512;
+    backSprite.depth = 0.0001;
     this.defaultDraw.sprites.push(backSprite);
 
     const frontSprite = new Sprite();
@@ -71,6 +72,7 @@ export class MainFrame implements IAppFrame {
     frontSprite.top = 512 / 4;
     frontSprite.width = 512 / 2;
     frontSprite.height = 512 / 2;
+    frontSprite.depth = 0;
     this.defaultDraw.sprites.push(frontSprite);
 
     this.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
