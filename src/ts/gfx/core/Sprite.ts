@@ -26,6 +26,8 @@ export class Sprite {
   }
 
   constructor(
+    private readonly canvasWidth: number,
+    private readonly canvasHeight: number,
     public left = 0,
     public top = 0,
     public width = 0,
@@ -85,13 +87,11 @@ export class Sprite {
       return;
     }
 
-    const tex_w = this.width;
-    const tex_h = this.height;
     if (this.crop.width == 0) {
-      this.crop.width = tex_w;
+      this.crop.width = this.width;
     }
     if (this.crop.height == 0) {
-      this.crop.height = tex_h;
+      this.crop.height = this.height;
     }
     if (this.sliceBorder.length != 4) {
       return;
@@ -127,7 +127,7 @@ export class Sprite {
         gl.uniform3fv(uniformLocation.rotation, new Float32Array([this.rotate.x, this.rotate.y, this.rotate.z]));
       }
       if (uniformLocation.textureSize) {
-        gl.uniform2fv(uniformLocation.textureSize, [tex_w, tex_h]);
+        gl.uniform2fv(uniformLocation.textureSize, [this.width, this.height]);
       }
       if (uniformLocation.editColor) {
         gl.uniform4fv(uniformLocation.editColor, new Float32Array([this.color.r, this.color.g, this.color.b, this.color.a]));
@@ -200,9 +200,6 @@ export class Sprite {
       );
     }
 
-    const canvas_w = 512.0;
-    const canvas_h = 512.0;
-
     // 頂点バッファ更新
     const vertices_pos: number[] = [];
     const vertices_uv: number[] = [];
@@ -212,10 +209,10 @@ export class Sprite {
 
       const world_pos = this.screenToWorld(
         new Coordinate(
-          screen_pos.left / canvas_w,
-          screen_pos.top / canvas_h,
-          (screen_pos.left + screen_pos.width) / canvas_w,
-          (screen_pos.top + screen_pos.height) / canvas_h
+          screen_pos.left / this.canvasWidth,
+          screen_pos.top / this.canvasHeight,
+          (screen_pos.left + screen_pos.width) / this.canvasWidth,
+          (screen_pos.top + screen_pos.height) / this.canvasHeight
         )
       );
 
@@ -240,10 +237,10 @@ export class Sprite {
     for (let i = 0; i < texcoords.length; i++) {
       const screen_tc = texcoords[i];
       const uv_tc = {
-        left: screen_tc.left / tex_w,
-        top: screen_tc.top / tex_h,
-        right: (screen_tc.left + screen_tc.width) / tex_w,
-        bottom: (screen_tc.top + screen_tc.height) / tex_h
+        left: screen_tc.left / this.width,
+        top: screen_tc.top / this.height,
+        right: (screen_tc.left + screen_tc.width) / this.width,
+        bottom: (screen_tc.top + screen_tc.height) / this.height
       };
 
       vertices_uv.push(

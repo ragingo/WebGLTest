@@ -57,7 +57,7 @@ export class Camera {
     if (this.cameraInit.video.allow) {
       const status = await navigator.permissions.query({ name: 'camera' });
       if (status.state !== 'granted') {
-        return;
+        return false;
       }
 
       constrains.video = true;
@@ -78,7 +78,12 @@ export class Camera {
       }
     }
 
-    this.stream = await navigator.mediaDevices.getUserMedia(constrains);
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia(constrains);
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
 
     // 音を鳴らす
     if (constrains.audio) {
@@ -132,5 +137,7 @@ export class Camera {
       }
       this.videoEncoder.encode(frame);
     });
+
+    return true;
   }
 }

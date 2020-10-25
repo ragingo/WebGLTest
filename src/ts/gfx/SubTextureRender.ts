@@ -54,7 +54,7 @@ export class SubTextureRender implements IDrawable {
       }
 
       for (let i = 0; i < 3; i++) {
-        const sprite = new Sprite();
+        const sprite = new Sprite(512, 512);
         sprite.initialize();
         if (i == 0) {
           sprite.left = 10;

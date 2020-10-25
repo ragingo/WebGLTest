@@ -43,6 +43,9 @@ export class MainFrame implements IAppFrame {
       return;
     }
 
+    this.view.canvas.width = 512;
+    this.view.canvas.height = 512;
+
     this.gfx = new Graphics(gl);
 
     if (!this.gfx.init(this.view.canvas.width, this.view.canvas.height)) {
@@ -57,7 +60,7 @@ export class MainFrame implements IAppFrame {
 
     this.gfx.pushRenderTarget(this.defaultDraw);
 
-    const backSprite = new Sprite();
+    const backSprite = new Sprite(this.view.canvas.width, this.view.canvas.height);
     backSprite.initialize();
     backSprite.left = 0;
     backSprite.top = 0;
@@ -66,7 +69,7 @@ export class MainFrame implements IAppFrame {
     backSprite.depth = 0.0001;
     this.defaultDraw.sprites.push(backSprite);
 
-    const frontSprite = new Sprite();
+    const frontSprite = new Sprite(this.view.canvas.width, this.view.canvas.height);
     frontSprite.initialize();
     frontSprite.left = 512 / 4;
     frontSprite.top = 512 / 4;
@@ -79,7 +82,6 @@ export class MainFrame implements IAppFrame {
       backSprite.setTexture(tex);
     });
 
-    // TODO: error handling
     this.camera.open();
   }
 
