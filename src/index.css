@@ -45,6 +45,7 @@ body {
 .app__rotation,
 .app__scale,
 .app__color,
+.app__binarize,
 .app__vivid {
   width: 300px;
   border: dashed 2px gray;
@@ -52,6 +53,10 @@ body {
   background-color: lightblue;
   margin-top: 10px;
   margin-left: 10px;
+}
+
+.app__binarize {
+  display: none;
 }
 
 .app__vivid {

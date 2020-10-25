@@ -101,6 +101,7 @@ export class MainFrame implements IAppFrame {
       sprite.scale = this.view.getScaleValue();
       sprite.vividParams = this.view.getVividValue();
       sprite.effectType = this.view.getEffectTypeValue();
+      sprite.binarizeThreshold = this.view.getBinarizeThresholdValue();
       sprite.showBorder = true;
     });
 

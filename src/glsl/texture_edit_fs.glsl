@@ -4,6 +4,7 @@ uniform sampler2D uSampler;
 uniform int       uShowBorder;
 uniform int       effectType;
 uniform vec2      textureSize;
+uniform float     binarizeThreshold;
 uniform vec4      editColor;
 uniform vec2      vividParams;
 varying vec2      vTextureCoord;
@@ -258,7 +259,7 @@ void main() {
 	}
 
 	if (effectType == 2) {
-		color = binarize(color, 0.1);
+		color = binarize(color, binarizeThreshold);
 	}
 
 	if (effectType == 3) {
@@ -329,6 +330,8 @@ void main() {
 		color = vec4(0.0, 1.0, 0.0, 1.0);
 	}
 
-	const vec3 CHROMAKEY_COLOR = vec3(1.0, 1.0, 1.0);
-	gl_FragColor = chromakey(color, CHROMAKEY_COLOR, 0.8);
+	// const vec3 CHROMAKEY_COLOR = vec3(1.0, 1.0, 1.0);
+	// gl_FragColor = chromakey(color, CHROMAKEY_COLOR, 0.8);
+
+	gl_FragColor = color;
 }

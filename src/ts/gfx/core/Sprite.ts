@@ -28,6 +28,7 @@ export class Sprite {
     public effectType = 0,
     public sliceBorder = [0, 0, 0, 0],
     public showBorder = false,
+    public binarizeThreshold = 0.1
   ) {}
 
   public initialize() {
@@ -109,6 +110,7 @@ export class Sprite {
         editColor: gl.getUniformLocation(program, 'editColor'),
         vividParams: gl.getUniformLocation(program, 'vividParams'),
         showBorder: gl.getUniformLocation(program, 'uShowBorder'),
+        binarizeThreshold: gl.getUniformLocation(program, 'binarizeThreshold'),
       };
 
       // テクスチャ登録
@@ -132,6 +134,9 @@ export class Sprite {
       gl.uniform1i(uniformLocation.effectType, this.effectType);
       if (uniformLocation.showBorder) {
         gl.uniform1i(uniformLocation.showBorder, this.showBorder ? 1 : 0);
+      }
+      if (uniformLocation.binarizeThreshold) {
+        gl.uniform1f(uniformLocation.binarizeThreshold, this.binarizeThreshold);
       }
     }
 

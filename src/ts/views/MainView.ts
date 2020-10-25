@@ -32,6 +32,7 @@ export class MainView {
   private rotation: Slider[] = [];
   private scale: Slider[] = [];
   private vivid: Slider[] = [];
+  private binarize: Slider;
 
   public canvas: HTMLCanvasElement;
 
@@ -66,6 +67,10 @@ export class MainView {
       b: this.color[2].value,
       a: this.color[3].value,
     };
+  }
+
+  public getBinarizeThresholdValue() {
+    return this.binarize.value;
   }
 
   public getVividValue() {
@@ -112,6 +117,8 @@ export class MainView {
       new Slider('.color--a > .color__slider', '.color--a > .color__label'),
     ];
 
+    this.binarize = new Slider('.binarize--value > .binarize__slider', '.binarize--value > .binarize__label');
+
     this.vivid = [
       new Slider('.vivid--k1 > .vivid__slider', '.vivid--k1 > .vivid__label'),
       new Slider('.vivid--k2 > .vivid__slider', '.vivid--k2 > .vivid__label'),
@@ -124,6 +131,7 @@ export class MainView {
     this.rotation.forEach((x) => x.reset());
     this.scale.forEach((x) => x.reset());
     this.color.forEach((x) => x.reset());
+    this.binarize.reset();
     this.vivid.forEach((x) => x.reset());
   }
 
@@ -132,11 +140,19 @@ export class MainView {
   };
 
   private onEffectTypeChanged(sender: HTMLSelectElement) {
-    const elem = getBySelector('.app__vivid');
-    if (sender.selectedIndex == 16) {
-      elem.style.display = 'block';
+    const binarize = getBySelector('.app__binarize');
+    const vivid = getBySelector('.app__vivid');
+
+    if (sender.selectedIndex === 2) {
+      binarize.style.display = 'block';
     } else {
-      elem.style.display = 'none';
+      binarize.style.display = 'none';
+    }
+
+    if (sender.selectedIndex === 16) {
+      vivid.style.display = 'block';
+    } else {
+      vivid.style.display = 'none';
     }
   }
 }
