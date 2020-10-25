@@ -233,6 +233,15 @@ vec4 vivid(vec4 pix, float k1, float k2) {
 	return result;
 }
 
+// クロマキー合成
+vec4 chromakey(vec4 pix, vec3 back, float threshold) {
+	float diff = length(back - pix.rgb);
+	if (diff < threshold) {
+		discard;
+	}
+	return pix;
+}
+
 void main() {
 
 	// 元の色
@@ -320,5 +329,6 @@ void main() {
 		color = vec4(0.0, 1.0, 0.0, 1.0);
 	}
 
-	gl_FragColor = color;
+	const vec3 CHROMAKEY_COLOR = vec3(1.0, 1.0, 1.0);
+	gl_FragColor = chromakey(color, CHROMAKEY_COLOR, 0.8);
 }
