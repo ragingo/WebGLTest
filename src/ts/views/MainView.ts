@@ -1,5 +1,5 @@
-const getById = <T extends HTMLElement>(id: string): T => {
-  return document.getElementById(id) as T;
+const getBySelector = <T extends HTMLElement>(selector: string): T => {
+  return document.querySelector(selector) as T;
 }
 
 export class MainView {
@@ -14,8 +14,6 @@ export class MainView {
   private scaleLabels: HTMLLabelElement[] = [];
   private vivid: HTMLInputElement[] = [];
   private vividLabels: HTMLLabelElement[] = [];
-  // private polygonCount: HTMLInputElement;
-  // private polygonCountLabel: HTMLLabelElement;
 
   public canvas: HTMLCanvasElement;
 
@@ -63,69 +61,99 @@ export class MainView {
     };
   }
 
-  // public getPolygonCountValue() {
-  //   return this.polygonCount.valueAsNumber;
-  // }
-
   constructor() {
-    this.reset = getById('reset');
+    this.reset = getBySelector('.app__reset');
     this.reset.onclick = this.onResetClick;
 
-    this.fpsLabel = getById('fps');
-    this.canvas = getById('canvas');
+    this.fpsLabel = getBySelector('.app__fps');
+    this.canvas = getBySelector('.app__canvas');
 
-    this.effectSelector = getById('effectSelector');
+    this.effectSelector = getBySelector('.app__effect-selector');
+    const effects = [
+      { id: 0, name: '通常' },
+      { id: 1, name: 'グレースケール' },
+      { id: 2, name: '2値化' },
+      { id: 3, name: '二次微分 laplacian 4方向' },
+      { id: 4, name: '二次微分 laplacian 8方向' },
+      { id: 5, name: '一次微分 Roberts' },
+      { id: 6, name: 'Prewitt' },
+      { id: 7, name: '階調反転' },
+      { id: 8, name: '色深度 8ビット' },
+      { id: 9, name: '色深度 15ビット' },
+      { id: 10, name: '色深度 16ビット' },
+      { id: 11, name: '色深度 24ビット' },
+      { id: 12, name: '色深度 32ビット' },
+      { id: 13, name: '円' },
+      { id: 14, name: '球' },
+      { id: 15, name: '正弦波' },
+      { id: 16, name: '鮮やか' },
+    ];
+    effects.forEach((x) => {
+      const opt = document.createElement('option');
+      opt.value = String(x.id);
+      opt.textContent = x.name;
+      this.effectSelector.add(opt);
+    });
     this.effectSelector.onchange = () => {
       this.onEffectTypeChanged(this.effectSelector);
     };
 
-    this.color = [
-      getById('slider_color_r'),
-      getById('slider_color_g'),
-      getById('slider_color_b'),
-      getById('slider_color_a')
-    ];
-    this.colorLabels = [
-      getById('label_color_r_value'),
-      getById('label_color_g_value'),
-      getById('label_color_b_value'),
-      getById('label_color_a_value')
-    ];
-    this.color.forEach((x, i) => {
-      x.oninput = () => this.onColorChanged(x, i);
-    });
-
     this.rotation = [
-      getById('slider_rotation_x'),
-      getById('slider_rotation_y'),
-      getById('slider_rotation_z')
+      getBySelector('.rotation--x > .rotation__slider'),
+      getBySelector('.rotation--y > .rotation__slider'),
+      getBySelector('.rotation--z > .rotation__slider'),
     ];
     this.rotationLabels = [
-      getById('label_rotation_x'),
-      getById('label_rotation_y'),
-      getById('label_rotation_z')
+      getBySelector('.rotation--x > .rotation__label'),
+      getBySelector('.rotation--y > .rotation__label'),
+      getBySelector('.rotation--z > .rotation__label'),
     ];
     this.rotation.forEach((x, i) => {
       x.oninput = () => this.onRotationChanged(x, i);
     });
 
-    this.scale = [getById('slider_scale_x'), getById('slider_scale_y'), getById('slider_scale_z')];
-    this.scaleLabels = [getById('label_scale_x'), getById('label_scale_y'), getById('label_scale_z')];
+    this.scale = [
+      getBySelector('.scale--x > .scale__slider'),
+      getBySelector('.scale--y > .scale__slider'),
+      getBySelector('.scale--z > .scale__slider'),
+    ];
+    this.scaleLabels = [
+      getBySelector('.scale--x > .scale__label'),
+      getBySelector('.scale--y > .scale__label'),
+      getBySelector('.scale--z > .scale__label'),
+    ];
     this.scale.forEach((x, i) => {
       x.oninput = () => this.onScaleChanged(x, i);
     });
 
-    this.vivid = [getById('slider_vivid_k1'), getById('slider_vivid_k2')];
-    this.vividLabels = [getById('label_vivid_k1_value'), getById('label_vivid_k2_value')];
+    this.color = [
+      getBySelector('.color--r > .color__slider'),
+      getBySelector('.color--g > .color__slider'),
+      getBySelector('.color--b > .color__slider'),
+      getBySelector('.color--a > .color__slider'),
+    ];
+    this.colorLabels = [
+      getBySelector('.color--r > .color__label'),
+      getBySelector('.color--g > .color__label'),
+      getBySelector('.color--b > .color__label'),
+      getBySelector('.color--a > .color__label'),
+    ];
+    this.color.forEach((x, i) => {
+      x.oninput = () => this.onColorChanged(x, i);
+    });
+
+
+    this.vivid = [
+      getBySelector('.vivid--k1 > .vivid__slider'),
+      getBySelector('.vivid--k2 > .vivid__slider'),
+    ];
+    this.vividLabels = [
+      getBySelector('.vivid--k1 > .vivid__label'),
+      getBySelector('.vivid--k2 > .vivid__label'),
+    ];
     this.vivid.forEach((x, i) => {
       x.oninput = () => this.onVividChanged(x, i);
     });
-
-    // this.polygonCount = getById('slider_polygon');
-    // this.polygonCount.oninput = () => {
-    //   this.onPolygonCountChanged(this.polygonCount);
-    // };
-    // this.polygonCountLabel = getById('label_polygon');
   }
 
   public resetValues() {
@@ -134,14 +162,12 @@ export class MainView {
     this.color.forEach((x) => (x.value = x.defaultValue));
     this.effectSelector.value = '0';
     this.vivid.forEach((x) => (x.value = x.defaultValue));
-    // this.polygonCount.value = this.polygonCount.defaultValue;
 
     this.rotation.forEach((x) => x.dispatchEvent(new Event('input')));
     this.scale.forEach((x) => x.dispatchEvent(new Event('input')));
     this.color.forEach((x) => x.dispatchEvent(new Event('input')));
     this.effectSelector.dispatchEvent(new Event('change'));
     this.vivid.forEach((x) => x.dispatchEvent(new Event('input')));
-    // this.polygonCount.dispatchEvent(new Event('input'));
   }
 
   private onResetClick = () => {
@@ -149,11 +175,11 @@ export class MainView {
   };
 
   private onEffectTypeChanged(sender: HTMLSelectElement) {
-    const elems = Array.from(document.getElementsByClassName('vivid_params')).map((x) => x as HTMLElement);
+    const elem = getBySelector('.app__vivid');
     if (sender.selectedIndex == 16) {
-      elems.forEach((x) => (x.style.visibility = 'visible'));
+      elem.style.display = 'block';
     } else {
-      elems.forEach((x) => (x.style.visibility = 'collapse'));
+      elem.style.display = 'none';
     }
   }
 
@@ -172,8 +198,4 @@ export class MainView {
   private onVividChanged(sender: HTMLInputElement, index: number) {
     this.vividLabels[index].innerText = sender.value;
   }
-
-  // private onPolygonCountChanged(sender: HTMLInputElement) {
-  //   this.polygonCountLabel.innerText = sender.value;
-  // }
 }

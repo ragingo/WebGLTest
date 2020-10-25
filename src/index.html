@@ -3,102 +3,89 @@
 
 <head>
   <title>Shader Practice</title>
-  <!-- webgl 公式リファレンス -->
-  <!-- https://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf -->
-  <script type="text/javascript" data-main="../dist/main.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.js"></script>
+  <link rel="stylesheet" href="./index.css">
+  <script type="text/javascript" data-main="../dist/main.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js"></script>
 </head>
 
 <body>
-  <select id="effectSelector">
-    <option value="0">通常</option>
-    <option value="1">グレースケール</option>
-    <option value="2">2値化</option>
-    <option value="3">二次微分 laplacian 4方向</option>
-    <option value="4">二次微分 laplacian 8方向</option>
-    <option value="5">一次微分 Roberts</option>
-    <option value="6">Prewitt</option>
-    <option value="7">階調反転</option>
-    <option value="8">色深度 8ビット</option>
-    <option value="9">色深度 15ビット</option>
-    <option value="10">色深度 16ビット</option>
-    <option value="11">色深度 24ビット</option>
-    <option value="12">色深度 32ビット</option>
-    <option value="13">円</option>
-    <option value="14">球</option>
-    <option value="15">正弦波</option>
-    <option value="16">鮮やか</option>
-  </select>
-  <br />
-  <br />
-  <table>
-    <tr>
-      <td>
-        <p id="fps"></p>
-        <canvas id="canvas" width="512" height="512">
-        </canvas>
-      </td>
-      <td>
-        <button id="reset">リセット</button>
-        <br /><br />
-        <!-- <label>ポリゴン数</label>
-        <input id="slider_polygon" type="range" min="0" max="4" step="1" value="4" />
-        <label id="label_polygon"></label>
-        <br /> -->
-        <label>rotation X</label>
-        <input id="slider_rotation_x" type="range" min="0.0" max="360.0" step="0.1" value="0.0" />
-        <label id="label_rotation_x"></label>
-        <br />
-        <label>rotation Y</label>
-        <input id="slider_rotation_y" type="range" min="0.0" max="360.0" step="0.1" value="0.0" />
-        <label id="label_rotation_y"></label>
-        <br />
-        <label>rotation Z</label>
-        <input id="slider_rotation_z" type="range" min="0.0" max="360.0" step="0.1" value="0.0" />
-        <label id="label_rotation_z"></label>
-        <br />
-        <label>scale X</label>
-        <input id="slider_scale_x" type="range" min="0.0" max="10.0" step="0.1" value="1.0" />
-        <label id="label_scale_x"></label>
-        <br />
-        <label>scale Y</label>
-        <input id="slider_scale_y" type="range" min="0.0" max="10.0" step="0.1" value="1.0" />
-        <label id="label_scale_y"></label>
-        <br />
-        <label>scale Z</label>
-        <input id="slider_scale_z" type="range" min="0.0" max="10.0" step="0.1" value="1.0" />
-        <label id="label_scale_z"></label>
-        <br />
-        <label>R </label>
-        <input id="slider_color_r" type="range" min="0" max="255" step="1" value="255" />
-        <label id="label_color_r_value"></label>
-        <br />
-        <label>G </label>
-        <input id="slider_color_g" type="range" min="0" max="255" step="1" value="255" />
-        <label id="label_color_g_value"></label>
-        <br />
-        <label>B </label>
-        <input id="slider_color_b" type="range" min="0" max="255" step="1" value="255" />
-        <label id="label_color_b_value"></label>
-        <br />
-        <label>A </label>
-        <input id="slider_color_a" type="range" min="0" max="255" step="1" value="255" />
-        <label id="label_color_a_value"></label>
-        <br />
-        <div class="vivid_params" style="visibility:collapse">
-          <label>鮮やかさ K1</label>
-          <input id="slider_vivid_k1" type="range" min="-1.5" max="1.5" step="0.1" value="1.0" />
-          <label id="label_vivid_k1_value"></label>
-          <br />
+
+  <div class="app">
+    <div class="app__left">
+      <p class="app__fps"></p>
+      <canvas class="app__canvas"></canvas>
+    </div>
+    <div class="app__right">
+      <button class="app__reset">リセット</button>
+      <select class="app__effect-selector"></select>
+      <div class="app__params">
+        <!-- rotation -->
+        <div class="app__rotation">
+          <label>rotation</label>
+          <div class="rotation--x">
+            <input class="rotation__slider" type="range" min="0.0" max="360.0" step="0.1" value="0.0" />
+            <label class="rotation__label"></label>
+          </div>
+          <div class="rotation--y">
+            <input class="rotation__slider" type="range" min="0.0" max="360.0" step="0.1" value="0.0" />
+            <label class="rotation__label"></label>
+          </div>
+          <div class="rotation--z">
+            <input class="rotation__slider" type="range" min="0.0" max="360.0" step="0.1" value="0.0" />
+            <label class="rotation__label"></label>
+          </div>
         </div>
-        <div class="vivid_params" style="visibility:collapse">
-          <label>鮮やかさ K2</label>
-          <input id="slider_vivid_k2" type="range" min="-1.5" max="1.5" step="0.1" value="1.0" />
-          <label id="label_vivid_k2_value"></label>
-          <br />
+        <!-- scale -->
+        <div class="app__scale">
+          <label>scale</label>
+          <div class="scale--x">
+            <input class="scale__slider" type="range" min="0.0" max="10.0" step="0.1" value="1.0" />
+            <label class="scale__label"></label>
+          </div>
+          <div class="scale--y">
+            <input class="scale__slider" type="range" min="0.0" max="10.0" step="0.1" value="1.0" />
+            <label class="scale__label"></label>
+          </div>
+          <div class="scale--z">
+            <input class="scale__slider" type="range" min="0.0" max="10.0" step="0.1" value="1.0" />
+            <label class="scale__label"></label>
+          </div>
         </div>
-      </td>
-    </tr>
-  </table>
+        <!-- color -->
+        <div class="app__color">
+          <label>color</label>
+          <div class="color--r">
+            <input class="color__slider" type="range" min="0" max="255" step="1" value="255" />
+            <label class="color__label"></label>
+          </div>
+          <div class="color--g">
+            <input class="color__slider" type="range" min="0" max="255" step="1" value="255" />
+            <label class="color__label"></label>
+          </div>
+          <div class="color--b">
+            <input class="color__slider" type="range" min="0" max="255" step="1" value="255" />
+            <label class="color__label"></label>
+          </div>
+          <div class="color--a">
+            <input class="color__slider" type="range" min="0" max="255" step="1" value="255" />
+            <label class="color__label"></label>
+          </div>
+        </div>
+        <!-- vivid -->
+        <div class="app__vivid">
+          <label>vivid</label>
+          <div class="vivid--k1">
+            <input class="vivid__slider" type="range" min="-1.5" max="1.5" step="0.1" value="1.0" />
+            <label class="vivid__label"></label>
+          </div>
+          <div class="vivid--k2">
+            <input class="vivid__slider" type="range" min="-1.5" max="1.5" step="0.1" value="1.0" />
+            <label class="vivid__label"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>
