@@ -60,7 +60,7 @@ export class SubTextureRender implements IDrawable {
           sprite.left = 10;
           sprite.top = 10;
           sprite.showBorder = true;
-          sprite.texture = tex;
+          sprite.setTexture(tex);
           sprite.width = 130;
           sprite.height = 100;
           sprite.sliceBorder = [20, 20, 20, 20];
@@ -72,7 +72,7 @@ export class SubTextureRender implements IDrawable {
           sprite.scale.x = 2;
           sprite.scale.y = 2;
           sprite.showBorder = false;
-          sprite.texture = tex;
+          sprite.setTexture(tex);
           sprite.width = 130;
           sprite.height = 100;
           sprite.sliceBorder = [20, 20, 20, 20];

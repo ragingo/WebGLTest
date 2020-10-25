@@ -76,7 +76,7 @@ export class MainFrame implements IAppFrame {
     this.defaultDraw.sprites.push(frontSprite);
 
     this.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
-      backSprite.texture = tex;
+      backSprite.setTexture(tex);
     });
 
     // TODO: error handling
@@ -92,7 +92,7 @@ export class MainFrame implements IAppFrame {
       if (!tex) {
         return;
       }
-      this.defaultDraw.sprites[1].texture = tex;
+      this.defaultDraw.sprites[1].setTexture(tex);
     });
 
     this.defaultDraw.sprites.forEach((sprite) => {

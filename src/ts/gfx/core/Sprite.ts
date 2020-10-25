@@ -1,6 +1,7 @@
 import { Graphics } from "./Graphics";
 import { ShaderLoader } from "./ShaderLoader";
 import { ShaderProgram } from "./ShaderProgram";
+import { Texture } from "./Texture";
 import { CropInfo, Coordinate } from "./types";
 
 export class Sprite {
@@ -8,7 +9,17 @@ export class Sprite {
   private shaderProgram: ShaderProgram | null = null;
   private vertexShader: string | null = null;
   private fragmentShader: string | null = null;
-  public texture: WebGLTexture | null = null;
+  private texture: Texture | null = null;
+
+  public setTexture(texture: WebGLTexture | null) {
+    if (this.texture) {
+      this.texture.unbind();
+    }
+    this.texture = null;
+    if (this.gl) {
+      this.texture = new Texture(this.gl, texture);
+    }
+  }
 
   private isShaderLoaded() {
     return this.vertexShader && this.fragmentShader;
@@ -91,15 +102,8 @@ export class Sprite {
 
     gl.useProgram(program);
 
-    if (this.texture && ctx.isTexture(this.texture)) {
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-      // NPOT の場合は filter は linear, wrap は clamp to edge にしないといけない
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (this.texture?.isValid()) {
+      this.texture.bind();
 
       const uniformLocation = {
         scale: gl.getUniformLocation(program, 'scale'),
