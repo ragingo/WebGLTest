@@ -14,11 +14,12 @@ export class Sprite {
   public setTexture(texture: WebGLTexture | null) {
     if (this.texture) {
       this.texture.unbind();
+      this.texture.dispose();
     }
     this.texture = null;
     if (this.gl) {
       this.texture = new Texture(this.gl, texture);
-      this.texture.bind();
+      this.texture.activate();
     }
   }
 
@@ -104,6 +105,9 @@ export class Sprite {
     gl.useProgram(program);
 
     if (this.texture?.isValid()) {
+      this.texture.activate();
+      this.texture.bind();
+
       const uniformLocation = {
         scale: gl.getUniformLocation(program, 'scale'),
         rotation: gl.getUniformLocation(program, 'rotation'),
