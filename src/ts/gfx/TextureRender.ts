@@ -40,15 +40,16 @@ export class TextureRender implements IDrawable {
     if (!this.gl) {
       return;
     }
-    if (!this.shaderProgram?.program) {
-      return;
-    }
     if (!this.texture) {
       return;
     }
 
     const gl = this.gl;
-    const program = this.shaderProgram.program;
+    const program = this.shaderProgram?.get();
+
+    if (!program) {
+      return;
+    }
 
     gl.useProgram(program);
     gl.activeTexture(gl.TEXTURE0);
@@ -203,7 +204,7 @@ export class TextureRender implements IDrawable {
       return false;
     }
 
-    if (!this.shaderProgram.program) {
+    if (!this.shaderProgram.get()) {
       console.log('webgl program is null.');
       return false;
     }

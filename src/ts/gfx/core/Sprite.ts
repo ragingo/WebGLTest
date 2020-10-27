@@ -11,6 +11,10 @@ export class Sprite {
   private fragmentShader: string | null = null;
   private texture: Texture | null = null;
 
+  public getTexture() {
+    return this.texture;
+  }
+
   public setTexture(texture: WebGLTexture | null) {
     if (this.texture) {
       this.texture.unbind();
@@ -23,13 +27,11 @@ export class Sprite {
     }
   }
 
-  private isShaderLoaded() {
-    return this.vertexShader && this.fragmentShader;
-  }
-
   constructor(
     private readonly canvasWidth: number,
     private readonly canvasHeight: number,
+    private readonly vertexShaderPath?: string,
+    private readonly fragmentShaderPath?: string,
     public left = 0,
     public top = 0,
     public width = 0,
@@ -43,11 +45,21 @@ export class Sprite {
     public effectType = 0,
     public sliceBorder = [0, 0, 0, 0],
     public showBorder = false,
-    public binarizeThreshold = 0.1
-  ) {}
+    public binarizeThreshold = 0.1,
+  ) {
+    if (!this.vertexShaderPath || this.vertexShaderPath.length === 0) {
+      this.vertexShaderPath = './glsl/default_vs.glsl';
+    }
+    if (!this.fragmentShaderPath || this.fragmentShaderPath.length === 0) {
+      this.fragmentShaderPath = './glsl/default_fs.glsl';
+    }
+  }
 
   public initialize() {
-    ShaderLoader.load('./glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl', (vs, fs) => {
+    if (!this.vertexShaderPath || !this.fragmentShaderPath) {
+      return;
+    }
+    ShaderLoader.load(this.vertexShaderPath, this.fragmentShaderPath, (vs, fs) => {
       this.vertexShader = vs;
       this.fragmentShader = fs;
     });
@@ -55,38 +67,34 @@ export class Sprite {
 
   private compile() {
     if (!this.gl) {
-      return;
+      return false;
     }
     if (!this.vertexShader || !this.fragmentShader) {
-      return;
+      return false;
     }
 
     this.shaderProgram = new ShaderProgram(this.gl);
 
     if (!this.shaderProgram.compile(this.vertexShader, this.fragmentShader)) {
       console.log('shader compile failed.');
-      return;
+      return false;
     }
 
-    if (!this.shaderProgram.program) {
+    if (!this.shaderProgram.get()) {
       console.log('webgl program is null.');
-      return;
+      return false;
     }
+
+    return true;
   }
 
   public draw(ctx: WebGLRenderingContext) {
     this.gl = ctx;
 
-    if (!this.isShaderLoaded) {
-      return;
-    }
-
     if (!this.shaderProgram) {
-      this.compile();
-    }
-
-    if (!this.shaderProgram?.program) {
-      return;
+      if (!this.compile()) {
+        return;
+      }
     }
 
     if (this.crop.width == 0) {
@@ -100,7 +108,11 @@ export class Sprite {
     }
 
     const gl = this.gl;
-    const program = this.shaderProgram.program;
+    const program = this.shaderProgram?.get();
+
+    if (!program) {
+      return;
+    }
 
     gl.useProgram(program);
 

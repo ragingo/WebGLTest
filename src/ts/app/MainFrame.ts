@@ -69,7 +69,7 @@ export class MainFrame implements IAppFrame {
     backSprite.depth = 0.0001;
     this.defaultDraw.sprites.push(backSprite);
 
-    const frontSprite = new Sprite(this.view.canvas.width, this.view.canvas.height);
+    const frontSprite = new Sprite(this.view.canvas.width, this.view.canvas.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
     frontSprite.initialize();
     frontSprite.left = 512 / 4;
     frontSprite.top = 512 / 4;

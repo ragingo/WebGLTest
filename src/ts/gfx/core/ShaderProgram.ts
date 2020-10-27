@@ -1,7 +1,8 @@
 export class ShaderProgram {
-  #program: WebGLProgram | null = null;
-  get program() {
-    return this.#program;
+  private program: WebGLProgram | null = null;
+
+  public get() {
+    return this.program;
   }
 
   constructor(private gl: WebGLRenderingContext) {}
@@ -41,7 +42,7 @@ export class ShaderProgram {
   }
 
   public compile(vs: string, fs: string) {
-    this.#program = this.gl.createProgram();
+    this.program = this.gl.createProgram();
     if (!this.program) {
       return false;
     }

@@ -21,9 +21,9 @@ void main() {
 	vec2 uv = vTextureCoord;
 	vec4 color = texture2D(uSampler, uv);
 
-	if (uShowBorder == 1 && isBorder(uv)) {
-		color = vec4(0.0, 1.0, 0.0, 1.0);
-	}
+	// if (uShowBorder == 1 && isBorder(uv)) {
+	// 	color = vec4(0.0, 1.0, 0.0, 1.0);
+	// }
 
 	gl_FragColor = color;
 
