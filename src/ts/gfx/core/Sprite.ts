@@ -27,6 +27,8 @@ export class Sprite {
     }
   }
 
+  public uniformLocationValues: ['int' | 'uint' | 'float', string, any][] = [];
+
   constructor(
     private readonly canvasWidth: number,
     private readonly canvasHeight: number,
@@ -40,12 +42,7 @@ export class Sprite {
     public crop = new CropInfo(),
     public scale: { x: number; y: number; z: number; } = { x: 1, y: 1, z: 1 },
     public rotate: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 },
-    public color: { r: number; g: number; b: number; a: number; } = { r: 255, g: 255, b: 255, a: 255 },
-    public vividParams: { k1: number; k2: number } = { k1: 1, k2: 1 },
-    public effectType = 0,
     public sliceBorder = [0, 0, 0, 0],
-    public showBorder = false,
-    public binarizeThreshold = 0.1,
   ) {
     if (!this.vertexShaderPath || this.vertexShaderPath.length === 0) {
       this.vertexShaderPath = './glsl/default_vs.glsl';
@@ -120,42 +117,53 @@ export class Sprite {
       this.texture.activate();
       this.texture.bind();
 
-      const uniformLocation = {
+      const uniformLocations = {
         scale: gl.getUniformLocation(program, 'scale'),
         rotation: gl.getUniformLocation(program, 'rotation'),
         sampler: gl.getUniformLocation(program, 'uSampler'),
-        effectType: gl.getUniformLocation(program, 'effectType'),
         textureSize: gl.getUniformLocation(program, 'textureSize'),
-        editColor: gl.getUniformLocation(program, 'editColor'),
-        vividParams: gl.getUniformLocation(program, 'vividParams'),
-        showBorder: gl.getUniformLocation(program, 'uShowBorder'),
-        binarizeThreshold: gl.getUniformLocation(program, 'binarizeThreshold'),
       };
 
-      // テクスチャ登録
-      gl.uniform1i(uniformLocation.sampler, 0);
+      this.uniformLocationValues.forEach((x) => {
+        const type = x[0];
+        const name = x[1];
+        const value = x[2];
+        switch (type) {
+          case 'int':
+            gl.uniform1i(gl.getUniformLocation(program, name), value);
+            break;
 
-      if (uniformLocation.scale) {
-        gl.uniform3fv(uniformLocation.scale, new Float32Array([this.scale.x, this.scale.y, this.scale.z]));
+          case 'float':
+            if (value instanceof Float32Array) {
+              switch (value.length) {
+                case 2:
+                  gl.uniform2fv(gl.getUniformLocation(program, name), value);
+                  break;
+                case 3:
+                  gl.uniform3fv(gl.getUniformLocation(program, name), value);
+                  break;
+                case 4:
+                  gl.uniform4fv(gl.getUniformLocation(program, name), value);
+                  break;
+              }
+            } else {
+              gl.uniform1f(gl.getUniformLocation(program, name), value);
+            }
+            break;
+        }
+      });
+
+      // テクスチャ登録
+      gl.uniform1i(uniformLocations.sampler, 0);
+
+      if (uniformLocations.scale) {
+        gl.uniform3fv(uniformLocations.scale, new Float32Array([this.scale.x, this.scale.y, this.scale.z]));
       }
-      if (uniformLocation.rotation) {
-        gl.uniform3fv(uniformLocation.rotation, new Float32Array([this.rotate.x, this.rotate.y, this.rotate.z]));
+      if (uniformLocations.rotation) {
+        gl.uniform3fv(uniformLocations.rotation, new Float32Array([this.rotate.x, this.rotate.y, this.rotate.z]));
       }
-      if (uniformLocation.textureSize) {
-        gl.uniform2fv(uniformLocation.textureSize, [this.width, this.height]);
-      }
-      if (uniformLocation.editColor) {
-        gl.uniform4fv(uniformLocation.editColor, new Float32Array([this.color.r, this.color.g, this.color.b, this.color.a]));
-      }
-      if (uniformLocation.vividParams) {
-        gl.uniform2fv(uniformLocation.vividParams, new Float32Array([this.vividParams.k1, this.vividParams.k2]));
-      }
-      gl.uniform1i(uniformLocation.effectType, this.effectType);
-      if (uniformLocation.showBorder) {
-        gl.uniform1i(uniformLocation.showBorder, this.showBorder ? 1 : 0);
-      }
-      if (uniformLocation.binarizeThreshold) {
-        gl.uniform1f(uniformLocation.binarizeThreshold, this.binarizeThreshold);
+      if (uniformLocations.textureSize) {
+        gl.uniform2fv(uniformLocations.textureSize, [this.width, this.height]);
       }
     }
 

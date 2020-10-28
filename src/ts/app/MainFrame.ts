@@ -98,13 +98,17 @@ export class MainFrame implements IAppFrame {
     });
 
     this.defaultDraw.sprites.forEach((sprite) => {
-      sprite.color = this.view.getColorValue();
       sprite.rotate = this.view.getRotationValue();
       sprite.scale = this.view.getScaleValue();
-      sprite.vividParams = this.view.getVividValue();
-      sprite.effectType = this.view.getEffectTypeValue();
-      sprite.binarizeThreshold = this.view.getBinarizeThresholdValue();
-      sprite.showBorder = true;
+      sprite.uniformLocationValues.length = 0;
+
+      const color = this.view.getColorValue()
+      sprite.uniformLocationValues.push(['float', 'editColor', new Float32Array([color.r, color.g, color.b, color.a])]);
+      sprite.uniformLocationValues.push(['int', 'effectType', this.view.getEffectTypeValue() as GLint]);
+
+      // const vividParams = this.view.getVividValue();
+      // const binarizeThreshold = this.view.getBinarizeThresholdValue();
+      // const showBorder = true;
     });
 
     this.gfx.render();
