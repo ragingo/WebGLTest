@@ -248,81 +248,95 @@ void main() {
 	// 元の色
 	vec4 color = texture2D(uSampler, vTextureCoord);
 
-	// color *= apply_edit_color(color);
-
 	if (effectType == 0) {
-		// 何もしない
+		color *= apply_edit_color(color);
 	}
 
 	if (effectType == 1) {
+		color *= apply_edit_color(color);
 		color = grayscale(color);
 	}
 
 	if (effectType == 2) {
+		color *= apply_edit_color(color);
 		color = binarize(color, binarizeThreshold);
 	}
 
 	if (effectType == 3) {
+		color *= apply_edit_color(color);
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
 		color = laplacian4(pix);
 	}
 
 	if (effectType == 4) {
+		color *= apply_edit_color(color);
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
 		color = laplacian8(pix);
 	}
 
 	if (effectType == 5) {
+		color *= apply_edit_color(color);
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
 		color = roberts(pix);
 	}
 
 	if (effectType == 6) {
+		color *= apply_edit_color(color);
 		vec4 pix[9];
 		get_neighbour_pixels(pix);
 		color = prewitt(pix);
 	}
 
 	if (effectType == 7) {
+		color *= apply_edit_color(color);
 		color = reverse(color);
 	}
 
 	if (effectType == 8) {
+		color *= apply_edit_color(color);
 		color = convert_colordepth(color, 8);
 	}
 
 	if (effectType == 9) {
+		color *= apply_edit_color(color);
 		color = convert_colordepth(color, 15);
 	}
 
 	if (effectType == 10) {
+		color *= apply_edit_color(color);
 		color = convert_colordepth(color, 16);
 	}
 
 	if (effectType == 11) {
+		color *= apply_edit_color(color);
 		color = convert_colordepth(color, 24);
 	}
 
 	if (effectType == 12) {
+		color *= apply_edit_color(color);
 		color = convert_colordepth(color, 32);
 	}
 
 	if (effectType == 13) {
+		color *= apply_edit_color(color);
 		color = circle(color);
 	}
 
 	if (effectType == 14) {
+		color *= apply_edit_color(color);
 		color = sphere(color);
 	}
 
 	if (effectType == 15) {
+		color *= apply_edit_color(color);
 		color = sine_wave(color);
 	}
 
 	if (effectType == 16) {
+		color *= apply_edit_color(color);
 		color = vivid(color, vividParams.x, vividParams.y);
 	}
 
@@ -339,9 +353,6 @@ void main() {
 	if (uShowBorder == 1 && isBorder(vTextureCoord)) {
 		color = vec4(0.0, 1.0, 0.0, 1.0);
 	}
-
-	// const vec3 CHROMAKEY_COLOR = vec3(1.0, 1.0, 1.0);
-	// gl_FragColor = chromakey(color, CHROMAKEY_COLOR, 0.8);
 
 	gl_FragColor = color;
 }
