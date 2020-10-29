@@ -10,6 +10,7 @@ export class MainFrame implements IAppFrame {
   private view: MainView;
   private defaultDraw = new DefaultDraw();
   private gfx: Graphics | null = null;
+  private isCameraOpened = false;
   private camera = new Camera({
     video: {
       allow: true,
@@ -61,7 +62,7 @@ export class MainFrame implements IAppFrame {
 
     this.gfx.pushRenderTarget(this.defaultDraw);
 
-    const backSprite = new Sprite(this.view.canvas.width, this.view.canvas.height);
+    const backSprite = new Sprite(this.view.canvas.width, this.view.canvas.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
     backSprite.initialize();
     backSprite.size = new Size(0, 0, 512, 512);
     backSprite.depth = 0.0001;
@@ -77,7 +78,7 @@ export class MainFrame implements IAppFrame {
       backSprite.setTexture(tex);
     });
 
-    this.camera.open();
+    this.camera.open().then((x) => this.isCameraOpened = x);
   }
 
   onUpdate() {
@@ -85,14 +86,14 @@ export class MainFrame implements IAppFrame {
       return;
     }
 
-    const sprite = this.defaultDraw.sprites[1];
-
     this.loadTextureFromCamera().then((tex) => {
       if (!tex) {
         return;
       }
-      sprite.setTexture(tex);
+      this.defaultDraw.sprites[1].setTexture(tex);
     });
+
+    const sprite = this.isCameraOpened ? this.defaultDraw.sprites[1] : this.defaultDraw.sprites[0];
 
     sprite.rotate = this.view.getRotationValue();
     sprite.scale = this.view.getScaleValue();
@@ -118,7 +119,7 @@ export class MainFrame implements IAppFrame {
           return;
         }
 
-        const tex = Graphics.createTexture(this.gfx.gl, img);
+        const tex = Graphics.createTextureFromImage(this.gfx.gl, img);
         if (!tex) {
           console.log('texture is null.');
           resolve(null);
@@ -143,7 +144,7 @@ export class MainFrame implements IAppFrame {
       return null;
     }
 
-    const tex = Graphics.createTexture(this.gfx.gl, bmp);
+    const tex = Graphics.createTextureFromImage(this.gfx.gl, bmp);
     bmp.close();
 
     if (!tex) {

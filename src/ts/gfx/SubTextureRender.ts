@@ -47,7 +47,7 @@ export class SubTextureRender implements IDrawable {
       if (!this.gl) {
         return;
       }
-      const tex = Graphics.createTexture(this.gl, img);
+      const tex = Graphics.createTextureFromImage(this.gl, img);
       if (!tex) {
         console.log('texture is null.');
         return;

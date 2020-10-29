@@ -54,14 +54,14 @@ vec4 laplacian4(vec4 pix[9]) {
 	return x;
 }
 
-// 二次微分 laplacian 8方向
+// 二次微分(差分) laplacian 8方向
 vec4 laplacian8(vec4 pix[9]) {
 	vec4 d =
-		-1.0 * pix[0] + -1.0 * pix[1] + -1.0 * pix[2] +
-		-1.0 * pix[3] +  8.0 * pix[4] + -1.0 * pix[5] +
-		-1.0 * pix[6] + -1.0 * pix[7] + -1.0 * pix[8];
+		1.0 * pix[0] +  1.0 * pix[1] + 1.0 * pix[2] +
+		1.0 * pix[3] + -8.0 * pix[4] + 1.0 * pix[5] +
+		1.0 * pix[6] +  1.0 * pix[7] + 1.0 * pix[8];
 	vec4 x = abs(d);
-	return x;
+	return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // 一次微分 Roberts

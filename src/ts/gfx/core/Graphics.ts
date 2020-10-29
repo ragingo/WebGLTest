@@ -64,7 +64,35 @@ export class Graphics {
     return buf;
   }
 
-  public static createTexture(gl: WebGLRenderingContext, img: TexImageSource) {
+  public static createFrameBuffer(gl: WebGLRenderingContext, width: number, height: number) {
+    const buf = gl.createFramebuffer();
+    gl.bindBuffer(gl.FRAMEBUFFER, buf);
+
+    const tex = this.createTexture(gl, width, height);
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindBuffer(gl.FRAMEBUFFER, null);
+    return buf;
+  }
+
+  public static createTexture(gl: WebGLRenderingContext, width: number, height: number) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+
+    // NPOT の場合は filter は linear, wrap は clamp to edge にしないといけない
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return tex;
+  }
+
+  public static createTextureFromImage(gl: WebGLRenderingContext, img: TexImageSource) {
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
