@@ -1,5 +1,6 @@
 import { Graphics } from '../gfx/core/Graphics';
 import { Sprite } from '../gfx/core/Sprite';
+import { Size } from '../gfx/core/types';
 import { DefaultDraw } from '../gfx/DefaultDraw';
 import { Camera } from '../media/Camera';
 import { MainView } from '../views/MainView';
@@ -62,19 +63,13 @@ export class MainFrame implements IAppFrame {
 
     const backSprite = new Sprite(this.view.canvas.width, this.view.canvas.height);
     backSprite.initialize();
-    backSprite.left = 0;
-    backSprite.top = 0;
-    backSprite.width = 512;
-    backSprite.height = 512;
+    backSprite.size = new Size(0, 0, 512, 512);
     backSprite.depth = 0.0001;
     this.defaultDraw.sprites.push(backSprite);
 
     const frontSprite = new Sprite(this.view.canvas.width, this.view.canvas.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
     frontSprite.initialize();
-    frontSprite.left = 512 / 4;
-    frontSprite.top = 512 / 4;
-    frontSprite.width = 512 / 2;
-    frontSprite.height = 512 / 2;
+    frontSprite.size = new Size(512 / 4, 512 / 4, 512 / 2, 512 / 2);
     frontSprite.depth = 0;
     this.defaultDraw.sprites.push(frontSprite);
 
@@ -90,26 +85,26 @@ export class MainFrame implements IAppFrame {
       return;
     }
 
+    const sprite = this.defaultDraw.sprites[1];
+
     this.loadTextureFromCamera().then((tex) => {
       if (!tex) {
         return;
       }
-      this.defaultDraw.sprites[1].setTexture(tex);
+      sprite.setTexture(tex);
     });
 
-    this.defaultDraw.sprites.forEach((sprite) => {
-      sprite.rotate = this.view.getRotationValue();
-      sprite.scale = this.view.getScaleValue();
-      sprite.uniformLocationValues.length = 0;
+    sprite.rotate = this.view.getRotationValue();
+    sprite.scale = this.view.getScaleValue();
+    sprite.uniformLocationInfos.length = 0;
 
-      const color = this.view.getColorValue()
-      sprite.uniformLocationValues.push(['float', 'editColor', new Float32Array([color.r, color.g, color.b, color.a])]);
-      sprite.uniformLocationValues.push(['int', 'effectType', this.view.getEffectTypeValue() as GLint]);
-
-      // const vividParams = this.view.getVividValue();
-      // const binarizeThreshold = this.view.getBinarizeThresholdValue();
-      // const showBorder = true;
-    });
+    const color = this.view.getColorValue()
+    const vivid = this.view.getVividValue();
+    sprite.uniformLocationInfos.push({ type: 'float', name: 'editColor', value: [color.r, color.g, color.b, color.a] });
+    sprite.uniformLocationInfos.push({ type: 'int', name: 'effectType', value: this.view.getEffectTypeValue() });
+    sprite.uniformLocationInfos.push({ type: 'float', name: 'binarizeThreshold', value: this.view.getBinarizeThresholdValue() });
+    sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
+    sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
     this.gfx.render();
   }

@@ -2,7 +2,7 @@ import { Graphics } from "./Graphics";
 import { ShaderLoader } from "./ShaderLoader";
 import { ShaderProgram } from "./ShaderProgram";
 import { Texture } from "./Texture";
-import { CropInfo, Coordinate } from "./types";
+import { Crop, Coordinate, UniformInfo, Rotate, Scale, Size } from "./types";
 
 export class Sprite {
   private gl: WebGLRenderingContext | null = null;
@@ -27,21 +27,18 @@ export class Sprite {
     }
   }
 
-  public uniformLocationValues: ['int' | 'uint' | 'float', string, any][] = [];
+  public uniformLocationInfos: UniformInfo[] = [];
 
   constructor(
     private readonly canvasWidth: number,
     private readonly canvasHeight: number,
     private readonly vertexShaderPath?: string,
     private readonly fragmentShaderPath?: string,
-    public left = 0,
-    public top = 0,
-    public width = 0,
-    public height = 0,
+    public size = new Size(),
     public depth = 0,
-    public crop = new CropInfo(),
-    public scale: { x: number; y: number; z: number; } = { x: 1, y: 1, z: 1 },
-    public rotate: { x: number; y: number; z: number; } = { x: 0, y: 0, z: 0 },
+    public crop = new Crop(),
+    public scale: Scale = { x: 1, y: 1, z: 1 },
+    public rotate: Rotate = { x: 0, y: 0, z: 0 },
     public sliceBorder = [0, 0, 0, 0],
   ) {
     if (!this.vertexShaderPath || this.vertexShaderPath.length === 0) {
@@ -95,10 +92,10 @@ export class Sprite {
     }
 
     if (this.crop.width == 0) {
-      this.crop.width = this.width;
+      this.crop.width = this.size.width;
     }
     if (this.crop.height == 0) {
-      this.crop.height = this.height;
+      this.crop.height = this.size.height;
     }
     if (this.sliceBorder.length != 4) {
       return;
@@ -117,69 +114,31 @@ export class Sprite {
       this.texture.activate();
       this.texture.bind();
 
-      const uniformLocations = {
-        scale: gl.getUniformLocation(program, 'scale'),
-        rotation: gl.getUniformLocation(program, 'rotation'),
-        sampler: gl.getUniformLocation(program, 'uSampler'),
-        textureSize: gl.getUniformLocation(program, 'textureSize'),
-      };
+      const infos: UniformInfo[] = [
+        { type: 'int', name: 'uSampler', value: 0 },
+        { type: 'float', name: 'scale', value: [this.scale.x, this.scale.y, this.scale.z] },
+        { type: 'float', name: 'rotation', value: [this.rotate.x, this.rotate.y, this.rotate.z] },
+        { type: 'float', name: 'textureSize', value: [this.size.width, this.size.height] },
+      ];
 
-      this.uniformLocationValues.forEach((x) => {
-        const type = x[0];
-        const name = x[1];
-        const value = x[2];
-        switch (type) {
-          case 'int':
-            gl.uniform1i(gl.getUniformLocation(program, name), value);
-            break;
-
-          case 'float':
-            if (value instanceof Float32Array) {
-              switch (value.length) {
-                case 2:
-                  gl.uniform2fv(gl.getUniformLocation(program, name), value);
-                  break;
-                case 3:
-                  gl.uniform3fv(gl.getUniformLocation(program, name), value);
-                  break;
-                case 4:
-                  gl.uniform4fv(gl.getUniformLocation(program, name), value);
-                  break;
-              }
-            } else {
-              gl.uniform1f(gl.getUniformLocation(program, name), value);
-            }
-            break;
-        }
+      infos.forEach((x) => {
+        Graphics.registerUniformLocation(gl, program, x);
       });
-
-      // テクスチャ登録
-      gl.uniform1i(uniformLocations.sampler, 0);
-
-      if (uniformLocations.scale) {
-        gl.uniform3fv(uniformLocations.scale, new Float32Array([this.scale.x, this.scale.y, this.scale.z]));
-      }
-      if (uniformLocations.rotation) {
-        gl.uniform3fv(uniformLocations.rotation, new Float32Array([this.rotate.x, this.rotate.y, this.rotate.z]));
-      }
-      if (uniformLocations.textureSize) {
-        gl.uniform2fv(uniformLocations.textureSize, [this.width, this.height]);
-      }
+      this.uniformLocationInfos.forEach((x) => {
+        Graphics.registerUniformLocation(gl, program, x);
+      });
     }
 
     const positions = [];
     const texcoords = [];
 
     {
-      const left_w = this.sliceBorder[0];
-      const top_h = this.sliceBorder[1];
-      const right_w = this.sliceBorder[2];
-      const bottom_h = this.sliceBorder[3];
+      const [left_w, top_h, right_w, bottom_h] = this.sliceBorder;
 
-      const scaled_w = this.width * this.scale.x;
-      const scaled_h = this.height * this.scale.y;
-      const pos_lb_l = this.left;
-      const pos_tb_t = this.top;
+      const scaled_w = this.size.width * this.scale.x;
+      const scaled_h = this.size.height * this.scale.y;
+      const pos_lb_l = this.size.left;
+      const pos_tb_t = this.size.top;
       const pos_cb_l = pos_lb_l + left_w;
       const pos_cb_t = pos_tb_t + top_h;
       const pos_cb_w = scaled_w - (left_w + right_w);
@@ -240,34 +199,24 @@ export class Sprite {
       );
 
       vertices_pos.push(
-        ...[
-          world_pos.left,
-          world_pos.bottom,
-          this.depth,
-          world_pos.right,
-          world_pos.bottom,
-          this.depth,
-          world_pos.left,
-          world_pos.top,
-          this.depth,
-          world_pos.right,
-          world_pos.top,
-          this.depth
-        ]
+        world_pos.left, world_pos.bottom, this.depth,
+        world_pos.right, world_pos.bottom, this.depth,
+        world_pos.left, world_pos.top, this.depth,
+        world_pos.right, world_pos.top, this.depth
       );
     }
 
     for (let i = 0; i < texcoords.length; i++) {
       const screen_tc = texcoords[i];
       const uv_tc = {
-        left: screen_tc.left / this.width,
-        top: screen_tc.top / this.height,
-        right: (screen_tc.left + screen_tc.width) / this.width,
-        bottom: (screen_tc.top + screen_tc.height) / this.height
+        left: screen_tc.left / this.size.width,
+        top: screen_tc.top / this.size.height,
+        right: (screen_tc.left + screen_tc.width) / this.size.width,
+        bottom: (screen_tc.top + screen_tc.height) / this.size.height
       };
 
       vertices_uv.push(
-        ...[uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom, uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top]
+        uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom, uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
       );
     }
 

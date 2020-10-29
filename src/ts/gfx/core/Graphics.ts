@@ -1,4 +1,5 @@
 import { IDrawable } from "./IDrawable";
+import { UniformInfo } from "./types";
 
 export class Graphics {
   private drawTargets: IDrawable[] = [];
@@ -77,5 +78,32 @@ export class Graphics {
 
     gl.bindTexture(gl.TEXTURE_2D, null);
     return tex;
+  }
+
+  public static registerUniformLocation(gl: WebGLRenderingContext, program: WebGLProgram, info: UniformInfo) {
+    const { type, name, value } = info;
+    switch (type) {
+      case 'int':
+        gl.uniform1i(gl.getUniformLocation(program, name), value);
+        break;
+
+      case 'float':
+        if (Array.isArray(value)) {
+          switch (value.length) {
+            case 2:
+              gl.uniform2fv(gl.getUniformLocation(program, name), new Float32Array(value));
+              break;
+            case 3:
+              gl.uniform3fv(gl.getUniformLocation(program, name), new Float32Array(value));
+              break;
+            case 4:
+              gl.uniform4fv(gl.getUniformLocation(program, name), new Float32Array(value));
+              break;
+          }
+        } else {
+          gl.uniform1f(gl.getUniformLocation(program, name), value);
+        }
+        break;
+    }
   }
 }
