@@ -144,6 +144,8 @@ export class MainFrame implements IAppFrame {
     }
 
     const tex = Graphics.createTexture(this.gfx.gl, bmp);
+    bmp.close();
+
     if (!tex) {
       console.log('texture is null.');
       return null;
