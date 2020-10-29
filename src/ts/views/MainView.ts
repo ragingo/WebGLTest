@@ -22,6 +22,7 @@ const effects = [
   { id: 14, name: '球' },
   { id: 15, name: '正弦波' },
   { id: 16, name: '鮮やか' },
+  { id: 17, name: '実験' },
 ];
 
 export class MainView {

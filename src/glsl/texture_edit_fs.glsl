@@ -248,7 +248,7 @@ void main() {
 	// 元の色
 	vec4 color = texture2D(uSampler, vTextureCoord);
 
-	color *= apply_edit_color(color);
+	// color *= apply_edit_color(color);
 
 	if (effectType == 0) {
 		// 何もしない
@@ -324,6 +324,16 @@ void main() {
 
 	if (effectType == 16) {
 		color = vivid(color, vividParams.x, vividParams.y);
+	}
+
+	if (effectType == 17) {
+		// 背景画像とカメラ映像を合成する実験
+		// TODO: 輪郭の外側の色を破棄したい。今は小細工して背景の色をなんとか抜いてる...
+		vec4 original = color;
+		color *= vec4(0, 149.0/255.0, 0.0, 1.0);
+		color = binarize(color, 0.34);
+		color = chromakey(color, vec3(0, 0, 0), 0.8);
+		color = original * color;
 	}
 
 	if (uShowBorder == 1 && isBorder(vTextureCoord)) {
