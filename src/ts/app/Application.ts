@@ -1,5 +1,5 @@
-import { Graphics } from "../gfx/core/Graphics";
-import { MainScene } from "../gfx/MainScene";
+import { Graphics } from "../gfx/Graphics";
+import { MainScene } from "./MainScene";
 
 export class Application {
 

@@ -1,9 +1,9 @@
 import { Camera } from "../media/Camera";
 import { MainView } from "../views/MainView";
-import { Graphics } from "./core/Graphics";
-import { IScene as IScene } from "./core/IScene";
-import { Sprite } from "./core/Sprite";
-import { Size } from "./core/types";
+import { Graphics } from "../gfx/Graphics";
+import { IScene } from "../gfx/IScene";
+import { Sprite } from "../gfx/Sprite";
+import { Size } from "../gfx/types";
 
 export class MainScene implements IScene {
   public canvas: HTMLCanvasElement | null = null;

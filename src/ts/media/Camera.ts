@@ -1,4 +1,4 @@
-import { Graphics } from "../gfx/core/Graphics";
+import { Graphics } from "../gfx/Graphics";
 
 const DEFAULT_INPUT_VIDEO_WIDTH = 640;
 const DEFAULT_INPUT_VIDEO_HEIGHT = 480;
