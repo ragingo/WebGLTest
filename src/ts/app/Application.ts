@@ -1,18 +1,15 @@
-import { IAppFrame } from "./IAppFrame";
+import { Graphics } from "../gfx/core/Graphics";
+import { MainScene } from "../gfx/MainScene";
 
 export class Application {
-  private static s_AppFrames: IAppFrame[] = [];
-
-  public static registerAppFrame(frame: IAppFrame) {
-    Application.s_AppFrames.push(frame);
-  }
 
   public static main() {
-    Application.s_AppFrames.forEach((f) => {
-      f.onStart();
-    });
+    const gfx = new Graphics();
+    gfx.pushScene(new MainScene(512, 512));
+    gfx.init(512, 512);
+    gfx.prepare();
 
-    let frameCount = 0;
+    // let frameCount = 0;
     let now = 0.0;
     let last = 0.0;
     let elapsed = 0.0;
@@ -22,19 +19,17 @@ export class Application {
       elapsed += now - last;
       last = now;
 
-      frameCount++;
+      // frameCount++;
 
       if (elapsed >= 1000) {
-        Application.s_AppFrames.forEach((f) => {
-          f.onFpsUpdate(frameCount);
-        });
-        frameCount = 0;
+        // Application.s_AppFrames.forEach((f) => {
+        //   f.onFpsUpdate(frameCount);
+        // });
+        // frameCount = 0;
         elapsed -= 1000.0;
       }
 
-      Application.s_AppFrames.forEach((f) => {
-        f.onUpdate();
-      });
+      gfx.render();
 
       window.requestAnimationFrame(frameRequestCallback);
     };
