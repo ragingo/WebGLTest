@@ -8,8 +8,11 @@ import { Size } from "../gfx/types";
 export class MainScene implements IScene {
   public canvas: HTMLCanvasElement | null = null;
   private gl: WebGLRenderingContext | null = null;
-  private view: MainView;
+  private view = new MainView();
   public canvasCtx: CanvasRenderingContext2D | null = null;
+  private backSprite: Sprite | null = null;
+  private frontSprite: Sprite | null = null;
+
   private isCameraOpened = false;
   private camera = new Camera({
     video: {
@@ -29,15 +32,6 @@ export class MainScene implements IScene {
     }
   });
 
-  public readonly sprites: Sprite[] = [];
-
-  constructor(
-    private readonly width: number,
-    private readonly height: number,
-  ) {
-    this.view = new MainView();
-  }
-
   getContext() {
     return this.gl;
   }
@@ -56,20 +50,18 @@ export class MainScene implements IScene {
 
     this.canvasCtx = this.canvas.getContext('2d');
 
-    const backSprite = new Sprite(this.width, this.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
-    backSprite.initialize();
-    backSprite.size = new Size(0, 0, 512, 512);
-    backSprite.depth = 0.0001;
-    this.sprites.push(backSprite);
+    this.backSprite = new Sprite(this.canvas.width, this.canvas.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
+    this.backSprite.initialize();
+    this.backSprite.size = new Size(0, 0, this.canvas.width, this.canvas.height);
+    this.backSprite.depth = 0.0001;
 
-    const frontSprite = new Sprite(this.width, this.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
-    frontSprite.initialize();
-    frontSprite.size = new Size(512 / 4, 512 / 4, 512 / 2, 512 / 2);
-    frontSprite.depth = 0;
-    this.sprites.push(frontSprite);
+    this.frontSprite = new Sprite(this.canvas.width, this.canvas.height, './glsl/texture_edit_vs.glsl', './glsl/texture_edit_fs.glsl');
+    this.frontSprite.initialize();
+    this.frontSprite.size = new Size(this.canvas.width / 4, this.canvas.height / 4, this.canvas.width / 2, this.canvas.height / 2);
+    this.frontSprite.depth = 0;
 
     Graphics.loadTextureFromImageFile(this.gl, './res/Lenna.png').then((tex) => {
-      backSprite.setTexture(tex);
+      this.backSprite?.setTexture(tex);
     });
 
     this.camera.open().then((x) => this.isCameraOpened = x);
@@ -94,10 +86,13 @@ export class MainScene implements IScene {
       if (!tex) {
         return;
       }
-      this.sprites[1].setTexture(tex);
+      this.frontSprite?.setTexture(tex);
     });
 
-    const sprite = this.isCameraOpened ? this.sprites[1] : this.sprites[0];
+    const sprite = this.isCameraOpened ? this.frontSprite : this.backSprite;
+    if (!sprite) {
+      return;
+    }
 
     sprite.rotate = this.view.getRotationValue();
     sprite.scale = this.view.getScaleValue();
@@ -111,12 +106,8 @@ export class MainScene implements IScene {
     sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
     sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
-    this.sprites.forEach((sprite) => {
-      if (!this.gl) {
-        return;
-      }
-      sprite.draw(this.gl);
-    })
+    this.backSprite?.draw(this.gl);
+    this.frontSprite?.draw(this.gl);
   }
 
   onEndDraw() {

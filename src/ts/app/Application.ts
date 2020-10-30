@@ -5,7 +5,7 @@ export class Application {
 
   public static main() {
     const gfx = new Graphics();
-    gfx.pushScene(new MainScene(512, 512));
+    gfx.pushScene(new MainScene());
     gfx.init(512, 512);
     gfx.prepare();
 
