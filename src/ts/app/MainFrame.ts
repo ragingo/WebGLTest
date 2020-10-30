@@ -74,7 +74,7 @@ export class MainFrame implements IAppFrame {
     frontSprite.depth = 0;
     this.defaultDraw.sprites.push(frontSprite);
 
-    this.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
+    Graphics.loadTextureFromImageFile(gl, './res/Lenna.png').then((tex) => {
       backSprite.setTexture(tex);
     });
 
@@ -86,7 +86,7 @@ export class MainFrame implements IAppFrame {
       return;
     }
 
-    this.loadTextureFromCamera().then((tex) => {
+    this.camera.consumeDecodedFrameAsTexture(this.gfx.gl).then((tex) => {
       if (!tex) {
         return;
       }
@@ -108,50 +108,5 @@ export class MainFrame implements IAppFrame {
     sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
     this.gfx.render();
-  }
-
-  private loadTextureFromImageFile(src: string) {
-    return new Promise<WebGLTexture | null>((resolve) => {
-      let img = new Image();
-      img.onload = () => {
-        if (!this.gfx) {
-          resolve(null);
-          return;
-        }
-
-        const tex = Graphics.createTextureFromImage(this.gfx.gl, img);
-        if (!tex) {
-          console.log('texture is null.');
-          resolve(null);
-          return;
-        }
-
-        resolve(tex);
-        console.log('texture loaded.');
-      };
-
-      img.src = src;
-    });
-  }
-
-  private async loadTextureFromCamera() {
-    if (!this.gfx) {
-      return null;
-    }
-
-    const bmp = await this.camera.consumeDecodedFrameAsImageBitmap();
-    if (!bmp) {
-      return null;
-    }
-
-    const tex = Graphics.createTextureFromImage(this.gfx.gl, bmp);
-    bmp.close();
-
-    if (!tex) {
-      console.log('texture is null.');
-      return null;
-    }
-
-    return tex;
   }
 }

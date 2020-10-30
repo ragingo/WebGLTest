@@ -134,4 +134,23 @@ export class Graphics {
         break;
     }
   }
+
+  public static loadTextureFromImageFile(gl: WebGLRenderingContext, src: string) {
+    return new Promise<WebGLTexture | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const tex = Graphics.createTextureFromImage(gl, img);
+        if (!tex) {
+          console.log('texture is null.');
+          resolve(null);
+          return;
+        }
+
+        resolve(tex);
+        console.log('texture loaded.');
+      };
+
+      img.src = src;
+    });
+  }
 }

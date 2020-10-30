@@ -1,3 +1,5 @@
+import { Graphics } from "../gfx/core/Graphics";
+
 const DEFAULT_INPUT_VIDEO_WIDTH = 640;
 const DEFAULT_INPUT_VIDEO_HEIGHT = 480;
 const DEFAULT_INPUT_VIDEO_FRAMERATE = 30;
@@ -30,6 +32,11 @@ export class Camera {
   private videoDecoder: any | null = null;
   private decodedFrameQueue: any[] = [];
 
+  #available = false;
+  public get available() {
+    return this.#available;
+  }
+
   public consumeDecodedFrame() {
     return this.decodedFrameQueue.shift();
   }
@@ -47,6 +54,23 @@ export class Camera {
     }) as ImageBitmap;
 
     return bmp;
+  }
+
+  public async consumeDecodedFrameAsTexture(gl: WebGLRenderingContext) {
+    const bmp = await this.consumeDecodedFrameAsImageBitmap();
+    if (!bmp) {
+      return null;
+    }
+
+    const tex = Graphics.createTextureFromImage(gl, bmp);
+    bmp.close();
+
+    if (!tex) {
+      console.log('texture is null.');
+      return null;
+    }
+
+    return tex;
   }
 
   constructor(private readonly cameraInit: CameraInit) {}
@@ -138,6 +162,7 @@ export class Camera {
       this.videoEncoder.encode(frame);
     });
 
+    this.#available = true;
     return true;
   }
 }
