@@ -129,58 +129,7 @@ export class Sprite {
       });
     }
 
-    const positions = [];
-    const texcoords = [];
-
-    {
-      const [left_w, top_h, right_w, bottom_h] = this.sliceBorder;
-
-      const scaled_w = this.size.width * this.scale.x;
-      const scaled_h = this.size.height * this.scale.y;
-      const pos_lb_l = this.size.left;
-      const pos_tb_t = this.size.top;
-      const pos_cb_l = pos_lb_l + left_w;
-      const pos_cb_t = pos_tb_t + top_h;
-      const pos_cb_w = scaled_w - (left_w + right_w);
-      const pos_cb_h = scaled_h - (top_h + bottom_h);
-      const pos_rb_l = pos_lb_l + scaled_w - right_w;
-      const pos_bb_t = pos_tb_t + scaled_h - bottom_h;
-
-      const tc_cb_w = this.crop.width - (left_w + right_w);
-      const tc_cb_h = this.crop.height - (top_h + bottom_h);
-      const tc_rb_l = this.crop.width - right_w;
-      const tc_bb_t = this.crop.height - bottom_h;
-
-      /**
-       * 0 1 2
-       * 3 4 5
-       * 6 7 8
-       */
-
-      positions.push(
-        { left: pos_lb_l, top: pos_tb_t, width: left_w, height: top_h },
-        { left: pos_cb_l, top: pos_tb_t, width: pos_cb_w, height: top_h },
-        { left: pos_rb_l, top: pos_tb_t, width: right_w, height: top_h },
-        { left: pos_lb_l, top: pos_cb_t, width: left_w, height: pos_cb_h },
-        { left: pos_cb_l, top: pos_cb_t, width: pos_cb_w, height: pos_cb_h },
-        { left: pos_rb_l, top: pos_cb_t, width: right_w, height: pos_cb_h },
-        { left: pos_lb_l, top: pos_bb_t, width: left_w, height: bottom_h },
-        { left: pos_cb_l, top: pos_bb_t, width: pos_cb_w, height: bottom_h },
-        { left: pos_rb_l, top: pos_bb_t, width: right_w, height: bottom_h }
-      );
-
-      texcoords.push(
-        { left: 0, top: 0, width: left_w, height: top_h },
-        { left: left_w, top: 0, width: tc_cb_w, height: top_h },
-        { left: tc_rb_l, top: 0, width: right_w, height: top_h },
-        { left: 0, top: top_h, width: left_w, height: tc_cb_h },
-        { left: left_w, top: top_h, width: tc_cb_w, height: tc_cb_h },
-        { left: tc_rb_l, top: top_h, width: right_w, height: tc_cb_h },
-        { left: 0, top: tc_bb_t, width: left_w, height: bottom_h },
-        { left: left_w, top: tc_bb_t, width: tc_cb_w, height: bottom_h },
-        { left: tc_rb_l, top: tc_bb_t, width: right_w, height: bottom_h }
-      );
-    }
+    const positions = this.getPositions();
 
     // 頂点バッファ更新
     const vertices_pos: number[] = [];
@@ -205,6 +154,8 @@ export class Sprite {
         world_pos.right, world_pos.top, this.depth
       );
     }
+
+    const texcoords = this.getTexcoords();
 
     for (let i = 0; i < texcoords.length; i++) {
       const screen_tc = texcoords[i];
@@ -263,5 +214,65 @@ export class Sprite {
     world.right = coord.right * 2.0 - 1.0;
     world.bottom = -(coord.bottom * 2.0 - 1.0);
     return world;
+  }
+
+  private getPositions() {
+    const positions = [];
+    const [left_w, top_h, right_w, bottom_h] = this.sliceBorder;
+
+    const scaled_w = this.size.width * this.scale.x;
+    const scaled_h = this.size.height * this.scale.y;
+    const pos_lb_l = this.size.left;
+    const pos_tb_t = this.size.top;
+    const pos_cb_l = pos_lb_l + left_w;
+    const pos_cb_t = pos_tb_t + top_h;
+    const pos_cb_w = scaled_w - (left_w + right_w);
+    const pos_cb_h = scaled_h - (top_h + bottom_h);
+    const pos_rb_l = pos_lb_l + scaled_w - right_w;
+    const pos_bb_t = pos_tb_t + scaled_h - bottom_h;
+
+    /**
+     * 0 1 2
+     * 3 4 5
+     * 6 7 8
+     */
+
+    positions.push(
+      { left: pos_lb_l, top: pos_tb_t, width: left_w, height: top_h },
+      { left: pos_cb_l, top: pos_tb_t, width: pos_cb_w, height: top_h },
+      { left: pos_rb_l, top: pos_tb_t, width: right_w, height: top_h },
+      { left: pos_lb_l, top: pos_cb_t, width: left_w, height: pos_cb_h },
+      { left: pos_cb_l, top: pos_cb_t, width: pos_cb_w, height: pos_cb_h },
+      { left: pos_rb_l, top: pos_cb_t, width: right_w, height: pos_cb_h },
+      { left: pos_lb_l, top: pos_bb_t, width: left_w, height: bottom_h },
+      { left: pos_cb_l, top: pos_bb_t, width: pos_cb_w, height: bottom_h },
+      { left: pos_rb_l, top: pos_bb_t, width: right_w, height: bottom_h }
+    );
+
+    return positions;
+  }
+
+  private getTexcoords() {
+    const texcoords = [];
+    const [left_w, top_h, right_w, bottom_h] = this.sliceBorder;
+
+    const tc_cb_w = this.crop.width - (left_w + right_w);
+    const tc_cb_h = this.crop.height - (top_h + bottom_h);
+    const tc_rb_l = this.crop.width - right_w;
+    const tc_bb_t = this.crop.height - bottom_h;
+
+    texcoords.push(
+      { left: 0, top: 0, width: left_w, height: top_h },
+      { left: left_w, top: 0, width: tc_cb_w, height: top_h },
+      { left: tc_rb_l, top: 0, width: right_w, height: top_h },
+      { left: 0, top: top_h, width: left_w, height: tc_cb_h },
+      { left: left_w, top: top_h, width: tc_cb_w, height: tc_cb_h },
+      { left: tc_rb_l, top: top_h, width: right_w, height: tc_cb_h },
+      { left: 0, top: tc_bb_t, width: left_w, height: bottom_h },
+      { left: left_w, top: tc_bb_t, width: tc_cb_w, height: bottom_h },
+      { left: tc_rb_l, top: tc_bb_t, width: right_w, height: bottom_h }
+    );
+
+    return texcoords;
   }
 }
