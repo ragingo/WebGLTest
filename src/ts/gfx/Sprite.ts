@@ -129,46 +129,49 @@ export class Sprite {
       });
     }
 
-    const positions = this.getPositions();
-
-    // 頂点バッファ更新
     const vertices_pos: number[] = [];
-    const vertices_uv: number[] = [];
+    {
+      const positions = this.getPositions();
 
-    for (let i = 0; i < positions.length; i++) {
-      const screen_pos = positions[i];
+      for (let i = 0; i < positions.length; i++) {
+        const screen_pos = positions[i];
 
-      const world_pos = this.screenToWorld(
-        new Coordinate(
-          screen_pos.left / this.canvasWidth,
-          screen_pos.top / this.canvasHeight,
-          (screen_pos.left + screen_pos.width) / this.canvasWidth,
-          (screen_pos.top + screen_pos.height) / this.canvasHeight
-        )
-      );
+        const world_pos = this.screenToWorld(
+          new Coordinate(
+            screen_pos.left / this.canvasWidth,
+            screen_pos.top / this.canvasHeight,
+            (screen_pos.left + screen_pos.width) / this.canvasWidth,
+            (screen_pos.top + screen_pos.height) / this.canvasHeight
+          )
+        );
 
-      vertices_pos.push(
-        world_pos.left, world_pos.bottom, this.depth,
-        world_pos.right, world_pos.bottom, this.depth,
-        world_pos.left, world_pos.top, this.depth,
-        world_pos.right, world_pos.top, this.depth
-      );
+        vertices_pos.push(
+          world_pos.left, world_pos.bottom, this.depth,
+          world_pos.right, world_pos.bottom, this.depth,
+          world_pos.left, world_pos.top, this.depth,
+          world_pos.right, world_pos.top, this.depth
+        );
+      }
     }
 
-    const texcoords = this.getTexcoords();
+    const vertices_uv: number[] = [];
+    {
+      const texcoords = this.getTexcoords();
 
-    for (let i = 0; i < texcoords.length; i++) {
-      const screen_tc = texcoords[i];
-      const uv_tc = {
-        left: screen_tc.left / this.size.width,
-        top: screen_tc.top / this.size.height,
-        right: (screen_tc.left + screen_tc.width) / this.size.width,
-        bottom: (screen_tc.top + screen_tc.height) / this.size.height
-      };
+      for (let i = 0; i < texcoords.length; i++) {
+        const screen_tc = texcoords[i];
+        const uv_tc = {
+          left: screen_tc.left / this.size.width,
+          top: screen_tc.top / this.size.height,
+          right: (screen_tc.left + screen_tc.width) / this.size.width,
+          bottom: (screen_tc.top + screen_tc.height) / this.size.height
+        };
 
-      vertices_uv.push(
-        uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom, uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
-      );
+        vertices_uv.push(
+          uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom,
+          uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
+        );
+      }
     }
 
     // インデックスバッファ生成 & 登録
