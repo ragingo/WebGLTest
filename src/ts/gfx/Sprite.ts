@@ -4,12 +4,19 @@ import { ShaderProgram } from "./ShaderProgram";
 import { Texture } from "./Texture";
 import { Crop, Coordinate, UniformInfo, Rotate, Scale, Size } from "./types";
 
+type VertexBufferObject = {
+  buffer: WebGLBuffer | null;
+  location: number;
+  stride: number;
+};
+
 export class Sprite {
   private gl: WebGLRenderingContext | null = null;
   private shaderProgram: ShaderProgram | null = null;
   private vertexShader: string | null = null;
   private fragmentShader: string | null = null;
   private texture: Texture | null = null;
+  private vertexBufferObjects: VertexBufferObject[] = [];
 
   public getTexture() {
     return this.texture;
@@ -132,74 +139,17 @@ export class Sprite {
       });
     }
 
-    const vertices_pos: number[] = [];
-    {
-      const positions = this.getPositions();
-
-      for (let i = 0; i < positions.length; i++) {
-        const screen_pos = positions[i];
-
-        const world_pos = this.screenToWorld(
-          new Coordinate(
-            screen_pos.left / this.canvasWidth,
-            screen_pos.top / this.canvasHeight,
-            (screen_pos.left + screen_pos.width) / this.canvasWidth,
-            (screen_pos.top + screen_pos.height) / this.canvasHeight
-          )
-        );
-
-        vertices_pos.push(
-          world_pos.left, world_pos.bottom, this.depth,
-          world_pos.right, world_pos.bottom, this.depth,
-          world_pos.left, world_pos.top, this.depth,
-          world_pos.right, world_pos.top, this.depth
-        );
-      }
-    }
-
-    const vertices_uv: number[] = [];
-    {
-      const texcoords = this.getTexcoords();
-
-      for (let i = 0; i < texcoords.length; i++) {
-        const screen_tc = texcoords[i];
-        const uv_tc = {
-          left: screen_tc.left / this.size.width,
-          top: screen_tc.top / this.size.height,
-          right: (screen_tc.left + screen_tc.width) / this.size.width,
-          bottom: (screen_tc.top + screen_tc.height) / this.size.height
-        };
-
-        vertices_uv.push(
-          uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom,
-          uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
-        );
-      }
-    }
-
-    // インデックスバッファ生成 & 登録
+    // index buffer
     if (!this.indexBuffer) {
-      this.indexData.length = 0;
-      for (let i = 0; i < 9; i++) {
-        this.indexData.push(...[0, 1, 2, 1, 3, 2].map((v) => v + 4 * i));
-      }
-      this.indexBuffer = Graphics.createIndexBuffer(gl, this.indexData);
+      this.createIndexBuffer();
     }
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-    const vbo_array = [
-      {
-        buffer: Graphics.createVertexBuffer(gl, vertices_pos),
-        location: gl.getAttribLocation(program, 'position'),
-        stride: 3
-      },
-      {
-        buffer: Graphics.createVertexBuffer(gl, vertices_uv),
-        location: gl.getAttribLocation(program, 'texCoord'),
-        stride: 2
-      }
-    ];
-    vbo_array.forEach((item) => {
+    // vertex buffer objects
+    if (this.vertexBufferObjects.length === 0) {
+      this.vertexBufferObjects = this.createVertexBufferObjects();
+    }
+    this.vertexBufferObjects.forEach((item) => {
       gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
       gl.enableVertexAttribArray(item.location);
       gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
@@ -281,5 +231,90 @@ export class Sprite {
     );
 
     return texcoords;
+  }
+
+  private createIndexBuffer() {
+    if (!this.gl) {
+      return;
+    }
+
+    this.indexData.length = 0;
+
+    for (let i = 0; i < 9; i++) {
+      this.indexData.push(...[0, 1, 2, 1, 3, 2].map((v) => v + 4 * i));
+    }
+
+    this.indexBuffer = Graphics.createIndexBuffer(this.gl, this.indexData);
+  }
+
+  private createVertexBufferObjects() {
+    if (!this.gl) {
+      return [];
+    }
+
+    const program = this.shaderProgram?.get();
+    if (!program) {
+      return [];
+    }
+
+    const vertices_pos: number[] = [];
+    {
+      const positions = this.getPositions();
+
+      for (let i = 0; i < positions.length; i++) {
+        const screen_pos = positions[i];
+
+        const world_pos = this.screenToWorld(
+          new Coordinate(
+            screen_pos.left / this.canvasWidth,
+            screen_pos.top / this.canvasHeight,
+            (screen_pos.left + screen_pos.width) / this.canvasWidth,
+            (screen_pos.top + screen_pos.height) / this.canvasHeight
+          )
+        );
+
+        vertices_pos.push(
+          world_pos.left, world_pos.bottom, this.depth,
+          world_pos.right, world_pos.bottom, this.depth,
+          world_pos.left, world_pos.top, this.depth,
+          world_pos.right, world_pos.top, this.depth
+        );
+      }
+    }
+
+    const vertices_uv: number[] = [];
+    {
+      const texcoords = this.getTexcoords();
+
+      for (let i = 0; i < texcoords.length; i++) {
+        const screen_tc = texcoords[i];
+        const uv_tc = {
+          left: screen_tc.left / this.size.width,
+          top: screen_tc.top / this.size.height,
+          right: (screen_tc.left + screen_tc.width) / this.size.width,
+          bottom: (screen_tc.top + screen_tc.height) / this.size.height
+        };
+
+        vertices_uv.push(
+          uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom,
+          uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
+        );
+      }
+    }
+
+    const objects = [
+      {
+        buffer: Graphics.createVertexBuffer(this.gl, vertices_pos),
+        location: this.gl.getAttribLocation(program, 'position'),
+        stride: 3
+      },
+      {
+        buffer: Graphics.createVertexBuffer(this.gl, vertices_uv),
+        location: this.gl.getAttribLocation(program, 'texCoord'),
+        stride: 2
+      }
+    ];
+
+    return objects;
   }
 }
