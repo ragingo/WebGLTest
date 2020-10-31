@@ -35,8 +35,6 @@ export class MainView {
   private vivid: Slider[] = [];
   private binarize: Slider;
 
-  public canvas: HTMLCanvasElement;
-
   public setFpsLabel(value: string) {
     this.fpsLabel.innerText = value;
   }
@@ -81,12 +79,20 @@ export class MainView {
     };
   }
 
+  public addCanvas(canvas: HTMLCanvasElement) {
+    const parent = document.querySelector('.app__left');
+    if (!parent) {
+      return;
+    }
+    canvas.className = 'app__canvas';
+    parent.appendChild(canvas);
+  }
+
   constructor() {
     this.reset = getBySelector('.app__reset');
     this.reset.onclick = this.onResetClick;
 
     this.fpsLabel = getBySelector('.app__fps');
-    this.canvas = getBySelector('.app__canvas');
 
     this.effectSelector = getBySelector('.app__effect-selector');
     effects.forEach((x) => {

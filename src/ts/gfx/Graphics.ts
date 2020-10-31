@@ -1,12 +1,24 @@
-import { IDrawable } from "./IDrawable";
+import { IScene } from "./IScene";
 import { UniformInfo } from "./types";
 
 export class Graphics {
-  private drawTargets: IDrawable[] = [];
+  private scenes: IScene[] = [];
+  private canvas: HTMLCanvasElement;
+  public readonly gl: WebGLRenderingContext;
 
-  constructor(public readonly gl: WebGLRenderingContext) {}
+  public getCanvas() {
+    return this.canvas;
+  }
+
+  constructor() {
+    this.canvas = document.createElement('canvas');
+    this.gl = this.canvas.getContext('webgl')!;
+  }
 
   public init(width: number, height: number) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+
     this.gl.viewport(0, 0, width, height);
 
     // アルファブレンドの有効化
@@ -21,31 +33,35 @@ export class Graphics {
   }
 
   public prepare() {
+    this.scenes.forEach((scene) => {
+      scene.canvas = this.canvas;
+      scene.setContext(this.gl);
+      scene.onPrepare();
+    });
     return true;
   }
 
   public render() {
     // begin
-    this.drawTargets.forEach((elem) => {
-      elem.setContext(this.gl);
-      elem.onBeginDraw();
+    this.scenes.forEach((scene) => {
+      scene.onBeginDraw();
     });
 
     // rendering
-    this.drawTargets.forEach((elem) => {
-      elem.onDraw();
+    this.scenes.forEach((scene) => {
+      scene.onDraw();
     });
 
     // end
-    this.drawTargets.forEach((elem) => {
-      elem.onEndDraw();
+    this.scenes.forEach((scene) => {
+      scene.onEndDraw();
     });
 
     this.gl.flush();
   }
 
-  public pushRenderTarget(d: IDrawable) {
-    this.drawTargets.push(d);
+  public pushScene(scene: IScene) {
+    this.scenes.push(scene);
   }
 
   public static createVertexBuffer(gl: WebGLRenderingContext, data: number[]) {
@@ -71,9 +87,15 @@ export class Graphics {
     const tex = this.createTexture(gl, width, height);
     gl.bindTexture(gl.TEXTURE_2D, tex);
 
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindBuffer(gl.FRAMEBUFFER, null);
-    return buf;
+
+    return {
+      frameBuffer: buf,
+      texture: tex
+    };
   }
 
   public static createTexture(gl: WebGLRenderingContext, width: number, height: number) {
@@ -133,5 +155,24 @@ export class Graphics {
         }
         break;
     }
+  }
+
+  public static loadTextureFromImageFile(gl: WebGLRenderingContext, src: string) {
+    return new Promise<WebGLTexture | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const tex = Graphics.createTextureFromImage(gl, img);
+        if (!tex) {
+          console.log('texture is null.');
+          resolve(null);
+          return;
+        }
+
+        resolve(tex);
+        console.log('texture loaded.');
+      };
+
+      img.src = src;
+    });
   }
 }
