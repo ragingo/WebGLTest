@@ -82,6 +82,9 @@ export class Sprite {
     return true;
   }
 
+  private indexBuffer: WebGLBuffer | null = null;
+  private indexData: number[] = [];
+
   public draw(ctx: WebGLRenderingContext) {
     this.gl = ctx;
 
@@ -175,13 +178,14 @@ export class Sprite {
     }
 
     // インデックスバッファ生成 & 登録
-    const indexData: number[] = [];
-
-    for (let i = 0; i < 9; i++) {
-      indexData.push(...[0, 1, 2, 1, 3, 2].map((v) => v + 4 * i));
+    if (!this.indexBuffer) {
+      this.indexData.length = 0;
+      for (let i = 0; i < 9; i++) {
+        this.indexData.push(...[0, 1, 2, 1, 3, 2].map((v) => v + 4 * i));
+      }
+      this.indexBuffer = Graphics.createIndexBuffer(gl, this.indexData);
     }
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Graphics.createIndexBuffer(gl, indexData));
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
     const vbo_array = [
       {
@@ -207,7 +211,7 @@ export class Sprite {
       draw_mode = gl.LINE_STRIP;
     }
 
-    gl.drawElements(draw_mode, indexData.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(draw_mode, this.indexData.length, gl.UNSIGNED_SHORT, 0);
   }
 
   private screenToWorld(coord: Coordinate) {
