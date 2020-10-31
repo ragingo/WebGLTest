@@ -17,6 +17,8 @@ export class Sprite {
   private fragmentShader: string | null = null;
   private texture: Texture | null = null;
   private vertexBufferObjects: VertexBufferObject[] = [];
+  private indexBuffer: WebGLBuffer | null = null;
+  private indexData: number[] = [];
 
   public getTexture() {
     return this.texture;
@@ -88,9 +90,6 @@ export class Sprite {
 
     return true;
   }
-
-  private indexBuffer: WebGLBuffer | null = null;
-  private indexData: number[] = [];
 
   public draw(ctx: WebGLRenderingContext) {
     this.gl = ctx;

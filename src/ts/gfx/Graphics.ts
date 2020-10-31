@@ -87,9 +87,15 @@ export class Graphics {
     const tex = this.createTexture(gl, width, height);
     gl.bindTexture(gl.TEXTURE_2D, tex);
 
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindBuffer(gl.FRAMEBUFFER, null);
-    return buf;
+
+    return {
+      frameBuffer: buf,
+      texture: tex
+    };
   }
 
   public static createTexture(gl: WebGLRenderingContext, width: number, height: number) {

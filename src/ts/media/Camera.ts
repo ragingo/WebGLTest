@@ -53,6 +53,8 @@ export class Camera {
       resizeHeight: this.cameraInit.video.output?.height ?? 512
     }) as ImageBitmap;
 
+    frame.destroy();
+
     return bmp;
   }
 
