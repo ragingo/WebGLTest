@@ -52,7 +52,7 @@ export class MainScene implements IScene {
     this.frontSprite.depth = 0;
 
     Graphics.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
-      this.backSprite?.replaceTexture(tex);
+      this.backSprite?.updateTexture(tex);
     });
 
     this.camera.open().then((x) => this.isCameraOpened = x);
@@ -73,7 +73,10 @@ export class MainScene implements IScene {
       if (!tex) {
         return;
       }
-      this.frontSprite?.updateTexture(tex);
+      if (!this.frontSprite) {
+        return;
+      }
+      this.frontSprite.updateTexture(tex);
     });
 
     const sprite = this.isCameraOpened ? this.frontSprite : this.backSprite;

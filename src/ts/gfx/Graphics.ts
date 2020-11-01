@@ -86,10 +86,15 @@ export class Graphics {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
 
+    const depthBuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
     gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     return {
@@ -163,18 +168,10 @@ export class Graphics {
   }
 
   public static loadTextureFromImageFile(src: string) {
-    return new Promise<WebGLTexture | null>((resolve) => {
+    return new Promise<TexImageSource | null>((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const tex = Graphics.createTextureFromImage(img);
-        if (!tex) {
-          console.log('texture is null.');
-          resolve(null);
-          return;
-        }
-
-        resolve(tex);
-        console.log('texture loaded.');
+        resolve(img);
       };
 
       img.src = src;
