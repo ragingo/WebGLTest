@@ -18,6 +18,15 @@ export class Sprite {
   private indexBuffer: WebGLBuffer | null = null;
   private indexData: number[] = [];
   private readonly frameBufferObject: { buffer: WebGLBuffer | null, texture: WebGLTexture | null } = { buffer: null, texture: null };
+  private drawCounter = 0;
+
+  private textureSource: TexImageSource | null = null;
+  private needsRefreshTexture = false;
+
+  public updateTexture(img: TexImageSource | null) {
+    this.textureSource = img;
+    this.needsRefreshTexture = true;
+  }
 
   public uniformLocationInfos: UniformInfo[] = [];
 
@@ -80,13 +89,6 @@ export class Sprite {
     return true;
   }
 
-  private textureSource: TexImageSource | null = null;
-  public updateTexture(img: TexImageSource | null) {
-    this.textureSource = img;
-  }
-
-  private counter = 0;
-
   public draw(ctx: WebGLRenderingContext) {
     this.gl = ctx;
 
@@ -117,23 +119,17 @@ export class Sprite {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferObject.buffer);
 
-    if (this.counter > 0) {
-      gl.activeTexture(gl.TEXTURE0);
-    }
-
     if (this.textureSource) {
-      if (this.counter++ === 0) {
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.frameBufferObject.texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      } else {
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.frameBufferObject.texture);
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.frameBufferObject.texture);
+
+      if (this.needsRefreshTexture) {
+        this.needsRefreshTexture = false;
+        if (this.drawCounter++ === 0) {
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
+        } else {
+          gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
+        }
       }
     }
 
