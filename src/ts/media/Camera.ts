@@ -58,13 +58,13 @@ export class Camera {
     return bmp;
   }
 
-  public async consumeDecodedFrameAsTexture(gl: WebGLRenderingContext) {
+  public async consumeDecodedFrameAsTexture() {
     const bmp = await this.consumeDecodedFrameAsImageBitmap();
     if (!bmp) {
       return null;
     }
 
-    const tex = Graphics.createTextureFromImage(gl, bmp);
+    const tex = Graphics.createTextureFromImage(bmp);
     bmp.close();
 
     if (!tex) {

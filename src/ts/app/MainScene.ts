@@ -7,7 +7,6 @@ import { Size } from "../gfx/types";
 
 export class MainScene implements IScene {
   public canvas: HTMLCanvasElement | null = null;
-  private gl: WebGLRenderingContext | null = null;
   private view = new MainView();
   public canvasCtx: CanvasRenderingContext2D | null = null;
   private backSprite: Sprite | null = null;
@@ -32,16 +31,8 @@ export class MainScene implements IScene {
     }
   });
 
-  getContext() {
-    return this.gl;
-  }
-
-  setContext(gl: WebGLRenderingContext | null) {
-    this.gl = gl;
-  }
-
   onPrepare() {
-    if (!this.gl || !this.canvas) {
+    if (!this.canvas) {
       return;
     }
 
@@ -60,33 +51,29 @@ export class MainScene implements IScene {
     this.frontSprite.size = new Size(this.canvas.width / 4, this.canvas.height / 4, this.canvas.width / 2, this.canvas.height / 2);
     this.frontSprite.depth = 0;
 
-    Graphics.loadTextureFromImageFile(this.gl, './res/Lenna.png').then((tex) => {
-      this.backSprite?.setTexture(tex);
+    Graphics.loadTextureFromImageFile('./res/Lenna.png').then((tex) => {
+      this.backSprite?.replaceTexture(tex);
     });
 
     this.camera.open().then((x) => this.isCameraOpened = x);
   }
 
   onBeginDraw() {
-    if (!this.gl) {
-      return;
-    }
+    const gl = Graphics.gl;
     // クリア
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    this.gl.clearDepth(1.0);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
   onDraw() {
-    if (!this.gl) {
-      return;
-    }
+    const gl = Graphics.gl;
 
-    this.camera.consumeDecodedFrameAsTexture(this.gl).then((tex) => {
+    this.camera.consumeDecodedFrameAsImageBitmap().then((tex) => {
       if (!tex) {
         return;
       }
-      this.frontSprite?.setTexture(tex);
+      this.frontSprite?.updateTexture(tex);
     });
 
     const sprite = this.isCameraOpened ? this.frontSprite : this.backSprite;
@@ -106,8 +93,8 @@ export class MainScene implements IScene {
     sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
     sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
-    this.backSprite?.draw(this.gl);
-    this.frontSprite?.draw(this.gl);
+    this.backSprite?.draw(gl);
+    this.frontSprite?.draw(gl);
   }
 
   onEndDraw() {

@@ -19,24 +19,13 @@ export class Sprite {
   private vertexBufferObjects: VertexBufferObject[] = [];
   private indexBuffer: WebGLBuffer | null = null;
   private indexData: number[] = [];
+  private readonly frameBufferObject: { buffer: WebGLBuffer | null, texture: WebGLTexture | null } = { buffer: null, texture: null };
+
+  public uniformLocationInfos: UniformInfo[] = [];
 
   public getTexture() {
     return this.texture;
   }
-
-  public setTexture(texture: WebGLTexture | null) {
-    if (this.texture) {
-      this.texture.unbind();
-      this.texture.dispose();
-    }
-    this.texture = null;
-    if (this.gl) {
-      this.texture = new Texture(this.gl, texture);
-      this.texture.activate();
-    }
-  }
-
-  public uniformLocationInfos: UniformInfo[] = [];
 
   constructor(
     private readonly canvasWidth: number,
@@ -66,6 +55,12 @@ export class Sprite {
       this.vertexShader = vs;
       this.fragmentShader = fs;
     });
+
+    if (!this.frameBufferObject.buffer) {
+      const obj = Graphics.createFrameBufferWithTexture(this.canvasWidth, this.canvasHeight);
+      this.frameBufferObject.buffer = obj.buffer;
+      this.frameBufferObject.texture = obj.texture;
+    }
   }
 
   private compile() {
@@ -89,6 +84,23 @@ export class Sprite {
     }
 
     return true;
+  }
+
+  public replaceTexture(texture: WebGLTexture | null) {
+    if (this.texture) {
+      this.texture.unbind();
+      this.texture.dispose();
+    }
+    this.texture = null;
+    if (this.gl) {
+      this.texture = new Texture(this.gl, texture);
+      this.texture.activate();
+    }
+  }
+
+  private textureSource: TexImageSource | null = null;
+  public updateTexture(img: ImageBitmap | null) {
+    this.textureSource = img;
   }
 
   public draw(ctx: WebGLRenderingContext) {
@@ -119,10 +131,23 @@ export class Sprite {
 
     gl.useProgram(program);
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferObject.buffer);
+
     if (this.texture?.isValid()) {
       this.texture.activate();
       this.texture.bind();
+    } else if (this.textureSource) {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.frameBufferObject.texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
 
+    // shader parameters
+    {
       const infos: UniformInfo[] = [
         { type: 'int', name: 'uSampler', value: 0 },
         { type: 'float', name: 'scale', value: [this.scale.x, this.scale.y, this.scale.z] },
@@ -131,10 +156,10 @@ export class Sprite {
       ];
 
       infos.forEach((x) => {
-        Graphics.registerUniformLocation(gl, program, x);
+        Graphics.registerUniformLocation(program, x);
       });
       this.uniformLocationInfos.forEach((x) => {
-        Graphics.registerUniformLocation(gl, program, x);
+        Graphics.registerUniformLocation(program, x);
       });
     }
 
@@ -243,7 +268,7 @@ export class Sprite {
       this.indexData.push(...[0, 1, 2, 1, 3, 2].map((v) => v + 4 * i));
     }
 
-    this.indexBuffer = Graphics.createIndexBuffer(this.gl, this.indexData);
+    this.indexBuffer = Graphics.createIndexBuffer(this.indexData);
   }
 
   private createVertexBufferObjects() {
@@ -303,12 +328,12 @@ export class Sprite {
 
     const objects = [
       {
-        buffer: Graphics.createVertexBuffer(this.gl, vertices_pos),
+        buffer: Graphics.createVertexBuffer(vertices_pos),
         location: this.gl.getAttribLocation(program, 'position'),
         stride: 3
       },
       {
-        buffer: Graphics.createVertexBuffer(this.gl, vertices_uv),
+        buffer: Graphics.createVertexBuffer(vertices_uv),
         location: this.gl.getAttribLocation(program, 'texCoord'),
         stride: 2
       }
