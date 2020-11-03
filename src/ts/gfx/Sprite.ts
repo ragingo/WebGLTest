@@ -1,5 +1,4 @@
 import { Graphics } from "./Graphics";
-import { ShaderLoader } from "./ShaderLoader";
 import { ShaderProgram } from "./ShaderProgram";
 import { Crop, Coordinate, UniformInfo, Rotate, Scale, Size } from "./types";
 
@@ -12,8 +11,6 @@ type VertexBufferObject = {
 export class Sprite {
   private gl: WebGLRenderingContext | null = null;
   private shaderProgram: ShaderProgram | null = null;
-  private vertexShader: string | null = null;
-  private fragmentShader: string | null = null;
   private vertexBufferObjects: VertexBufferObject[] = [];
   private indexBuffer: WebGLBuffer | null = null;
   private indexData: number[] = [];
@@ -33,8 +30,8 @@ export class Sprite {
   constructor(
     private readonly canvasWidth: number,
     private readonly canvasHeight: number,
-    private readonly vertexShaderPath?: string,
-    private readonly fragmentShaderPath?: string,
+    private readonly vertexShader?: string,
+    private readonly fragmentShader?: string,
     public size = new Size(),
     public depth = 0,
     public crop = new Crop(),
@@ -42,22 +39,18 @@ export class Sprite {
     public rotate: Rotate = { x: 0, y: 0, z: 0 },
     public sliceBorder = [0, 0, 0, 0],
   ) {
-    if (!this.vertexShaderPath || this.vertexShaderPath.length === 0) {
-      this.vertexShaderPath = './glsl/default_vs.glsl';
+    if (!this.vertexShader || this.vertexShader.length === 0) {
+      this.vertexShader = require('../../glsl/default_vs.glsl').default;
     }
-    if (!this.fragmentShaderPath || this.fragmentShaderPath.length === 0) {
-      this.fragmentShaderPath = './glsl/default_fs.glsl';
+    if (!this.fragmentShader || this.fragmentShader.length === 0) {
+      this.fragmentShader = require('../../glsl/default_fs.glsl').default;
     }
   }
 
   public initialize() {
-    if (!this.vertexShaderPath || !this.fragmentShaderPath) {
+    if (!this.vertexShader || !this.fragmentShader) {
       return;
     }
-    ShaderLoader.load(this.vertexShaderPath, this.fragmentShaderPath, (vs, fs) => {
-      this.vertexShader = vs;
-      this.fragmentShader = fs;
-    });
 
     if (!this.frameBufferObject.buffer) {
       const obj = Graphics.createFrameBufferWithTexture(this.canvasWidth, this.canvasHeight);

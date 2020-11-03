@@ -1,4 +1,9 @@
-node_modules/
 dist/
-src/res/*
+logs/
+node_modules/
+
+src/img/*
+!src/img/.gitkeep
+
 *.tsbuildinfo
+*.log

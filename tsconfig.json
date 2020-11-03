@@ -1,24 +1,26 @@
 {
   "compilerOptions": {
-    "module": "UMD",
-    "target": "ES2019",
-    //"declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "newLine": "CRLF",
-    "forceConsistentCasingInFileNames": true,
-    "pretty": true,
-    "removeComments": true,
-    "strict": true,
+    "importHelpers": true,
+    "incremental": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "newLine": "lf",
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "incremental": true,
-    // "outFile": "./dist/main.js"
-    "outDir": "./dist"
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ESNext",
   },
   "exclude": [
-    "node_modules",
-    "**/node_modules/*"
+    "node_modules"
   ]
 }
