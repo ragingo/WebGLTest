@@ -1,6 +1,6 @@
-import { Graphics } from "./Graphics";
-import { ShaderProgram } from "./ShaderProgram";
-import { Crop, Coordinate, UniformInfo, Rotate, Scale, Size } from "./types";
+import { Graphics } from './Graphics';
+import { ShaderProgram } from './ShaderProgram';
+import { Crop, Coordinate, UniformInfo, Rotate, Scale, Size, FrameBufferObject } from './types';
 
 type VertexBufferObject = {
   buffer: WebGLBuffer | null;
@@ -14,7 +14,10 @@ export class Sprite {
   private vertexBufferObjects: VertexBufferObject[] = [];
   private indexBuffer: WebGLBuffer | null = null;
   private indexData: number[] = [];
-  private readonly frameBufferObject: { buffer: WebGLBuffer | null, texture: WebGLTexture | null } = { buffer: null, texture: null };
+  private readonly frameBufferObject: FrameBufferObject = {
+    buffer: null,
+    texture: null
+  };
   private drawCounter = 0;
 
   private textureSource: TexImageSource | null = null;
@@ -37,7 +40,7 @@ export class Sprite {
     public crop = new Crop(),
     public scale: Scale = { x: 1, y: 1, z: 1 },
     public rotate: Rotate = { x: 0, y: 0, z: 0 },
-    public sliceBorder = [0, 0, 0, 0],
+    public sliceBorder = [0, 0, 0, 0]
   ) {
     if (!this.vertexShader || this.vertexShader.length === 0) {
       this.vertexShader = require('../../glsl/default_vs.glsl').default;
@@ -132,7 +135,7 @@ export class Sprite {
         { type: 'int', name: 'uSampler', value: 0 },
         { type: 'float', name: 'scale', value: [this.scale.x, this.scale.y, this.scale.z] },
         { type: 'float', name: 'rotation', value: [this.rotate.x, this.rotate.y, this.rotate.z] },
-        { type: 'float', name: 'textureSize', value: [this.size.width, this.size.height] },
+        { type: 'float', name: 'textureSize', value: [this.size.width, this.size.height] }
       ];
 
       infos.forEach((x) => {
@@ -283,10 +286,18 @@ export class Sprite {
         );
 
         vertices_pos.push(
-          world_pos.left, world_pos.bottom, this.depth,
-          world_pos.right, world_pos.bottom, this.depth,
-          world_pos.left, world_pos.top, this.depth,
-          world_pos.right, world_pos.top, this.depth
+          world_pos.left,
+          world_pos.bottom,
+          this.depth,
+          world_pos.right,
+          world_pos.bottom,
+          this.depth,
+          world_pos.left,
+          world_pos.top,
+          this.depth,
+          world_pos.right,
+          world_pos.top,
+          this.depth
         );
       }
     }
@@ -305,8 +316,14 @@ export class Sprite {
         };
 
         vertices_uv.push(
-          uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom,
-          uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
+          uv_tc.left,
+          uv_tc.bottom,
+          uv_tc.right,
+          uv_tc.bottom,
+          uv_tc.left,
+          uv_tc.top,
+          uv_tc.right,
+          uv_tc.top
         );
       }
     }

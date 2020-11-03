@@ -1,10 +1,10 @@
-import { Camera } from "../media/Camera";
-import { MainView } from "../views/MainView";
-import { Graphics } from "../gfx/Graphics";
-import { IScene } from "../gfx/IScene";
-import { Sprite } from "../gfx/Sprite";
-import { Size } from "../gfx/types";
-import Lenna from  "../../img/Lenna.png";
+import { Camera } from '../media/Camera';
+import { MainView } from '../views/MainView';
+import { Graphics } from '../gfx/Graphics';
+import { IScene } from '../gfx/IScene';
+import { Sprite } from '../gfx/Sprite';
+import { Size } from '../gfx/types';
+import Lenna from '../../img/Lenna.png';
 
 export class MainScene implements IScene {
   public canvas: HTMLCanvasElement | null = null;
@@ -52,14 +52,19 @@ export class MainScene implements IScene {
 
     this.frontSprite = new Sprite(this.canvas.width, this.canvas.height, vs, fs);
     this.frontSprite.initialize();
-    this.frontSprite.size = new Size(this.canvas.width / 4, this.canvas.height / 4, this.canvas.width / 2, this.canvas.height / 2);
+    this.frontSprite.size = new Size(
+      this.canvas.width / 4,
+      this.canvas.height / 4,
+      this.canvas.width / 2,
+      this.canvas.height / 2
+    );
     this.frontSprite.depth = 0;
 
     Graphics.loadTextureFromImageFile(Lenna).then((tex) => {
       this.backSprite?.updateTexture(tex);
     });
 
-    this.camera.open().then((x) => this.isCameraOpened = x);
+    this.camera.open().then((x) => (this.isCameraOpened = x));
   }
 
   onBeginDraw() {
@@ -92,11 +97,15 @@ export class MainScene implements IScene {
     sprite.scale = this.view.getScaleValue();
     sprite.uniformLocationInfos.length = 0;
 
-    const color = this.view.getColorValue()
+    const color = this.view.getColorValue();
     const vivid = this.view.getVividValue();
     sprite.uniformLocationInfos.push({ type: 'float', name: 'editColor', value: [color.r, color.g, color.b, color.a] });
     sprite.uniformLocationInfos.push({ type: 'int', name: 'effectType', value: this.view.getEffectTypeValue() });
-    sprite.uniformLocationInfos.push({ type: 'float', name: 'binarizeThreshold', value: this.view.getBinarizeThresholdValue() });
+    sprite.uniformLocationInfos.push({
+      type: 'float',
+      name: 'binarizeThreshold',
+      value: this.view.getBinarizeThresholdValue()
+    });
     sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
     sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
@@ -104,6 +113,5 @@ export class MainScene implements IScene {
     this.frontSprite?.draw(gl);
   }
 
-  onEndDraw() {
-  }
+  onEndDraw() {}
 }

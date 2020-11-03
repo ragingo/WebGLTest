@@ -1,4 +1,4 @@
-import { Graphics } from "../gfx/Graphics";
+import { Graphics } from '../gfx/Graphics';
 
 const DEFAULT_INPUT_VIDEO_WIDTH = 640;
 const DEFAULT_INPUT_VIDEO_HEIGHT = 480;
@@ -13,16 +13,16 @@ export type CameraInit = {
       width?: number;
       height?: number;
       frameRate?: number;
-    },
+    };
     output?: {
       width?: number;
       height?: number;
       frameRate?: number;
-    }
-  },
+    };
+  };
   audio: {
     allow: boolean;
-  }
+  };
 };
 
 export class Camera {
@@ -48,10 +48,10 @@ export class Camera {
       return;
     }
 
-    const bmp = await frame.createImageBitmap({
+    const bmp = (await frame.createImageBitmap({
       resizeWidth: this.cameraInit.video.output?.width ?? 512,
       resizeHeight: this.cameraInit.video.output?.height ?? 512
-    }) as ImageBitmap;
+    })) as ImageBitmap;
 
     frame.destroy();
 
@@ -92,7 +92,7 @@ export class Camera {
         constrains.video = {
           width: this.cameraInit.video.input.width,
           height: this.cameraInit.video.input.height,
-          frameRate: this.cameraInit.video.input.frameRate,
+          frameRate: this.cameraInit.video.input.frameRate
         };
       }
     }
@@ -152,7 +152,7 @@ export class Camera {
       codec: 'vp8',
       width: this.cameraInit.video.input?.width ?? DEFAULT_INPUT_VIDEO_WIDTH,
       height: this.cameraInit.video.input?.height ?? DEFAULT_INPUT_VIDEO_HEIGHT,
-      framerate: this.cameraInit.video.input?.frameRate ?? DEFAULT_INPUT_VIDEO_FRAMERATE,
+      framerate: this.cameraInit.video.input?.frameRate ?? DEFAULT_INPUT_VIDEO_FRAMERATE
     });
 
     this.videoTrackReader.start((frame: any) => {

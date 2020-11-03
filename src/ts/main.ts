@@ -1,3 +1,3 @@
-import { Application } from "./app/Application";
+import { Application } from './app/Application';
 
 Application.main();

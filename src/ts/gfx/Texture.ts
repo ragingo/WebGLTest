@@ -7,11 +7,7 @@ export class Texture {
     return this.gl.isTexture(this.texture);
   }
 
-  constructor(
-    private gl: WebGLRenderingContext,
-    private texture: WebGLTexture | null
-  ) {
-  }
+  constructor(private gl: WebGLRenderingContext, private texture: WebGLTexture | null) {}
 
   public activate() {
     this.gl.activeTexture(this.gl.TEXTURE0);

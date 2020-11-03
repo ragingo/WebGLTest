@@ -1,5 +1,5 @@
-import { Graphics } from "../gfx/Graphics";
-import { MainScene } from "./MainScene";
+import { Graphics } from '../gfx/Graphics';
+import { MainScene } from './MainScene';
 
 export class Application {
   public static main() {

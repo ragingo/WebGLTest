@@ -1,8 +1,8 @@
-import { Slider } from "./Slider";
+import { Slider } from './Slider';
 
 const getBySelector = <T extends HTMLElement>(selector: string): T => {
   return document.querySelector(selector) as T;
-}
+};
 
 const effects = [
   { id: 0, name: '通常' },
@@ -22,7 +22,7 @@ const effects = [
   { id: 14, name: '球' },
   { id: 15, name: '正弦波' },
   { id: 16, name: '鮮やか' },
-  { id: 17, name: '実験' },
+  { id: 17, name: '実験' }
 ];
 
 export class MainView {
@@ -47,7 +47,7 @@ export class MainView {
     return {
       x: this.rotation[0].value,
       y: this.rotation[1].value,
-      z: this.rotation[2].value,
+      z: this.rotation[2].value
     };
   }
 
@@ -55,7 +55,7 @@ export class MainView {
     return {
       x: this.scale[0].value,
       y: this.scale[1].value,
-      z: this.scale[2].value,
+      z: this.scale[2].value
     };
   }
 
@@ -64,7 +64,7 @@ export class MainView {
       r: this.color[0].value,
       g: this.color[1].value,
       b: this.color[2].value,
-      a: this.color[3].value,
+      a: this.color[3].value
     };
   }
 
@@ -75,7 +75,7 @@ export class MainView {
   public getVividValue() {
     return {
       k1: this.vivid[0].value,
-      k2: this.vivid[1].value,
+      k2: this.vivid[1].value
     };
   }
 
@@ -108,27 +108,27 @@ export class MainView {
     this.rotation = [
       new Slider('.rotation--x > .rotation__slider', '.rotation--x > .rotation__label'),
       new Slider('.rotation--y > .rotation__slider', '.rotation--y > .rotation__label'),
-      new Slider('.rotation--z > .rotation__slider', '.rotation--z > .rotation__label'),
+      new Slider('.rotation--z > .rotation__slider', '.rotation--z > .rotation__label')
     ];
 
     this.scale = [
       new Slider('.scale--x > .scale__slider', '.scale--x > .scale__label'),
       new Slider('.scale--y > .scale__slider', '.scale--y > .scale__label'),
-      new Slider('.scale--z > .scale__slider', '.scale--z > .scale__label'),
+      new Slider('.scale--z > .scale__slider', '.scale--z > .scale__label')
     ];
 
     this.color = [
       new Slider('.color--r > .color__slider', '.color--r > .color__label'),
       new Slider('.color--g > .color__slider', '.color--g > .color__label'),
       new Slider('.color--b > .color__slider', '.color--b > .color__label'),
-      new Slider('.color--a > .color__slider', '.color--a > .color__label'),
+      new Slider('.color--a > .color__slider', '.color--a > .color__label')
     ];
 
     this.binarize = new Slider('.binarize--value > .binarize__slider', '.binarize--value > .binarize__label');
 
     this.vivid = [
       new Slider('.vivid--k1 > .vivid__slider', '.vivid--k1 > .vivid__label'),
-      new Slider('.vivid--k2 > .vivid__slider', '.vivid--k2 > .vivid__label'),
+      new Slider('.vivid--k2 > .vivid__slider', '.vivid--k2 > .vivid__label')
     ];
   }
 

@@ -1,5 +1,5 @@
-import { IScene } from "./IScene";
-import { UniformInfo } from "./types";
+import { IScene } from './IScene';
+import { UniformInfo } from './types';
 
 export class Graphics {
   private scenes: IScene[] = [];
