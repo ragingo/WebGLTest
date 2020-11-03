@@ -1,0 +1,8 @@
+{
+  "comments": false,
+  "compact": "auto",
+  "plugins": [
+    "@babel/plugin-proposal-class-properties",
+    "transform-class-properties"
+  ]
+}
