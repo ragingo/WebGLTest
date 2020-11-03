@@ -4,101 +4,116 @@ body {
 
 .app {
   display: flex;
+
+  > * + * {
+    margin-left: 30px;
+  }
+
+  &__canvas {
+    width: 512px;
+    height: 512px;
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    width: 1000px;
+    margin-top: 30px;
+    border: solid 2px gray;
+    padding: 10px;
+    background-color: lightgray;
+
+    > * + * {
+      margin-top: 10px;
+    }
+  }
+
+  &__reset {
+    width: 100px;
+  }
+
+  &__effect-selector {
+    width: 200px;
+  }
+
+  &__params {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &__rotation,
+  &__scale,
+  &__color,
+  &__binarize,
+  &__vivid {
+    width: 300px;
+    border: dashed 2px gray;
+    padding: 10px;
+    background-color: lightblue;
+    margin-top: 10px;
+    margin-left: 10px;
+  }
+
+  &__binarize {
+    display: none;
+  }
+
+  &__vivid {
+    display: none;
+  }
 }
 
-.app > * + * {
-  margin-left: 30px;
+.rotation {
+  &--x > &__label::before {
+    content: 'X: ';
+  }
+
+  &--y > &__label::before {
+    content: 'Y: ';
+  }
+
+  &--z > &__label::before {
+    content: 'Z: ';
+  }
 }
 
-.app__canvas {
-  width: 512px;
-  height: 512px;
+.scale {
+  &--x > &__label::before {
+    content: 'X: ';
+  }
+
+  &--y > &__label::before {
+    content: 'Y: ';
+  }
+
+  &--z > &__label::before {
+    content: 'Z: ';
+  }
 }
 
-.app__right {
-  display: flex;
-  flex-direction: column;
-  width: 1000px;
-  margin-top: 30px;
-  border: solid 2px gray;
-  padding: 10px;
-  background-color: lightgray;
+.color {
+  &--r > &__label::before {
+    content: 'R: ';
+  }
+
+  &--g > &__label::before {
+    content: 'G: ';
+  }
+
+  &--b > &__label::before {
+    content: 'B: ';
+  }
+
+  &--a > &__label::before {
+    content: 'A: ';
+  }
 }
 
-.app__right > * + * {
-  margin-top: 10px;
-}
-
-.app__reset {
-  width: 100px;
-}
-
-.app__effect-selector {
-  width: 200px;
-}
-
-.app__params {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.app__rotation,
-.app__scale,
-.app__color,
-.app__binarize,
-.app__vivid {
-  width: 300px;
-  border: dashed 2px gray;
-  padding: 10px;
-  background-color: lightblue;
-  margin-top: 10px;
-  margin-left: 10px;
-}
-
-.app__binarize {
-  display: none;
-}
-
-.app__vivid {
-  display: none;
-}
-
-.rotation--x > .rotation__label::before {
-  content: 'X: ';
-}
-.rotation--y > .rotation__label::before {
-  content: 'Y: ';
-}
-.rotation--z > .rotation__label::before {
-  content: 'Z: ';
-}
-
-.scale--x > .scale__label::before {
-  content: 'X: ';
-}
-.scale--y > .scale__label::before {
-  content: 'Y: ';
-}
-.scale--z > .scale__label::before {
-  content: 'Z: ';
-}
-
-.color--r > .color__label::before {
-  content: 'R: ';
-}
-.color--g > .color__label::before {
-  content: 'G: ';
-}
-.color--b > .color__label::before {
-  content: 'B: ';
-}
-.color--a > .color__label::before {
-  content: 'A: ';
-}
-
-.vivid--k1 > .vivid__label::before {
-  content: 'K1: ';
-}
-.vivid--k2 > .vivid__label::before {
-  content: 'K2: ';
+.vivid {
+  &--k1 > &__label::before {
+    content: 'K1: ';
+  }
+  &--k2 > &__label::before {
+    content: 'K2: ';
+  }
 }
