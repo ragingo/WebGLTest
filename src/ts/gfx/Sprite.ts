@@ -1,6 +1,8 @@
+import DefaultFragmentShader from '../../glsl/default_fs.glsl';
+import DefaultVertexShader from '../../glsl/default_vs.glsl';
 import { Graphics } from './Graphics';
 import { ShaderProgram } from './ShaderProgram';
-import { Crop, Coordinate, UniformInfo, Rotate, Scale, Size, FrameBufferObject } from './types';
+import { Coordinate, Crop, FrameBufferObject, Rotate, Scale, Size, UniformInfo } from './types';
 
 type VertexBufferObject = {
   buffer: WebGLBuffer | null;
@@ -43,10 +45,10 @@ export class Sprite {
     public sliceBorder = [0, 0, 0, 0]
   ) {
     if (!this.vertexShader || this.vertexShader.length === 0) {
-      this.vertexShader = require('../../glsl/default_vs.glsl').default;
+      this.vertexShader = DefaultVertexShader;
     }
     if (!this.fragmentShader || this.fragmentShader.length === 0) {
-      this.fragmentShader = require('../../glsl/default_fs.glsl').default;
+      this.fragmentShader = DefaultFragmentShader;
     }
   }
 

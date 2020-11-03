@@ -1,10 +1,13 @@
-import { Camera } from '../media/Camera';
-import { MainView } from '../views/MainView';
+import FragmentShader from '../../glsl/texture_edit_fs.glsl';
+import VertexShader from '../../glsl/texture_edit_vs.glsl';
+import Lenna from '../../img/Lenna.png';
 import { Graphics } from '../gfx/Graphics';
 import { IScene } from '../gfx/IScene';
 import { Sprite } from '../gfx/Sprite';
 import { Size } from '../gfx/types';
-import Lenna from '../../img/Lenna.png';
+import { Camera } from '../media/Camera';
+import { MainView } from '../views/MainView';
+
 
 export class MainScene implements IScene {
   public canvas: HTMLCanvasElement | null = null;
@@ -42,15 +45,12 @@ export class MainScene implements IScene {
 
     this.canvasCtx = this.canvas.getContext('2d');
 
-    const vs = require('../../glsl/texture_edit_vs.glsl').default;
-    const fs = require('../../glsl/texture_edit_fs.glsl').default;
-
-    this.backSprite = new Sprite(this.canvas.width, this.canvas.height, vs, fs);
+    this.backSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
     this.backSprite.initialize();
     this.backSprite.size = new Size(0, 0, this.canvas.width, this.canvas.height);
     this.backSprite.depth = 0.0001;
 
-    this.frontSprite = new Sprite(this.canvas.width, this.canvas.height, vs, fs);
+    this.frontSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
     this.frontSprite.initialize();
     this.frontSprite.size = new Size(
       this.canvas.width / 4,
