@@ -32,6 +32,9 @@ export class Sprite {
 
   public uniformLocationInfos: UniformInfo[] = [];
 
+  public isVisible = true;
+  public isDisposed = false;
+
   constructor(
     private readonly canvasWidth: number,
     private readonly canvasHeight: number,
@@ -64,6 +67,24 @@ export class Sprite {
     }
   }
 
+  public dispose() {
+    this.vertexBufferObjects.forEach((vbo) => {
+      Graphics.gl.deleteBuffer(vbo.buffer);
+      vbo.buffer = null;
+    });
+
+    Graphics.gl.deleteBuffer(this.indexBuffer);
+    this.indexBuffer = null;
+
+    Graphics.gl.deleteFramebuffer(this.frameBufferObject.buffer);
+    this.frameBufferObject.buffer = null;
+
+    Graphics.gl.deleteTexture(this.frameBufferObject.texture);
+    this.frameBufferObject.texture = null;
+
+    this.isDisposed = true;
+  }
+
   private compile() {
     if (!this.gl) {
       return false;
@@ -88,6 +109,10 @@ export class Sprite {
   }
 
   public draw(ctx: WebGLRenderingContext) {
+    if (!this.isVisible || this.isDisposed) {
+      return;
+    }
+
     this.gl = ctx;
 
     if (!this.shaderProgram) {

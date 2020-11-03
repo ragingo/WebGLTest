@@ -8,13 +8,12 @@ import { Size } from '../gfx/types';
 import { Camera } from '../media/Camera';
 import { MainView } from '../views/MainView';
 
-
 export class MainScene implements IScene {
   public canvas: HTMLCanvasElement | null = null;
   private view = new MainView();
   public canvasCtx: CanvasRenderingContext2D | null = null;
-  private backSprite: Sprite | null = null;
-  private frontSprite: Sprite | null = null;
+  private backgroundSprite: Sprite | null = null;
+  private cameraSprite: Sprite | null = null;
 
   private isCameraOpened = false;
   private camera = new Camera({
@@ -45,26 +44,32 @@ export class MainScene implements IScene {
 
     this.canvasCtx = this.canvas.getContext('2d');
 
-    this.backSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
-    this.backSprite.initialize();
-    this.backSprite.size = new Size(0, 0, this.canvas.width, this.canvas.height);
-    this.backSprite.depth = 0.0001;
+    this.backgroundSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
+    this.backgroundSprite.initialize();
+    this.backgroundSprite.size = new Size(0, 0, this.canvas.width, this.canvas.height);
+    this.backgroundSprite.depth = 0.0001;
 
-    this.frontSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
-    this.frontSprite.initialize();
-    this.frontSprite.size = new Size(
+    this.cameraSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
+    this.cameraSprite.initialize();
+    this.cameraSprite.size = new Size(
       this.canvas.width / 4,
       this.canvas.height / 4,
       this.canvas.width / 2,
       this.canvas.height / 2
     );
-    this.frontSprite.depth = 0;
+    this.cameraSprite.depth = 0;
 
     Graphics.loadTextureFromImageFile(Lenna).then((tex) => {
-      this.backSprite?.updateTexture(tex);
+      this.backgroundSprite?.updateTexture(tex);
     });
 
-    this.camera.open().then((x) => (this.isCameraOpened = x));
+    this.camera.open().then((result) => {
+      this.isCameraOpened = result;
+      if (!result) {
+        this.cameraSprite?.dispose();
+        this.cameraSprite = null;
+      }
+    });
   }
 
   onBeginDraw() {
@@ -82,13 +87,13 @@ export class MainScene implements IScene {
       if (!tex) {
         return;
       }
-      if (!this.frontSprite) {
+      if (!this.cameraSprite) {
         return;
       }
-      this.frontSprite.updateTexture(tex);
+      this.cameraSprite.updateTexture(tex);
     });
 
-    const sprite = this.isCameraOpened ? this.frontSprite : this.backSprite;
+    const sprite = this.isCameraOpened ? this.cameraSprite : this.backgroundSprite;
     if (!sprite) {
       return;
     }
@@ -109,8 +114,8 @@ export class MainScene implements IScene {
     sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
     sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
-    this.backSprite?.draw(gl);
-    this.frontSprite?.draw(gl);
+    this.backgroundSprite?.draw(gl);
+    this.cameraSprite?.draw(gl);
   }
 
   onEndDraw() {}
