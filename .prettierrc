@@ -4,3 +4,6 @@ singleQuote: true
 trailingComma: none
 semi: true
 parser: typescript
+bracketSpacing: true
+arrowParens: 'always'
+endOfLine: 'lf'
