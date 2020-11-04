@@ -118,12 +118,29 @@ export class Sprite {
       return;
     }
 
-    Graphics.gl.useProgram(program);
+    const gl = Graphics.gl;
+    gl.useProgram(program);
     this.prepare(program);
+
+    {
+      if (!this.baseTexture && this.textureSource) {
+        const tex = Graphics.createTextureFromImage(this.textureSource);
+        this.baseTexture = new Texture(gl, tex);
+      }
+
+      if (this.baseTexture) {
+        this.baseTexture.activate();
+        this.baseTexture.bind();
+        this.baseTexture.updateTextureSource(this.textureSource);
+      }
+    }
+
+    // this.debugDraw();
+
     this.draw1st();
 
     // TODO: どうにかする
-    Graphics.gl.uniform1i(Graphics.gl.getUniformLocation(program, 'effectType'), -1);
+    gl.uniform1i(gl.getUniformLocation(program, 'effectType'), -1);
 
     this.draw2nd();
   }
@@ -172,23 +189,21 @@ export class Sprite {
     });
   }
 
+  // @ts-ignore
+  private debugDraw() {
+    if (!this.indexBufferObject) {
+      return;
+    }
+    const gl = Graphics.gl;
+    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
+  }
+
   private draw1st() {
     if (!this.indexBufferObject) {
       return;
     }
 
     const gl = Graphics.gl;
-
-    if (!this.baseTexture && this.textureSource) {
-      const tex = Graphics.createTextureFromImage(this.textureSource);
-      this.baseTexture = new Texture(gl, tex);
-    }
-
-    if (this.baseTexture) {
-      this.baseTexture.activate();
-      this.baseTexture.bind();
-      this.baseTexture.updateTextureSource(this.textureSource);
-    }
 
     const fbo = this.frameBufferObjects[0];
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer);
@@ -213,8 +228,8 @@ export class Sprite {
 
     const gl = Graphics.gl;
 
-    const fbo2 = this.frameBufferObjects[1];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2.frameBuffer);
+    const fbo = this.frameBufferObjects[1];
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer);
 
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -223,9 +238,9 @@ export class Sprite {
     // TODO: ここで書き込んだ結果、一辺の長さが 1/4 になってる・・・どうにかして直す
     gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
 
-    if (fbo2.texture) {
-      fbo2.texture.activate();
-      fbo2.texture.bind();
+    if (fbo.texture) {
+      fbo.texture.activate();
+      fbo.texture.bind();
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
