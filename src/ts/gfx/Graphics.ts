@@ -1,5 +1,5 @@
 import { IScene } from './IScene';
-import { UniformInfo } from './types';
+import { FrameBufferObject, UniformInfo } from './types';
 
 export class Graphics {
   private scenes: IScene[] = [];
@@ -93,10 +93,7 @@ export class Graphics {
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    return {
-      buffer: buf,
-      texture: tex
-    };
+    return { buffer: buf, texture: tex } as FrameBufferObject;
   }
 
   public static createTexture(width: number, height: number) {

@@ -81,8 +81,6 @@ export class MainScene implements IScene {
   }
 
   onDraw() {
-    const gl = Graphics.gl;
-
     this.camera.consumeDecodedFrameAsImageBitmap().then((tex) => {
       if (!tex) {
         return;
@@ -114,8 +112,8 @@ export class MainScene implements IScene {
     sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
     sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
 
-    this.backgroundSprite?.draw(gl);
-    this.cameraSprite?.draw(gl);
+    this.backgroundSprite?.draw();
+    this.cameraSprite?.draw();
   }
 
   onEndDraw() {}

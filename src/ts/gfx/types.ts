@@ -1,6 +1,10 @@
+export type Position = { left: number; top: number; right: number; bottom: number };
+
 export type Scale = { x: number; y: number; z: number };
 
 export type Rotate = { x: number; y: number; z: number };
+
+export type Border = { left: number; top: number; right: number; bottom: number };
 
 export class Size {
   constructor(public left = 0, public top = 0, public width = 0, public height = 0) {}
@@ -16,6 +20,24 @@ export class Coordinate {
 
 export type UniformType = 'int' | 'uint' | 'float';
 
-export type UniformInfo = { type: UniformType; name: string; value: any };
+export type UniformInfo = {
+  type: UniformType;
+  name: string;
+  value: any;
+};
 
-export type FrameBufferObject = { buffer: WebGLBuffer | null; texture: WebGLTexture | null };
+export type FrameBufferObject = {
+  buffer: WebGLBuffer | null;
+  texture: WebGLTexture | null;
+};
+
+export type VertexBufferObject = {
+  buffer: WebGLBuffer | null;
+  location: number;
+  stride: number;
+};
+
+export type IndexBufferObject = {
+  buffer: WebGLBuffer | null;
+  size: number;
+};
