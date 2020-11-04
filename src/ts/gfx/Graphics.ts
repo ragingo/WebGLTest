@@ -1,4 +1,5 @@
 import { IScene } from './IScene';
+import { Texture } from './Texture';
 import { FrameBufferObject, UniformInfo } from './types';
 
 export class Graphics {
@@ -80,9 +81,9 @@ export class Graphics {
     const buf = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, buf);
 
-    const tex = this.createTexture(width, height);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    const tex = new Texture(gl, this.createTexture(width, height));
+    gl.bindTexture(gl.TEXTURE_2D, tex.get());
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex.get(), 0);
 
     const depthBuffer = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
@@ -93,7 +94,7 @@ export class Graphics {
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    return { buffer: buf, texture: tex } as FrameBufferObject;
+    return { frameBuffer: buf, depthBuffer: depthBuffer, texture: tex } as FrameBufferObject;
   }
 
   public static createTexture(width: number, height: number) {

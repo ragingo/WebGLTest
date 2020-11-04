@@ -1,3 +1,5 @@
+import { Texture } from './Texture';
+
 export type Position = { left: number; top: number; right: number; bottom: number };
 
 export type Scale = { x: number; y: number; z: number };
@@ -27,8 +29,9 @@ export type UniformInfo = {
 };
 
 export type FrameBufferObject = {
-  buffer: WebGLBuffer | null;
-  texture: WebGLTexture | null;
+  frameBuffer: WebGLBuffer | null;
+  depthBuffer: WebGLBuffer | null;
+  texture: Texture | null;
 };
 
 export type VertexBufferObject = {

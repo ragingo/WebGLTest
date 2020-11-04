@@ -3,6 +3,7 @@ import DefaultVertexShader from '../../glsl/default_vs.glsl';
 import { Graphics } from './Graphics';
 import { GraphicsUtils } from './GraphicsUtils';
 import { ShaderProgram } from './ShaderProgram';
+import { Texture } from './Texture';
 import {
   Border,
   Crop,
@@ -20,9 +21,8 @@ export class Sprite {
   private vertexBufferObjects: VertexBufferObject[] = [];
   private readonly frameBufferObjects: FrameBufferObject[] = [];
   private indexBufferObject: IndexBufferObject | null = null;
-  private drawCounter = 0;
+  private baseTexture: Texture | null = null;
   private textureSource: TexImageSource | null = null;
-  private needsRefreshTexture = false;
 
   public uniformLocationInfos: UniformInfo[] = [];
   public isVisible = true;
@@ -54,8 +54,11 @@ export class Sprite {
     }
 
     if (this.frameBufferObjects.length === 0) {
-      const obj = Graphics.createFrameBufferWithTexture(this.canvasWidth, this.canvasHeight);
-      this.frameBufferObjects.push(obj);
+      const obj1 = Graphics.createFrameBufferWithTexture(this.canvasWidth, this.canvasHeight);
+      this.frameBufferObjects.push(obj1);
+
+      const obj2 = Graphics.createFrameBufferWithTexture(this.canvasWidth, this.canvasHeight);
+      this.frameBufferObjects.push(obj2);
     }
   }
 
@@ -73,11 +76,9 @@ export class Sprite {
     }
 
     this.frameBufferObjects.forEach((obj) => {
-      gl.deleteFramebuffer(obj.buffer);
-      obj.buffer = null;
-
-      gl.deleteTexture(obj.texture);
-      obj.texture = null;
+      gl.deleteFramebuffer(obj.frameBuffer);
+      obj.frameBuffer = null;
+      obj.texture?.dispose();
     });
 
     this.isDisposed = true;
@@ -85,7 +86,6 @@ export class Sprite {
 
   public updateTexture(img: TexImageSource | null) {
     this.textureSource = img;
-    this.needsRefreshTexture = true;
   }
 
   public isDrawable() {
@@ -107,49 +107,29 @@ export class Sprite {
       this.crop.height = this.size.height;
     }
 
-    this.draw1st();
-
-    if (!this.indexBufferObject) {
-      return;
-    }
-
-    const gl = Graphics.gl;
-    gl.activeTexture(gl.TEXTURE0);
-    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
-  }
-
-  private draw1st() {
     if (!this.shaderProgram) {
       if (!this.compile()) {
         return;
       }
     }
 
-    const gl = Graphics.gl;
     const program = this.shaderProgram?.get();
     if (!program) {
       return;
     }
 
-    gl.useProgram(program);
+    Graphics.gl.useProgram(program);
+    this.prepare(program);
+    this.draw1st();
 
-    // TODO: fbを入れ替えられるようにする
-    // TODO: 何回シェーダーを実行してfbを更新する必要があるのか（処理に何パス必要なのか）外から指定できるようにしてみる
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferObjects[0].buffer);
+    // TODO: どうにかする
+    Graphics.gl.uniform1i(Graphics.gl.getUniformLocation(program, 'effectType'), -1);
 
-    if (this.textureSource) {
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, this.frameBufferObjects[0].texture);
+    this.draw2nd();
+  }
 
-      if (this.needsRefreshTexture) {
-        this.needsRefreshTexture = false;
-        if (this.drawCounter++ === 0) {
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
-        } else {
-          gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.textureSource);
-        }
-      }
-    }
+  private prepare(program: WebGLProgram) {
+    const gl = Graphics.gl;
 
     // shader parameters
     {
@@ -169,9 +149,7 @@ export class Sprite {
     }
 
     // index buffer
-    if (!this.indexBufferObject) {
-      this.indexBufferObject = GraphicsUtils.create9SliceSpriteIndexBufferObject();
-    }
+    this.indexBufferObject ??= GraphicsUtils.create9SliceSpriteIndexBufferObject();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBufferObject.buffer);
 
     // vertex buffer object
@@ -192,10 +170,66 @@ export class Sprite {
       gl.enableVertexAttribArray(item.location);
       gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
     });
+  }
+
+  private draw1st() {
+    if (!this.indexBufferObject) {
+      return;
+    }
+
+    const gl = Graphics.gl;
+
+    if (!this.baseTexture && this.textureSource) {
+      const tex = Graphics.createTextureFromImage(this.textureSource);
+      this.baseTexture = new Texture(gl, tex);
+    }
+
+    if (this.baseTexture) {
+      this.baseTexture.activate();
+      this.baseTexture.bind();
+      this.baseTexture.updateTextureSource(this.textureSource);
+    }
+
+    const fbo = this.frameBufferObjects[0];
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer);
+
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
 
     gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    if (fbo.texture) {
+      fbo.texture.activate();
+      fbo.texture.bind();
+    }
+  }
+
+  private draw2nd() {
+    if (!this.indexBufferObject) {
+      return;
+    }
+
+    const gl = Graphics.gl;
+
+    const fbo2 = this.frameBufferObjects[1];
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo2.frameBuffer);
+
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
+
+    // TODO: ここで書き込んだ結果、一辺の長さが 1/4 になってる・・・どうにかして直す
+    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
+
+    if (fbo2.texture) {
+      fbo2.texture.activate();
+      fbo2.texture.bind();
+    }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
   }
 
   private compile() {
