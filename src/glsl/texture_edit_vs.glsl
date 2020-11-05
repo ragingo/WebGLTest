@@ -12,12 +12,12 @@ varying vec2 vTextureCoord;
  * |r4| 0| 0| 0| 1|
 */
 mat4 mat4_identity() {
-	return mat4(
-		vec4(1.0, 0.0, 0.0, 0.0),
-		vec4(0.0, 1.0, 0.0, 0.0),
-		vec4(0.0, 0.0, 1.0, 0.0),
-		vec4(0.0, 0.0, 0.0, 1.0)
-	);
+    return mat4(
+        vec4(1.0, 0.0, 0.0, 0.0),
+        vec4(0.0, 1.0, 0.0, 0.0),
+        vec4(0.0, 0.0, 1.0, 0.0),
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
 }
 
 /* 拡大縮小行列
@@ -28,12 +28,12 @@ mat4 mat4_identity() {
  * |r4| 0| 0| 0| 1|
 */
 mat4 mat4_scale(vec3 value) {
-	return mat4(
-		vec4(value.x, 0.0, 0.0, 0.0),
-		vec4(0.0, value.y, 0.0, 0.0),
-		vec4(0.0, 0.0, value.z, 0.0),
-		vec4(0.0, 0.0, 0.0, 1.0)
-	);
+    return mat4(
+        vec4(value.x, 0.0, 0.0, 0.0),
+        vec4(0.0, value.y, 0.0, 0.0),
+        vec4(0.0, 0.0, value.z, 0.0),
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
 }
 
 /* 平行移動行列
@@ -44,12 +44,12 @@ mat4 mat4_scale(vec3 value) {
  * |r4| 0| 0| 0| 1|
 */
 mat4 mat4_translate(vec3 value) {
-	return mat4(
-		vec4(1.0, 0.0, 0.0, 0.0),
-		vec4(0.0, 1.0, 0.0, 0.0),
-		vec4(0.0, 0.0, 1.0, 0.0),
-		vec4(value.x, value.y, value.z, 1.0)
-	);
+    return mat4(
+        vec4(1.0, 0.0, 0.0, 0.0),
+        vec4(0.0, 1.0, 0.0, 0.0),
+        vec4(0.0, 0.0, 1.0, 0.0),
+        vec4(value.x, value.y, value.z, 1.0)
+    );
 }
 
 /* 回転行列(X軸)
@@ -60,12 +60,12 @@ mat4 mat4_translate(vec3 value) {
  * |r4|        0|        0|        0|        1|
 */
 mat4 mat4_rotation_x(float rad) {
-	return mat4(
-		vec4(1.0, 0.0, 0.0, 0.0),
-		vec4(0.0, cos(rad), -sin(rad), 0.0),
-		vec4(0.0, sin(rad), cos(rad), 0.0),
-		vec4(0.0, 0.0, 0.0, 1.0)
-	);
+    return mat4(
+        vec4(1.0, 0.0, 0.0, 0.0),
+        vec4(0.0, cos(rad), -sin(rad), 0.0),
+        vec4(0.0, sin(rad), cos(rad), 0.0),
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
 }
 
 /* 回転行列(Y軸)
@@ -76,12 +76,12 @@ mat4 mat4_rotation_x(float rad) {
  * |r4|        0|        0|        0|        1|
 */
 mat4 mat4_rotation_y(float rad) {
-	return mat4(
-		vec4(cos(rad), 0.0, -sin(rad), 0.0),
-		vec4(0.0, 1.0, 0.0, 0.0),
-		vec4(sin(rad), 0.0, cos(rad), 0.0),
-		vec4(0.0, 0.0, 0.0, 1.0)
-	);
+    return mat4(
+        vec4(cos(rad), 0.0, -sin(rad), 0.0),
+        vec4(0.0, 1.0, 0.0, 0.0),
+        vec4(sin(rad), 0.0, cos(rad), 0.0),
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
 }
 
 /* 回転行列(Z軸)
@@ -92,24 +92,24 @@ mat4 mat4_rotation_y(float rad) {
  * |r4|        0|        0|        0|        1|
 */
 mat4 mat4_rotation_z(float rad) {
-	return mat4(
-		vec4(cos(rad), sin(rad), 0.0, 0.0),
-		vec4(-sin(rad), cos(rad), 0.0, 0.0),
-		vec4(0.0, 0.0, 1.0, 0.0),
-		vec4(0.0, 0.0, 0.0, 1.0)
-	);
+    return mat4(
+        vec4(cos(rad), sin(rad), 0.0, 0.0),
+        vec4(-sin(rad), cos(rad), 0.0, 0.0),
+        vec4(0.0, 0.0, 1.0, 0.0),
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
 }
 void main() {
-	vTextureCoord = texCoord;
+    vTextureCoord = texCoord;
 
-	vec3 rotation2 = (rotation * 2.0 * 3.14) / 360.0;
+    vec3 rotation2 = (rotation * 2.0 * 3.14) / 360.0;
 
-	mat4 mat_result =
-		mat4_identity() *
-		mat4_scale(scale) *
-		mat4_rotation_x(rotation2.x) *
-		mat4_rotation_y(rotation2.y) *
-		mat4_rotation_z(rotation2.z);
+    mat4 mat_result =
+        mat4_identity() *
+        mat4_scale(scale) *
+        mat4_rotation_x(rotation2.x) *
+        mat4_rotation_y(rotation2.y) *
+        mat4_rotation_z(rotation2.z);
 
-	gl_Position = mat_result * vec4(position, 1.0);
+    gl_Position = mat_result * vec4(position, 1.0);
 }
