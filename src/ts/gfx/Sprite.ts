@@ -1,3 +1,4 @@
+import { glMatrix, mat4, vec3 } from 'gl-matrix';
 import DefaultFragmentShader from '../../glsl/default_fs.glsl';
 import DefaultVertexShader from '../../glsl/default_vs.glsl';
 import { Graphics } from './Graphics';
@@ -148,12 +149,29 @@ export class Sprite {
   private prepare(program: WebGLProgram) {
     const gl = Graphics.gl;
 
+    {
+      const model = mat4.identity(mat4.create());
+      const view = mat4.identity(mat4.create());
+      const proj = mat4.identity(mat4.create());
+      const mvp = mat4.identity(mat4.create());
+
+      // TODO: よくわからない。分かったら直す。何も描画されない状態になる。
+      // mat4.perspective(proj, glMatrix.toRadian(90), this.canvasWidth / this.canvasHeight, 0.1, 100);
+      // mat4.lookAt(view, vec3.fromValues(0.0, 1.0, 3.0), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+
+      mat4.rotateX(model, model, glMatrix.toRadian(this.rotate.x));
+      mat4.rotateY(model, model, glMatrix.toRadian(this.rotate.y));
+      mat4.rotateZ(model, model, glMatrix.toRadian(this.rotate.z));
+      mat4.scale(model, model, vec3.fromValues(this.scale.x, this.scale.y, this.scale.z));
+      mat4.mul(mvp, proj, view);
+      mat4.mul(mvp, model, mvp);
+      gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mvp'), false, mvp);
+    }
+
     // shader parameters
     {
       const infos: UniformInfo[] = [
         { type: 'int', name: 'uSampler', value: 0 },
-        { type: 'float', name: 'scale', value: [this.scale.x, this.scale.y, this.scale.z] },
-        { type: 'float', name: 'rotation', value: [this.rotate.x, this.rotate.y, this.rotate.z] },
         { type: 'float', name: 'textureSize', value: [this.size.width, this.size.height] }
       ];
 
@@ -176,10 +194,9 @@ export class Sprite {
         this.canvasWidth,
         this.canvasHeight,
         this.size,
-        this.scale,
         this.depth,
-        this.crop,
-        this.border
+        GraphicsUtils.create9SliceSpritePositions(this.size, this.scale, this.border),
+        GraphicsUtils.create9SliceSpriteTextureCoordinates(this.crop, this.border)
       );
     }
     this.vertexBufferObjects.forEach((item) => {

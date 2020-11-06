@@ -350,9 +350,9 @@ void main() {
         color = original * color;
     }
 
-    if (uShowBorder == 1 && isBorder(vTextureCoord)) {
-        color = vec4(0.0, 1.0, 0.0, 1.0);
-    }
+    // if (uShowBorder == 1 && isBorder(vTextureCoord)) {
+    //     color = vec4(0.0, 1.0, 0.0, 1.0);
+    // }
 
     gl_FragColor = color;
 }

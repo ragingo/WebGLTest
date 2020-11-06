@@ -41,16 +41,16 @@ export class GraphicsUtils {
     const tc_bb_t = crop.height - bottom;
 
     return [
-      { left: 0, top: 0, width: left, height: top },
-      { left: left, top: 0, width: tc_cb_w, height: top },
-      { left: tc_rb_l, top: 0, width: right, height: top },
-      { left: 0, top: top, width: left, height: tc_cb_h },
-      { left: left, top: top, width: tc_cb_w, height: tc_cb_h },
-      { left: tc_rb_l, top: top, width: right, height: tc_cb_h },
-      { left: 0, top: tc_bb_t, width: left, height: bottom },
-      { left: left, top: tc_bb_t, width: tc_cb_w, height: bottom },
-      { left: tc_rb_l, top: tc_bb_t, width: right, height: bottom }
-    ];
+      { left: 0, top: 0, right: left, bottom: top },
+      { left: left, top: 0, right: tc_cb_w, bottom: top },
+      { left: tc_rb_l, top: 0, right: right, bottom: top },
+      { left: 0, top: top, right: left, bottom: tc_cb_h },
+      { left: left, top: top, right: tc_cb_w, bottom: tc_cb_h },
+      { left: tc_rb_l, top: top, right: right, bottom: tc_cb_h },
+      { left: 0, top: tc_bb_t, right: left, bottom: bottom },
+      { left: left, top: tc_bb_t, right: tc_cb_w, bottom: bottom },
+      { left: tc_rb_l, top: tc_bb_t, right: right, bottom: bottom }
+    ] as Coordinate[];
   }
 
   public static screenToWorld(canvasWidth: number, canvasHeight: number, pos: Position) {
@@ -61,7 +61,7 @@ export class GraphicsUtils {
       bottom: (pos.top + pos.bottom) / canvasHeight
     };
 
-    const world = new Coordinate();
+    const world: Position = {} as Position;
     world.left = newPos.left * 2.0 - 1.0;
     world.top = -(newPos.top * 2.0 - 1.0);
     world.right = newPos.right * 2.0 - 1.0;
@@ -85,15 +85,12 @@ export class GraphicsUtils {
     canvasWidth: number,
     canvasHeight: number,
     size: Size,
-    scale: Scale,
     depth: number,
-    crop: Crop,
-    border: Border
+    positions: Position[],
+    texcoords: Coordinate[]
   ) {
     const vertices_pos: number[] = [];
     {
-      const positions = GraphicsUtils.create9SliceSpritePositions(size, scale, border);
-
       for (let i = 0; i < positions.length; i++) {
         const pos = GraphicsUtils.screenToWorld(canvasWidth, canvasHeight, positions[i]);
         // prettier-ignore
@@ -108,15 +105,13 @@ export class GraphicsUtils {
 
     const vertices_uv: number[] = [];
     {
-      const texcoords = GraphicsUtils.create9SliceSpriteTextureCoordinates(crop, border);
-
       for (let i = 0; i < texcoords.length; i++) {
         const screen_tc = texcoords[i];
         const uv_tc = {
           left: screen_tc.left / size.width,
           top: screen_tc.top / size.height,
-          right: (screen_tc.left + screen_tc.width) / size.width,
-          bottom: (screen_tc.top + screen_tc.height) / size.height
+          right: (screen_tc.left + screen_tc.right) / size.width,
+          bottom: (screen_tc.top + screen_tc.bottom) / size.height
         };
 
         // prettier-ignore
