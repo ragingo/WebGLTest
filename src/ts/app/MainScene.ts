@@ -47,7 +47,7 @@ export class MainScene implements IScene {
     this.backgroundSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
     this.backgroundSprite.initialize();
     this.backgroundSprite.size = new Size(0, 0, this.canvas.width, this.canvas.height);
-    this.backgroundSprite.depth = 0.0001;
+    this.backgroundSprite.depth = 0.01;
 
     this.cameraSprite = new Sprite(this.canvas.width, this.canvas.height, VertexShader, FragmentShader);
     this.cameraSprite.initialize();

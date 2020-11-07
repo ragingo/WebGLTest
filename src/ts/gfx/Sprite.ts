@@ -20,6 +20,7 @@ import {
 export class Sprite {
   private shaderProgram: ShaderProgram | null = null;
   private vertexBufferObjects: VertexBufferObject[] = [];
+  private vertexBufferObjectsForFrameBuffer: VertexBufferObject[] = [];
   private readonly frameBufferObjects: FrameBufferObject[] = [];
   private indexBufferObject: IndexBufferObject | null = null;
   private baseTexture: Texture | null = null;
@@ -67,6 +68,11 @@ export class Sprite {
     const gl = Graphics.gl;
 
     this.vertexBufferObjects.forEach((vbo) => {
+      gl.deleteBuffer(vbo.buffer);
+      vbo.buffer = null;
+    });
+
+    this.vertexBufferObjectsForFrameBuffer.forEach((vbo) => {
       gl.deleteBuffer(vbo.buffer);
       vbo.buffer = null;
     });
@@ -155,16 +161,16 @@ export class Sprite {
       const proj = mat4.identity(mat4.create());
       const mvp = mat4.identity(mat4.create());
 
-      // TODO: よくわからない。分かったら直す。何も描画されない状態になる。
-      // mat4.perspective(proj, glMatrix.toRadian(90), this.canvasWidth / this.canvasHeight, 0.1, 100);
-      // mat4.lookAt(view, vec3.fromValues(0.0, 1.0, 3.0), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+      // mat4.perspective(proj, glMatrix.toRadian(10), 1, 0.01, 100);
+      // mat4.lookAt(view, vec3.fromValues(0, 0, -10), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
 
       mat4.rotateX(model, model, glMatrix.toRadian(this.rotate.x));
       mat4.rotateY(model, model, glMatrix.toRadian(this.rotate.y));
       mat4.rotateZ(model, model, glMatrix.toRadian(this.rotate.z));
       mat4.scale(model, model, vec3.fromValues(this.scale.x, this.scale.y, this.scale.z));
-      mat4.mul(mvp, proj, view);
-      mat4.mul(mvp, model, mvp);
+      mat4.mul(mvp, mvp, proj);
+      mat4.mul(mvp, mvp, view);
+      mat4.mul(mvp, mvp, model);
       gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mvp'), false, mvp);
     }
 
@@ -191,11 +197,10 @@ export class Sprite {
     if (this.vertexBufferObjects.length === 0) {
       this.vertexBufferObjects = GraphicsUtils.createVertexBufferObject(
         program,
-        this.canvasWidth,
-        this.canvasHeight,
+        { left: 0, top: 0, width: this.canvasWidth, height: this.canvasHeight },
         this.size,
         this.depth,
-        GraphicsUtils.create9SliceSpritePositions(this.size, this.scale, this.border),
+        GraphicsUtils.create9SliceSpritePositions(this.size, this.border),
         GraphicsUtils.create9SliceSpriteTextureCoordinates(this.crop, this.border)
       );
     }
@@ -204,6 +209,18 @@ export class Sprite {
       gl.enableVertexAttribArray(item.location);
       gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
     });
+
+    // vertex buffer object for frame buffer
+    if (this.vertexBufferObjectsForFrameBuffer.length === 0) {
+      this.vertexBufferObjectsForFrameBuffer = GraphicsUtils.createVertexBufferObject(
+        program,
+        { left: 0, top: 0, width: this.canvasWidth, height: this.canvasHeight },
+        { left: 0, top: 0, width: this.canvasWidth, height: this.canvasHeight },
+        this.depth,
+        GraphicsUtils.create9SliceSpritePositions({ left: 0, top: 0, width: this.canvasWidth, height: this.canvasHeight }),
+        GraphicsUtils.create9SliceSpriteTextureCoordinates({ left: 0, top: 0, width: this.canvasWidth, height: this.canvasHeight })
+      );
+    }
   }
 
   // @ts-ignore
@@ -252,7 +269,12 @@ export class Sprite {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
 
-    // TODO: ここで書き込んだ結果、一辺の長さが 1/4 になってる・・・どうにかして直す
+    this.vertexBufferObjectsForFrameBuffer.forEach((item) => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
+      gl.enableVertexAttribArray(item.location);
+      gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
+    });
+
     gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
 
     if (fbo.texture) {

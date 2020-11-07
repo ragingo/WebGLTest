@@ -1,64 +1,70 @@
 import { Graphics } from './Graphics';
-import { Border, Coordinate, Crop, IndexBufferObject, Position, Scale, Size } from './types';
+import { Border, Coordinate, Crop, IndexBufferObject, Position, Size } from './types';
 
 export class GraphicsUtils {
-  public static create9SliceSpritePositions(size: Size, scale: Scale, border: Border) {
-    const { left, top, right, bottom } = border;
-    const scaled_w = size.width * scale.x;
-    const scaled_h = size.height * scale.y;
-    const pos_lb_l = size.left;
-    const pos_tb_t = size.top;
-    const pos_cb_l = pos_lb_l + left;
-    const pos_cb_t = pos_tb_t + top;
-    const pos_cb_w = scaled_w - (left + right);
-    const pos_cb_h = scaled_h - (top + bottom);
-    const pos_rb_l = pos_lb_l + scaled_w - right;
-    const pos_bb_t = pos_tb_t + scaled_h - bottom;
+  public static create9SliceSpritePositions(size: Size, border?: Border) {
+    const { left, top, right, bottom } = border ?? { left: 0, top: 0, right: 0, bottom: 0 };
+
+    const border_left = size.left;
+    const border_right = border_left + size.width - right;
+    const border_top = size.top;
+    const border_bottom = border_top + size.height - bottom;
+
+    const block_left = border_left + left;
+    const block_top = border_top + top;
+    const block_right = size.width - (left + right);
+    const block_bottom = size.height - (top + bottom);
 
     /**
      * 0 1 2
      * 3 4 5
      * 6 7 8
      */
+    // prettier-ignore
     return [
-      { left: pos_lb_l, top: pos_tb_t, right: left, bottom: top },
-      { left: pos_cb_l, top: pos_tb_t, right: pos_cb_w, bottom: top },
-      { left: pos_rb_l, top: pos_tb_t, right: right, bottom: top },
-      { left: pos_lb_l, top: pos_cb_t, right: left, bottom: pos_cb_h },
-      { left: pos_cb_l, top: pos_cb_t, right: pos_cb_w, bottom: pos_cb_h },
-      { left: pos_rb_l, top: pos_cb_t, right: right, bottom: pos_cb_h },
-      { left: pos_lb_l, top: pos_bb_t, right: left, bottom: bottom },
-      { left: pos_cb_l, top: pos_bb_t, right: pos_cb_w, bottom: bottom },
-      { left: pos_rb_l, top: pos_bb_t, right: right, bottom: bottom }
+      { left: border_left,  top: border_top,    right: left,        bottom: top },
+      { left: block_left,   top: border_top,    right: block_right, bottom: top },
+      { left: border_right, top: border_top,    right: right,       bottom: top },
+      { left: border_left,  top: block_top,     right: left,        bottom: block_bottom },
+      { left: block_left,   top: block_top,     right: block_right, bottom: block_bottom },
+      { left: border_right, top: block_top,     right: right,       bottom: block_bottom },
+      { left: border_left,  top: border_bottom, right: left,        bottom: bottom },
+      { left: block_left,   top: border_bottom, right: block_right, bottom: bottom },
+      { left: border_right, top: border_bottom, right: right,       bottom: bottom }
     ] as Position[];
   }
 
-  public static create9SliceSpriteTextureCoordinates(crop: Crop, border: Border) {
-    const { left, top, right, bottom } = border;
-    const tc_cb_w = crop.width - (left + right);
-    const tc_cb_h = crop.height - (top + bottom);
-    const tc_rb_l = crop.width - right;
-    const tc_bb_t = crop.height - bottom;
+  public static create9SliceSpriteTextureCoordinates(crop: Crop, border?: Border) {
+    const { left, top, right, bottom } = border ?? { left: 0, top: 0, right: 0, bottom: 0 };
 
+    const block_width = crop.width - (left + right);
+    const block_height = crop.height - (top + bottom);
+
+    const border_left = 0;
+    const border_top = 0;
+    const border_right = crop.width - right;
+    const border_bottom = crop.height - bottom;
+
+    // prettier-ignore
     return [
-      { left: 0, top: 0, right: left, bottom: top },
-      { left: left, top: 0, right: tc_cb_w, bottom: top },
-      { left: tc_rb_l, top: 0, right: right, bottom: top },
-      { left: 0, top: top, right: left, bottom: tc_cb_h },
-      { left: left, top: top, right: tc_cb_w, bottom: tc_cb_h },
-      { left: tc_rb_l, top: top, right: right, bottom: tc_cb_h },
-      { left: 0, top: tc_bb_t, right: left, bottom: bottom },
-      { left: left, top: tc_bb_t, right: tc_cb_w, bottom: bottom },
-      { left: tc_rb_l, top: tc_bb_t, right: right, bottom: bottom }
+      { left: border_left,  top: border_top,    right: left,        bottom: top },
+      { left: left,         top: border_top,    right: block_width, bottom: top },
+      { left: border_right, top: border_top,    right: right,       bottom: top },
+      { left: border_left,  top: top,           right: left,        bottom: block_height },
+      { left: left,         top: top,           right: block_width, bottom: block_height },
+      { left: border_right, top: top,           right: right,       bottom: block_height },
+      { left: border_left,  top: border_bottom, right: left,        bottom: bottom },
+      { left: left,         top: border_bottom, right: block_width, bottom: bottom },
+      { left: border_right, top: border_bottom, right: right,       bottom: bottom }
     ] as Coordinate[];
   }
 
-  public static screenToWorld(canvasWidth: number, canvasHeight: number, pos: Position) {
+  public static screenToWorld(canvasSize: Size, pos: Position) {
     const newPos: Position = {
-      left: pos.left / canvasWidth,
-      top: pos.top / canvasHeight,
-      right: (pos.left + pos.right) / canvasWidth,
-      bottom: (pos.top + pos.bottom) / canvasHeight
+      left: pos.left / canvasSize.width,
+      top: pos.top / canvasSize.height,
+      right: (pos.left + pos.right) / canvasSize.width,
+      bottom: (pos.top + pos.bottom) / canvasSize.height
     };
 
     const world: Position = {} as Position;
@@ -82,8 +88,7 @@ export class GraphicsUtils {
 
   public static createVertexBufferObject(
     program: WebGLProgram,
-    canvasWidth: number,
-    canvasHeight: number,
+    canvasSize: Size,
     size: Size,
     depth: number,
     positions: Position[],
@@ -92,13 +97,13 @@ export class GraphicsUtils {
     const vertices_pos: number[] = [];
     {
       for (let i = 0; i < positions.length; i++) {
-        const pos = GraphicsUtils.screenToWorld(canvasWidth, canvasHeight, positions[i]);
+        const pos = GraphicsUtils.screenToWorld(canvasSize, positions[i]);
         // prettier-ignore
         vertices_pos.push(
-          pos.left, pos.bottom, depth,
+          pos.left,  pos.bottom, depth,
           pos.right, pos.bottom, depth,
-          pos.left, pos.top, depth,
-          pos.right, pos.top, depth
+          pos.left,  pos.top,    depth,
+          pos.right, pos.top,    depth
         );
       }
     }
@@ -117,7 +122,7 @@ export class GraphicsUtils {
         // prettier-ignore
         vertices_uv.push(
           uv_tc.left, uv_tc.bottom, uv_tc.right, uv_tc.bottom,
-          uv_tc.left, uv_tc.top, uv_tc.right, uv_tc.top
+          uv_tc.left, uv_tc.top,    uv_tc.right, uv_tc.top
         );
       }
     }
