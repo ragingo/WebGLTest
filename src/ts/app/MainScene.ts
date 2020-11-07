@@ -15,7 +15,7 @@ export class MainScene implements IScene {
   private backgroundSprite: Sprite | null = null;
   private cameraSprite: Sprite | null = null;
 
-  private isCameraOpened = false;
+  private isCameraOpenResult: { success: boolean, reason?: string } | false = false;
   private camera = new Camera({
     video: {
       allow: true,
@@ -64,8 +64,8 @@ export class MainScene implements IScene {
     });
 
     this.camera.open().then((result) => {
-      this.isCameraOpened = result;
-      if (!result) {
+      this.isCameraOpenResult = result;
+      if (!result.success) {
         this.cameraSprite?.dispose();
         this.cameraSprite = null;
       }
@@ -80,6 +80,10 @@ export class MainScene implements IScene {
   }
 
   onDraw() {
+    if (!this.isCameraOpenResult) {
+      return;
+    }
+
     this.camera.consumeDecodedFrameAsImageBitmap().then((tex) => {
       if (!tex) {
         return;
@@ -90,26 +94,41 @@ export class MainScene implements IScene {
       this.cameraSprite.updateTexture(tex);
     });
 
-    const sprite = this.isCameraOpened ? this.cameraSprite : this.backgroundSprite;
+    [this.cameraSprite, this.backgroundSprite].forEach((s) => {
+      if (!s) {
+        return;
+      }
+      s.uniformLocationInfos.clear();
+    });
+
+    const sprite = this.isCameraOpenResult.success ? this.cameraSprite : this.backgroundSprite;
     if (!sprite) {
       return;
     }
 
     sprite.rotate = this.view.getRotationValue();
     sprite.scale = this.view.getScaleValue();
-    sprite.uniformLocationInfos.length = 0;
 
     const color = this.view.getColorValue();
     const vivid = this.view.getVividValue();
-    sprite.uniformLocationInfos.push({ type: 'float', name: 'editColor', value: [color.r, color.g, color.b, color.a] });
-    sprite.uniformLocationInfos.push({ type: 'int', name: 'effectType', value: this.view.getEffectTypeValue() });
-    sprite.uniformLocationInfos.push({
+    sprite.uniformLocationInfos.set('editColor', { type: 'float', value: [color.r, color.g, color.b, color.a] });
+    sprite.uniformLocationInfos.set('effectType', { type: 'int', value: this.view.getEffectTypeValue() });
+    sprite.uniformLocationInfos.set('binarizeThreshold', {
       type: 'float',
-      name: 'binarizeThreshold',
       value: this.view.getBinarizeThresholdValue()
     });
-    sprite.uniformLocationInfos.push({ type: 'float', name: 'vividParams', value: [vivid.k1, vivid.k2] });
-    sprite.uniformLocationInfos.push({ type: 'int', name: 'uShowBorder', value: true ? 1 : 0 });
+    sprite.uniformLocationInfos.set('vividParams', { type: 'float', value: [vivid.k1, vivid.k2] });
+    sprite.uniformLocationInfos.set('uShowBorder', { type: 'int', value: true ? 1 : 0 });
+
+    [this.cameraSprite, this.backgroundSprite].forEach((s) => {
+      if (!s) {
+        return;
+      }
+      if (s.uniformLocationInfos.has('effectType')) {
+        return;
+      }
+      s.uniformLocationInfos.set('effectType', { type: 'int', value: -1 });
+    });
 
     this.backgroundSprite?.draw();
     this.cameraSprite?.draw();

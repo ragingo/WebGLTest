@@ -3,6 +3,7 @@ precision mediump float;
 uniform sampler2D uSampler;
 uniform int       uShowBorder;
 uniform int       effectType;
+uniform int       nthPass;
 uniform vec2      textureSize;
 uniform float     binarizeThreshold;
 uniform vec4      editColor;
@@ -248,106 +249,114 @@ void main() {
     // 元の色
     vec4 color = texture2D(uSampler, vTextureCoord);
 
-    if (effectType == 0) {
+    if (effectType == 0 && nthPass == 1) {
         color *= apply_edit_color(color);
     }
 
-    if (effectType == 1) {
+    if (effectType == 1 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = grayscale(color);
     }
 
-    if (effectType == 2) {
+    if (effectType == 2 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = binarize(color, binarizeThreshold);
     }
 
-    if (effectType == 3) {
+    if (effectType == 3 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = laplacian4(pix);
     }
 
-    if (effectType == 4) {
+    if (effectType == 4 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = laplacian8(pix);
     }
 
-    if (effectType == 5) {
+    if (effectType == 5 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = roberts(pix);
     }
 
-    if (effectType == 6) {
+    if (effectType == 6 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = prewitt(pix);
     }
 
-    if (effectType == 7) {
+    if (effectType == 7 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = reverse(color);
     }
 
-    if (effectType == 8) {
+    if (effectType == 8 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 8);
     }
 
-    if (effectType == 9) {
+    if (effectType == 9 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 15);
     }
 
-    if (effectType == 10) {
+    if (effectType == 10 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 16);
     }
 
-    if (effectType == 11) {
+    if (effectType == 11 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 24);
     }
 
-    if (effectType == 12) {
+    if (effectType == 12 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 32);
     }
 
-    if (effectType == 13) {
+    if (effectType == 13 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = circle(color);
     }
 
-    if (effectType == 14) {
+    if (effectType == 14 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = sphere(color);
     }
 
-    if (effectType == 15) {
+    if (effectType == 15 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = sine_wave(color);
     }
 
-    if (effectType == 16) {
+    if (effectType == 16 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = vivid(color, vividParams.x, vividParams.y);
     }
 
-    if (effectType == 17) {
-        // 背景画像とカメラ映像を合成する実験
-        // TODO: 輪郭の外側の色を破棄したい。今は小細工して背景の色をなんとか抜いてる...
-        vec4 original = color;
-        color *= vec4(0, 149.0/255.0, 0.0, 1.0);
-        color = binarize(color, 0.34);
-        color = chromakey(color, vec3(0, 0, 0), 0.8);
-        color = original * color;
+    if (effectType == 17 && nthPass == 1) {
+        color = grayscale(color);
+    }
+    if (effectType == 17 && nthPass == 2) {
+        vec4 pix[9];
+        get_neighbour_pixels(pix);
+        color = laplacian8(pix);
+    }
+    if (effectType == 17 && nthPass == 3) {
+        vec4 pix[9];
+        get_neighbour_pixels(pix);
+        if (pix[0].rgb == vec3(1,1,1) && pix[1].rgb == vec3(1,1,1) && pix[2].rgb == vec3(1,1,1) &&
+            pix[3].rgb == vec3(1,1,1) && pix[4].rgb == vec3(1,1,1) && pix[5].rgb == vec3(1,1,1) &&
+            pix[6].rgb == vec3(1,1,1) && pix[7].rgb == vec3(1,1,1) && pix[8].rgb == vec3(1,1,1)) {
+            color = vec4(0.0, 1.0, 0.0, 1.0);
+        }
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {

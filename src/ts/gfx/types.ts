@@ -22,7 +22,6 @@ export type UniformType = 'int' | 'uint' | 'float';
 
 export type UniformInfo = {
   type: UniformType;
-  name: string;
   value: any;
 };
 
