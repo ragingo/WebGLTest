@@ -52,7 +52,7 @@ vec4 laplacian4(vec4 pix[9]) {
        -1.0 * pix[3] +  4.0 * pix[4] + -1.0 * pix[5] +
         0.0 * pix[6] + -1.0 * pix[7] +  0.0 * pix[8];
     vec4 x = abs(d);
-    return x;
+    return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // 二次微分(差分) laplacian 8方向
@@ -78,7 +78,7 @@ vec4 roberts(vec4 pix[9]) {
          0.0 * pix[6] + -1.0 * pix[7] +  0.0 * pix[8];
 
     vec4 x = sqrt(pow(dx,vec4(2.0)) + pow(dy,vec4(2.0))) * 0.5;
-    return x;
+    return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // Prewitt
@@ -103,7 +103,7 @@ vec4 prewitt(vec4 pix[9]) {
         n = max(n, m[i]);
     }
     vec4 x = n * 0.8;
-    return x;
+    return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // 階調反転
@@ -148,7 +148,7 @@ void get_neighbour_pixels(out vec4 pix[9]) {
             vec2 kernel = vec2(x, y);
             vec4 result = texture2D(uSampler, kernel);
 
-            pix[row+col] = apply_edit_color(result); // 外部指定色を掛けて更新
+            pix[(row * 3) + col] = result;
         }
     }
 }
@@ -342,21 +342,14 @@ void main() {
     }
 
     if (effectType == 17 && nthPass == 1) {
-        color = grayscale(color);
+        vec4 pix[9];
+        get_neighbour_pixels(pix);
+        color = prewitt(pix);
     }
     if (effectType == 17 && nthPass == 2) {
-        vec4 pix[9];
-        get_neighbour_pixels(pix);
-        color = laplacian8(pix);
+        color = binarize(color, binarizeThreshold);
     }
     if (effectType == 17 && nthPass == 3) {
-        vec4 pix[9];
-        get_neighbour_pixels(pix);
-        if (pix[0].rgb == vec3(1,1,1) && pix[1].rgb == vec3(1,1,1) && pix[2].rgb == vec3(1,1,1) &&
-            pix[3].rgb == vec3(1,1,1) && pix[4].rgb == vec3(1,1,1) && pix[5].rgb == vec3(1,1,1) &&
-            pix[6].rgb == vec3(1,1,1) && pix[7].rgb == vec3(1,1,1) && pix[8].rgb == vec3(1,1,1)) {
-            color = vec4(0.0, 1.0, 0.0, 1.0);
-        }
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {

@@ -153,7 +153,7 @@ export class MainView {
     const binarize = getBySelector('.app__binarize');
     const vivid = getBySelector('.app__vivid');
 
-    if (sender.selectedIndex === 2) {
+    if (sender.selectedIndex === 2 || sender.selectedIndex === 17) {
       binarize.style.display = 'block';
     } else {
       binarize.style.display = 'none';
