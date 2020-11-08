@@ -83,7 +83,7 @@ export class Camera {
     if (this.cameraInit.video.allow) {
       const status = await navigator.permissions.query({ name: 'camera' });
       if (status.state !== 'granted') {
-        return false;
+        return { success: false, reason: 'CAMERA_PERMISSION_ERROR' };
       }
 
       constrains.video = true;
@@ -108,7 +108,7 @@ export class Camera {
       this.stream = await navigator.mediaDevices.getUserMedia(constrains);
     } catch (e) {
       console.log(e);
-      return false;
+      return { success: false, reason: 'CAMERA_OPEN_ERROR' };
     }
 
     // 音を鳴らす
@@ -159,12 +159,12 @@ export class Camera {
       // NOTE: カメラ入力の width|height === frame.display(Width|Height)
       // frame.display(Width|Height) !== frame.coded(Width|Height) だとエラーになったからチェックしておく
       if (frame.codedWidth !== frame.displayWidth || frame.codedHeight !== frame.displayHeight) {
-        return;
+        return { success: false, reason: 'CAMERA_VIDEO_FRAME_SIZE_ERROR' };
       }
       this.videoEncoder.encode(frame);
     });
 
     this.#available = true;
-    return true;
+    return { success: true };
   }
 }

@@ -3,6 +3,7 @@ precision mediump float;
 uniform sampler2D uSampler;
 uniform int       uShowBorder;
 uniform int       effectType;
+uniform int       nthPass;
 uniform vec2      textureSize;
 uniform float     binarizeThreshold;
 uniform vec4      editColor;
@@ -51,7 +52,7 @@ vec4 laplacian4(vec4 pix[9]) {
        -1.0 * pix[3] +  4.0 * pix[4] + -1.0 * pix[5] +
         0.0 * pix[6] + -1.0 * pix[7] +  0.0 * pix[8];
     vec4 x = abs(d);
-    return x;
+    return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // 二次微分(差分) laplacian 8方向
@@ -77,7 +78,7 @@ vec4 roberts(vec4 pix[9]) {
          0.0 * pix[6] + -1.0 * pix[7] +  0.0 * pix[8];
 
     vec4 x = sqrt(pow(dx,vec4(2.0)) + pow(dy,vec4(2.0))) * 0.5;
-    return x;
+    return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // Prewitt
@@ -102,7 +103,7 @@ vec4 prewitt(vec4 pix[9]) {
         n = max(n, m[i]);
     }
     vec4 x = n * 0.8;
-    return x;
+    return vec4(clamp(x.r, 0.0, 1.0), clamp(x.g, 0.0, 1.0), clamp(x.b, 0.0, 1.0), 1.0);
 }
 
 // 階調反転
@@ -147,7 +148,7 @@ void get_neighbour_pixels(out vec4 pix[9]) {
             vec2 kernel = vec2(x, y);
             vec4 result = texture2D(uSampler, kernel);
 
-            pix[row+col] = apply_edit_color(result); // 外部指定色を掛けて更新
+            pix[(row * 3) + col] = result;
         }
     }
 }
@@ -248,106 +249,107 @@ void main() {
     // 元の色
     vec4 color = texture2D(uSampler, vTextureCoord);
 
-    if (effectType == 0) {
+    if (effectType == 0 && nthPass == 1) {
         color *= apply_edit_color(color);
     }
 
-    if (effectType == 1) {
+    if (effectType == 1 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = grayscale(color);
     }
 
-    if (effectType == 2) {
+    if (effectType == 2 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = binarize(color, binarizeThreshold);
     }
 
-    if (effectType == 3) {
+    if (effectType == 3 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = laplacian4(pix);
     }
 
-    if (effectType == 4) {
+    if (effectType == 4 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = laplacian8(pix);
     }
 
-    if (effectType == 5) {
+    if (effectType == 5 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = roberts(pix);
     }
 
-    if (effectType == 6) {
+    if (effectType == 6 && nthPass == 1) {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
         color = prewitt(pix);
     }
 
-    if (effectType == 7) {
+    if (effectType == 7 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = reverse(color);
     }
 
-    if (effectType == 8) {
+    if (effectType == 8 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 8);
     }
 
-    if (effectType == 9) {
+    if (effectType == 9 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 15);
     }
 
-    if (effectType == 10) {
+    if (effectType == 10 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 16);
     }
 
-    if (effectType == 11) {
+    if (effectType == 11 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 24);
     }
 
-    if (effectType == 12) {
+    if (effectType == 12 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = convert_colordepth(color, 32);
     }
 
-    if (effectType == 13) {
+    if (effectType == 13 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = circle(color);
     }
 
-    if (effectType == 14) {
+    if (effectType == 14 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = sphere(color);
     }
 
-    if (effectType == 15) {
+    if (effectType == 15 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = sine_wave(color);
     }
 
-    if (effectType == 16) {
+    if (effectType == 16 && nthPass == 1) {
         color *= apply_edit_color(color);
         color = vivid(color, vividParams.x, vividParams.y);
     }
 
-    if (effectType == 17) {
-        // 背景画像とカメラ映像を合成する実験
-        // TODO: 輪郭の外側の色を破棄したい。今は小細工して背景の色をなんとか抜いてる...
-        vec4 original = color;
-        color *= vec4(0, 149.0/255.0, 0.0, 1.0);
-        color = binarize(color, 0.34);
-        color = chromakey(color, vec3(0, 0, 0), 0.8);
-        color = original * color;
+    if (effectType == 17 && nthPass == 1) {
+        vec4 pix[9];
+        get_neighbour_pixels(pix);
+        color = prewitt(pix);
+    }
+    if (effectType == 17 && nthPass == 2) {
+        color = binarize(color, binarizeThreshold);
+    }
+    if (effectType == 17 && nthPass == 3) {
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {

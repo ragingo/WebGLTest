@@ -104,6 +104,10 @@ export class MainView {
     this.effectSelector.onchange = () => {
       this.onEffectTypeChanged(this.effectSelector);
     };
+    const selectedEffectType = localStorage.getItem('effectType');
+    if (selectedEffectType && parseInt(selectedEffectType)) {
+      this.effectSelector.value = selectedEffectType;
+    }
 
     this.rotation = [
       new Slider('.rotation--x > .rotation__slider', '.rotation--x > .rotation__label'),
@@ -133,7 +137,6 @@ export class MainView {
   }
 
   public resetValues() {
-    this.effectSelector.value = '0';
     this.effectSelector.dispatchEvent(new Event('change'));
     this.rotation.forEach((x) => x.reset());
     this.scale.forEach((x) => x.reset());
@@ -150,7 +153,7 @@ export class MainView {
     const binarize = getBySelector('.app__binarize');
     const vivid = getBySelector('.app__vivid');
 
-    if (sender.selectedIndex === 2) {
+    if (sender.selectedIndex === 2 || sender.selectedIndex === 17) {
       binarize.style.display = 'block';
     } else {
       binarize.style.display = 'none';
@@ -161,5 +164,7 @@ export class MainView {
     } else {
       vivid.style.display = 'none';
     }
+
+    localStorage.setItem('effectType', sender.selectedIndex.toString());
   }
 }

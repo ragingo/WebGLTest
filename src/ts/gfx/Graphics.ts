@@ -131,10 +131,10 @@ export class Graphics {
     return tex;
   }
 
-  public static registerUniformLocation(program: WebGLProgram, info: UniformInfo) {
+  public static registerUniformLocation(program: WebGLProgram, name: string, info: UniformInfo) {
     const gl = Graphics.gl;
 
-    const { type, name, value } = info;
+    const { type, value } = info;
     switch (type) {
       case 'int':
         gl.uniform1i(gl.getUniformLocation(program, name), value);
