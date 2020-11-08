@@ -142,11 +142,15 @@ export class Sprite {
       }
     }
 
-    this.draw1st(program);
-    this.draw2nd(program);
-    this.draw3rd(program);
-
-    // this.debugDraw();
+    const effectType = this.uniformLocationInfos.get('effectType');
+    if (effectType?.value === 17) {
+      this.drawFrameBuffer(program, 1);
+      this.drawFrameBuffer(program, 2);
+      this.drawFrameBuffer(program, 3);
+      this.drawDisplay(program, 4);
+    } else {
+      this.drawDisplay(program, 1);
+    }
   }
 
   private prepare(program: WebGLProgram) {
@@ -220,49 +224,24 @@ export class Sprite {
     }
   }
 
-  // @ts-ignore
-  private debugDraw() {
+  private drawDisplay(program: WebGLProgram, nthPass: number) {
     if (!this.indexBufferObject) {
       return;
     }
     const gl = Graphics.gl;
+    gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), nthPass);
+    gl.uniform1f(gl.getUniformLocation(program, 'flipY'), 1);
     gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
   }
 
-  private draw1st(program: WebGLProgram) {
+  private drawFrameBuffer(program: WebGLProgram, nthPass: number) {
     if (!this.indexBufferObject) {
       return;
     }
 
     const gl = Graphics.gl;
 
-    const fbo = this.frameBufferObjects[0];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer);
-
-    gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), 1);
-
-    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
-
-    if (fbo.texture) {
-      fbo.texture.activate();
-      fbo.texture.bind();
-    }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  }
-
-  private draw2nd(program: WebGLProgram) {
-    if (!this.indexBufferObject) {
-      return;
-    }
-
-    const gl = Graphics.gl;
-
-    const fbo = this.frameBufferObjects[1];
+    const fbo = this.frameBufferObjects[nthPass % this.frameBufferObjects.length];
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer);
 
     gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
@@ -275,7 +254,8 @@ export class Sprite {
       gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
     });
 
-    gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), 2);
+    gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), nthPass);
+    gl.uniform1f(gl.getUniformLocation(program, 'flipY'), nthPass % 2 ? 1 : -1);
 
     gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
 
@@ -285,41 +265,6 @@ export class Sprite {
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  }
-
-  private draw3rd(program: WebGLProgram) {
-    if (!this.indexBufferObject) {
-      return;
-    }
-
-    const gl = Graphics.gl;
-
-    const fbo = this.frameBufferObjects[0];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.frameBuffer);
-
-    gl.viewport(0, 0, this.canvasWidth, this.canvasHeight);
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    this.vertexBufferObjectsForFrameBuffer.forEach((item) => {
-      gl.bindBuffer(gl.ARRAY_BUFFER, item.buffer);
-      gl.enableVertexAttribArray(item.location);
-      gl.vertexAttribPointer(item.location, item.stride, gl.FLOAT, false, 0, 0);
-    });
-
-    gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), 3);
-
-    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
-
-    if (fbo.texture) {
-      fbo.texture.activate();
-      fbo.texture.bind();
-    }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), 4);
-    gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
   }
 
   private compile() {
