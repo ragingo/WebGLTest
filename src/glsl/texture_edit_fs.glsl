@@ -152,6 +152,18 @@ void get_neighbour_pixels(out vec4 pix[9]) {
         }
     }
 }
+void get_8neighbour_pixels(out vec4 pix[9]) {
+    vec2 onePix = vec2(1.0 / textureSize.x, 1.0 / textureSize.y);
+    pix[0] = texture2D(uSampler, vTextureCoord.xy + vec2(-onePix.x,  onePix.y));
+    pix[1] = texture2D(uSampler, vTextureCoord.xy + vec2(        0,  onePix.y));
+    pix[2] = texture2D(uSampler, vTextureCoord.xy + vec2( onePix.x,  onePix.y));
+    pix[3] = texture2D(uSampler, vTextureCoord.xy + vec2(-onePix.x,         0));
+    pix[4] = texture2D(uSampler, vTextureCoord.xy + vec2(        0,         0));
+    pix[5] = texture2D(uSampler, vTextureCoord.xy + vec2( onePix.x,         0));
+    pix[6] = texture2D(uSampler, vTextureCoord.xy + vec2(-onePix.x, -onePix.y));
+    pix[7] = texture2D(uSampler, vTextureCoord.xy + vec2(        0, -onePix.y));
+    pix[8] = texture2D(uSampler, vTextureCoord.xy + vec2( onePix.x, -onePix.y));
+}
 
 // 円
 vec4 circle(vec4 pix) {
@@ -343,13 +355,21 @@ void main() {
 
     if (effectType == 17 && nthPass == 1) {
         vec4 pix[9];
-        get_neighbour_pixels(pix);
+        get_8neighbour_pixels(pix);
         color = prewitt(pix);
     }
     if (effectType == 17 && nthPass == 2) {
         color = binarize(color, binarizeThreshold);
     }
     if (effectType == 17 && nthPass == 3) {
+        vec4 pix[9];
+        get_8neighbour_pixels(pix);
+        const vec3 COLOR_WHITE = vec3(1, 1, 1);
+        const vec3 COLOR_BLACK = vec3(0, 0, 0);
+        if (pix[3].rgb == COLOR_WHITE && pix[4].rgb == COLOR_BLACK && pix[5].rgb == COLOR_WHITE) {
+            // color = vec4(COLOR_BLACK, 0.5);
+            color = vec4(vec3(0, 0, 1), 1);
+        }
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {
