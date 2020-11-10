@@ -179,6 +179,7 @@ export class Sprite {
     {
       const infos: { name: string, info: UniformInfo }[] = [
         { name: 'uSampler', info: { type: 'int', value: 0 } },
+        { name: 'uSampler1', info: { type: 'int', value: 1 } },
         { name: 'textureSize', info: { type: 'float', value: [this.size.width, this.size.height] } },
       ];
 
@@ -231,6 +232,10 @@ export class Sprite {
     const gl = Graphics.gl;
     gl.uniform1i(gl.getUniformLocation(program, 'nthPass'), nthPass);
     gl.uniform1f(gl.getUniformLocation(program, 'flipY'), 1);
+    if (nthPass > 1) {
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, this.baseTexture?.get() ?? null);
+    }
     gl.drawElements(gl.TRIANGLES, this.indexBufferObject.size, gl.UNSIGNED_SHORT, 0);
   }
 

@@ -1,6 +1,7 @@
 precision mediump float;
 
 uniform sampler2D uSampler;
+uniform sampler2D uSampler1;
 uniform int       uShowBorder;
 uniform int       effectType;
 uniform int       nthPass;
@@ -9,6 +10,9 @@ uniform float     binarizeThreshold;
 uniform vec4      editColor;
 uniform vec2      vividParams;
 varying vec2      vTextureCoord;
+
+const vec3 COLOR_WHITE = vec3(1.0, 1.0, 1.0);
+const vec3 COLOR_BLACK = vec3(0.0, 0.0, 0.0);
 
 bool isBorder(vec2 v) {
     if (v.x <= (2.0 / textureSize.x) ||
@@ -362,13 +366,25 @@ void main() {
         color = binarize(color, binarizeThreshold);
     }
     if (effectType == 17 && nthPass == 3) {
-        vec4 pix[9];
-        get_8neighbour_pixels(pix);
-        const vec3 COLOR_WHITE = vec3(1, 1, 1);
-        const vec3 COLOR_BLACK = vec3(0, 0, 0);
-        if (pix[3].rgb == COLOR_WHITE && pix[4].rgb == COLOR_BLACK && pix[5].rgb == COLOR_WHITE) {
-            // color = vec4(COLOR_BLACK, 0.5);
-            color = vec4(vec3(0, 0, 1), 1);
+        vec2 onePix = vec2(1.0 / textureSize.x, 1.0 / textureSize.y);
+        vec2 pos;
+        bool blackDetected = false;
+        for (int col = 0; col < 512; col++) {
+            pos = vec2(onePix.x * float(col), vTextureCoord.y);
+            if (pos.x >= vTextureCoord.x) {
+                continue;
+            }
+            vec4 pix = texture2D(uSampler, pos);
+            if (pix.rgb == COLOR_BLACK) {
+                blackDetected = true;
+                break;
+            }
+        }
+        if (blackDetected) {
+            color = texture2D(uSampler1, vTextureCoord);
+        }
+        else {
+            discard;
         }
     }
 
