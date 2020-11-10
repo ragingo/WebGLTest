@@ -369,19 +369,24 @@ void main() {
         vec2 onePix = vec2(1.0 / textureSize.x, 1.0 / textureSize.y);
         vec2 pos;
         bool blackDetected = false;
+        int blackCount = 0;
         for (int col = 0; col < 512; col++) {
             pos = vec2(onePix.x * float(col), vTextureCoord.y);
             if (pos.x >= vTextureCoord.x) {
                 continue;
             }
             vec4 pix = texture2D(uSampler, pos);
-            if (pix.rgb == COLOR_BLACK) {
+            if (pix.rgb == COLOR_BLACK && col > 0) {
+                blackCount++;
+            }
+            if (blackCount > 5) {
                 blackDetected = true;
                 break;
             }
         }
         if (blackDetected) {
-            color = texture2D(uSampler1, vTextureCoord);
+            // 原画像を参照
+            // color = texture2D(uSampler1, vec2(vTextureCoord.x, 1.0 - vTextureCoord.y));
         }
         else {
             discard;
