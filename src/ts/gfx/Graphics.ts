@@ -5,7 +5,7 @@ import { FrameBufferObject, UniformInfo } from './types';
 export class Graphics {
   private scenes: IScene[] = [];
   private static readonly canvas = document.createElement('canvas');
-  public static readonly gl = Graphics.canvas.getContext('webgl')!;
+  public static readonly gl = Graphics.canvas.getContext('webgl2')!;
 
   public init(width: number, height: number) {
     Graphics.canvas.width = width;
