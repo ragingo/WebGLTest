@@ -279,6 +279,38 @@ vec4 median(vec4 pxs[9]) {
     return pxs[4];
 }
 
+// TODO: なんとなくで実装。あとで見直す。
+void morphology_shrinking(inout vec4 pxs[9], vec4 key) {
+    if (
+        pxs[0] == key || pxs[1] == key || pxs[2] == key ||
+        pxs[3] == key || pxs[5] == key ||
+        pxs[6] == key || pxs[7] == key || pxs[8] == key
+    ) {
+        pxs[4] = key;
+    }
+}
+
+// TODO: なんとなくで実装。あとで見直す。
+void morphology_inflation(inout vec4 pxs[9], vec4 key) {
+    if (
+        pxs[1] == key || pxs[3] == key || pxs[5] == key || pxs[7] == key
+    ) {
+        pxs[4] = key;
+    }
+}
+
+vec4 morphology_opening(vec4 pxs[9], vec4 key) {
+    morphology_shrinking(pxs, key);
+    morphology_inflation(pxs, key);
+    return pxs[4];
+}
+
+vec4 morphology_closing(vec4 pxs[9], vec4 key) {
+    morphology_inflation(pxs, key);
+    morphology_shrinking(pxs, key);
+    return pxs[4];
+}
+
 void main() {
 
     // 元の色
@@ -391,8 +423,13 @@ void main() {
         vec4 pix[9];
         get_8neighbour_pixels(pix);
         color = median(pix);
+        color = binarize(color, binarizeThreshold);
     }
     if (effectType == 17 && nthPass == 3) {
+        vec4 pix[9];
+        get_8neighbour_pixels(pix);
+        // color = morphology_opening(pix, vec4(COLOR_WHITE, 1));
+        color = morphology_closing(pix, vec4(COLOR_WHITE, 1));
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {
