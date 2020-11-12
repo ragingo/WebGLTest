@@ -1,3 +1,5 @@
+#version 300 es
+
 precision mediump float;
 
 uniform sampler2D uSampler;
@@ -9,7 +11,8 @@ uniform vec2      textureSize;
 uniform float     binarizeThreshold;
 uniform vec4      editColor;
 uniform vec2      vividParams;
-varying vec2      vTextureCoord;
+in vec2           vTextureCoord;
+out vec4          outColor;
 
 const vec3 COLOR_WHITE = vec3(1.0, 1.0, 1.0);
 const vec3 COLOR_BLACK = vec3(0.0, 0.0, 0.0);
@@ -86,12 +89,7 @@ vec4 roberts(vec4 pix[9]) {
 }
 
 // Prewitt
-// TODO: だいぶ前に書いてみたやつだったけど、計算全然違うものかも？！
 vec4 prewitt(vec4 pix[9]) {
-    for (int i = 0; i < 9; i++) {
-        pix[i] = grayscale(pix[i]); // グレースケール化して上書き
-    }
-
     vec4 m[8];
     m[0] =  pix[0] + pix[1] + pix[2] + pix[3] - 2.0 * pix[4] + pix[5] - pix[6] - pix[7] - pix[8];
     m[1] =  pix[0] + pix[1] + pix[2] + pix[3] - 2.0 * pix[4] - pix[5] + pix[6] - pix[7] - pix[8];
@@ -150,7 +148,7 @@ void get_neighbour_pixels(out vec4 pix[9]) {
             float x = vTextureCoord.x + (float(col)-1.0) * offset.x;
             float y = vTextureCoord.y + (float(row)-1.0) * offset.y;
             vec2 kernel = vec2(x, y);
-            vec4 result = texture2D(uSampler, kernel);
+            vec4 result = texture(uSampler, kernel);
 
             pix[(row * 3) + col] = result;
         }
@@ -158,15 +156,15 @@ void get_neighbour_pixels(out vec4 pix[9]) {
 }
 void get_8neighbour_pixels(out vec4 pix[9]) {
     vec2 onePix = vec2(1.0 / textureSize.x, 1.0 / textureSize.y);
-    pix[0] = texture2D(uSampler, vTextureCoord.xy + vec2(-onePix.x,  onePix.y));
-    pix[1] = texture2D(uSampler, vTextureCoord.xy + vec2(        0,  onePix.y));
-    pix[2] = texture2D(uSampler, vTextureCoord.xy + vec2( onePix.x,  onePix.y));
-    pix[3] = texture2D(uSampler, vTextureCoord.xy + vec2(-onePix.x,         0));
-    pix[4] = texture2D(uSampler, vTextureCoord.xy + vec2(        0,         0));
-    pix[5] = texture2D(uSampler, vTextureCoord.xy + vec2( onePix.x,         0));
-    pix[6] = texture2D(uSampler, vTextureCoord.xy + vec2(-onePix.x, -onePix.y));
-    pix[7] = texture2D(uSampler, vTextureCoord.xy + vec2(        0, -onePix.y));
-    pix[8] = texture2D(uSampler, vTextureCoord.xy + vec2( onePix.x, -onePix.y));
+    pix[0] = texture(uSampler, vTextureCoord.xy + vec2(-onePix.x,  onePix.y));
+    pix[1] = texture(uSampler, vTextureCoord.xy + vec2(        0,  onePix.y));
+    pix[2] = texture(uSampler, vTextureCoord.xy + vec2( onePix.x,  onePix.y));
+    pix[3] = texture(uSampler, vTextureCoord.xy + vec2(-onePix.x,         0));
+    pix[4] = texture(uSampler, vTextureCoord.xy + vec2(        0,         0));
+    pix[5] = texture(uSampler, vTextureCoord.xy + vec2( onePix.x,         0));
+    pix[6] = texture(uSampler, vTextureCoord.xy + vec2(-onePix.x, -onePix.y));
+    pix[7] = texture(uSampler, vTextureCoord.xy + vec2(        0, -onePix.y));
+    pix[8] = texture(uSampler, vTextureCoord.xy + vec2( onePix.x, -onePix.y));
 }
 
 // 円
@@ -232,7 +230,7 @@ vec4 sine_wave(vec4 pix) {
     float wave = amp * sin(uv.x/180.0 * pi * freq);
     vec2 new_wave = vec2(uv.x, uv.y + wave);
 
-    result = texture2D(uSampler, new_wave);
+    result = texture(uSampler, new_wave);
     result = apply_edit_color(result);
 
     return result;
@@ -260,10 +258,31 @@ vec4 chromakey(vec4 pix, vec3 back, float threshold) {
     return pix;
 }
 
+void swap(inout vec4 a, inout vec4 b) {
+    vec4 t = a;
+    a = b;
+    b = t;
+}
+
+void sort(inout vec4 pxs[9]) {
+    for (int i=0; i<8; i++) {
+        for (int j=0; j<8-1; j++) {
+            if (max(pxs[i], pxs[j]) == pxs[i]) {
+                swap(pxs[i], pxs[j]);
+            }
+        }
+    }
+}
+
+vec4 median(vec4 pxs[9]) {
+    sort(pxs);
+    return pxs[4];
+}
+
 void main() {
 
     // 元の色
-    vec4 color = texture2D(uSampler, vTextureCoord);
+    vec4 color = texture(uSampler, vTextureCoord);
 
     if (effectType == 0 && nthPass == 1) {
         color *= apply_edit_color(color);
@@ -304,6 +323,9 @@ void main() {
         color *= apply_edit_color(color);
         vec4 pix[9];
         get_neighbour_pixels(pix);
+        for (int i = 0; i < 9; i++) {
+            pix[i] = grayscale(pix[i]);
+        }
         color = prewitt(pix);
     }
 
@@ -360,42 +382,22 @@ void main() {
     if (effectType == 17 && nthPass == 1) {
         vec4 pix[9];
         get_8neighbour_pixels(pix);
+        for (int i = 0; i < 9; i++) {
+            pix[i] = grayscale(pix[i]);
+        }
         color = prewitt(pix);
     }
     if (effectType == 17 && nthPass == 2) {
-        color = binarize(color, binarizeThreshold);
+        vec4 pix[9];
+        get_8neighbour_pixels(pix);
+        color = median(pix);
     }
     if (effectType == 17 && nthPass == 3) {
-        vec2 onePix = vec2(1.0 / textureSize.x, 1.0 / textureSize.y);
-        vec2 pos;
-        bool blackDetected = false;
-        int blackCount = 0;
-        for (int col = 0; col < 512; col++) {
-            pos = vec2(onePix.x * float(col), vTextureCoord.y);
-            if (pos.x >= vTextureCoord.x) {
-                continue;
-            }
-            vec4 pix = texture2D(uSampler, pos);
-            if (pix.rgb == COLOR_BLACK && col > 0) {
-                blackCount++;
-            }
-            if (blackCount > 5) {
-                blackDetected = true;
-                break;
-            }
-        }
-        if (blackDetected) {
-            // 原画像を参照
-            // color = texture2D(uSampler1, vec2(vTextureCoord.x, 1.0 - vTextureCoord.y));
-        }
-        else {
-            discard;
-        }
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {
     //     color = vec4(0.0, 1.0, 0.0, 1.0);
     // }
 
-    gl_FragColor = color;
+    outColor = color;
 }
