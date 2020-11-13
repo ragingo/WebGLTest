@@ -44,10 +44,10 @@ vec4 binarize(vec4 color, float threshold) {
     if (color.r > threshold ||
         color.g > threshold ||
         color.b > threshold) {
-        color = vec4(0.0, 0.0, 0.0, 1.0);
+        color = vec4(COLOR_WHITE, 1.0);
     }
     else {
-        color = vec4(1.0, 1.0, 1.0, 1.0);
+        color = vec4(COLOR_BLACK, 1.0);
     }
     return color;
 }
@@ -258,12 +258,14 @@ vec4 chromakey(vec4 pix, vec3 back, float threshold) {
     return pix;
 }
 
+// vec4 の入れ替え
 void swap(inout vec4 a, inout vec4 b) {
     vec4 t = a;
     a = b;
     b = t;
 }
 
+// 3x3 ピクセルのソート
 void sort(inout vec4 pxs[9]) {
     for (int i=0; i<8; i++) {
         for (int j=0; j<8-1; j++) {
@@ -274,41 +276,64 @@ void sort(inout vec4 pxs[9]) {
     }
 }
 
+// メディアン
 vec4 median(vec4 pxs[9]) {
     sort(pxs);
     return pxs[4];
 }
 
-// TODO: なんとなくで実装。あとで見直す。
-void morphology_shrinking(inout vec4 pxs[9], vec4 key) {
-    if (
-        pxs[0] == key || pxs[1] == key || pxs[2] == key ||
-        pxs[3] == key || pxs[5] == key ||
-        pxs[6] == key || pxs[7] == key || pxs[8] == key
-    ) {
-        pxs[4] = key;
+// モルフォロジー 収縮
+void morphology_erosion(inout vec4 pxs[9]) {
+    if (pxs[1].rgb == COLOR_BLACK || pxs[3].rgb == COLOR_BLACK || pxs[5].rgb == COLOR_BLACK || pxs[7].rgb == COLOR_BLACK) {
+        pxs[4].rgb = COLOR_BLACK;
     }
 }
 
-// TODO: なんとなくで実装。あとで見直す。
-void morphology_inflation(inout vec4 pxs[9], vec4 key) {
-    if (
-        pxs[1] == key || pxs[3] == key || pxs[5] == key || pxs[7] == key
-    ) {
-        pxs[4] = key;
+// モルフォロジー 膨張
+void morphology_dilation(inout vec4 pxs[9]) {
+    if (pxs[1].rgb == COLOR_WHITE || pxs[3].rgb == COLOR_WHITE || pxs[5].rgb == COLOR_WHITE || pxs[7].rgb == COLOR_WHITE) {
+        pxs[4].rgb = COLOR_WHITE;
     }
 }
 
-vec4 morphology_opening(vec4 pxs[9], vec4 key) {
-    morphology_shrinking(pxs, key);
-    morphology_inflation(pxs, key);
+// モルフォロジー オープニング
+vec4 morphology_opening(inout vec4 pxs[9]) {
+    morphology_erosion(pxs);
+    morphology_dilation(pxs);
     return pxs[4];
 }
 
-vec4 morphology_closing(vec4 pxs[9], vec4 key) {
-    morphology_inflation(pxs, key);
-    morphology_shrinking(pxs, key);
+// モルフォロジー クロージング
+vec4 morphology_closing(inout vec4 pxs[9]) {
+    morphology_dilation(pxs);
+    morphology_erosion(pxs);
     return pxs[4];
+}
+
+// RGB to HSV
+vec4 rgb2hsv(vec4 px) {
+    float min = min(min(px.r, px.g), px.b);
+    float max = max(max(px.r, px.g), px.b);
+
+    float h = 0.0;
+    float h_deno = max - min;
+    if (px.r == px.g && px.g == px.b) {
+        h = 0.0;
+    }
+    else if (max == px.r) {
+        h = 60.0 * ((px.g - px.b) / h_deno);
+    }
+    else if (max == px.g) {
+        h = 60.0 * ((px.b - px.r) / h_deno + 2.0);
+    }
+    else if (max == px.b) {
+        h = 60.0 * ((px.r - px.g) / h_deno + 4.0);
+    }
+
+    float s = (max - min) / max; // 円柱モデル
+    float v = max;
+
+    return vec4(h, s, v, 1);
 }
 
 void main() {
@@ -412,24 +437,26 @@ void main() {
     }
 
     if (effectType == 17 && nthPass == 1) {
-        vec4 pix[9];
-        get_8neighbour_pixels(pix);
-        for (int i = 0; i < 9; i++) {
-            pix[i] = grayscale(pix[i]);
-        }
-        color = prewitt(pix);
+        // vec4 pix[9];
+        // get_8neighbour_pixels(pix);
+        // for (int i = 0; i < 9; i++) {
+        //     pix[i] = grayscale(pix[i]);
+        // }
+        // color = prewitt(pix);
+
+        // color = rgb2hsv(color);
     }
     if (effectType == 17 && nthPass == 2) {
-        vec4 pix[9];
-        get_8neighbour_pixels(pix);
-        color = median(pix);
-        color = binarize(color, binarizeThreshold);
+        // vec4 pix[9];
+        // get_8neighbour_pixels(pix);
+        // color = median(pix);
+        // color = binarize(color, binarizeThreshold);
     }
     if (effectType == 17 && nthPass == 3) {
-        vec4 pix[9];
-        get_8neighbour_pixels(pix);
-        // color = morphology_opening(pix, vec4(COLOR_WHITE, 1));
-        color = morphology_closing(pix, vec4(COLOR_WHITE, 1));
+        // vec4 pix[9];
+        // get_8neighbour_pixels(pix);
+        // color = morphology_opening(pix);
+        // color = morphology_closing(pix);
     }
 
     // if (uShowBorder == 1 && isBorder(vTextureCoord)) {
