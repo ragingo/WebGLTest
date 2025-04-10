@@ -52,15 +52,10 @@ module.exports = {
   plugins: loadPlugins(),
   devtool: 'source-map',
   devServer: {
-    contentBase: getFullPath('./dist'),
+    watchFiles: getFullPath('./dist'),
     hot: true,
     open: true,
-    port: 3001,
-    progress: true,
-    stats: {
-      normal: true
-    },
-    watchContentBase: true,
+    port: 3001
   }
 }
 
