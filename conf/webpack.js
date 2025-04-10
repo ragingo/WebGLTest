@@ -9,7 +9,6 @@ const getFullPath = (path) => Path.resolve(rootDir, path);
 module.exports = {
   mode: 'development',
   entry: [
-    "@babel/polyfill",
     getFullPath('./src/ts/main.ts')
   ],
   output: {
