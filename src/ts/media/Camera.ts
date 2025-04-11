@@ -1,11 +1,5 @@
 import { Graphics } from '../gfx/Graphics';
 
-const DEFAULT_INPUT_VIDEO_WIDTH = 640;
-const DEFAULT_INPUT_VIDEO_HEIGHT = 480;
-const DEFAULT_INPUT_VIDEO_FRAMERATE = 30;
-
-const MAX_DECODED_FRAME_QUEUE_SIZE = 100 * 1024 * 1024;
-
 export type CameraInit = {
   video: {
     allow: boolean;
@@ -27,10 +21,8 @@ export type CameraInit = {
 
 export class Camera {
   private stream: MediaStream | null = null;
-  private videoTrackReader: any | null = null;
-  private videoEncoder: any | null = null;
-  private videoDecoder: any | null = null;
-  private decodedFrameQueue: any[] = [];
+  private videoProcessor: MediaStreamTrackProcessor<VideoFrame> | null = null;
+  private frameQueue: VideoFrame[] = [];
 
   #available = false;
   public get available() {
@@ -38,22 +30,26 @@ export class Camera {
   }
 
   public consumeDecodedFrame() {
-    return this.decodedFrameQueue.shift();
+    return this.frameQueue.shift();
   }
 
   // https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagebitmapoptions
   public async consumeDecodedFrameAsImageBitmap() {
-    const frame = this.decodedFrameQueue.shift();
+    const frame = this.frameQueue.shift();
     if (!frame) {
       return;
     }
 
-    const bmp = (await frame.createImageBitmap({
-      resizeWidth: this.cameraInit.video.output?.width ?? 512,
-      resizeHeight: this.cameraInit.video.output?.height ?? 512
-    })) as ImageBitmap;
+    const bmp = await createImageBitmap(frame, {
+      resizeWidth: this.cameraInit.video.output?.width,
+      resizeHeight: this.cameraInit.video.output?.height
+    });
 
-    frame.destroy();
+    frame.close();
+
+    if (!bmp) {
+      return;
+    }
 
     return bmp;
   }
@@ -120,49 +116,21 @@ export class Camera {
 
     const tracks = this.stream.getVideoTracks();
 
-    // @ts-ignore
-    this.videoTrackReader = new VideoTrackReader(tracks[0]);
+    this.videoProcessor = new MediaStreamTrackProcessor({ track: tracks[0] });
 
-    // @ts-ignore
-    this.videoDecoder = new VideoDecoder({
-      output: async (frame: any) => {
-        if (this.decodedFrameQueue.length === MAX_DECODED_FRAME_QUEUE_SIZE) {
-          this.decodedFrameQueue.shift();
-        }
-        this.decodedFrameQueue.push(frame);
+    const writable = new WritableStream({
+      write: (frame: VideoFrame) => {
+        this.frameQueue.push(frame);
       },
-      error: () => {}
-    });
-
-    this.videoDecoder.configure({
-      codec: 'vp8',
-      width: this.cameraInit.video.output?.width ?? 512,
-      height: this.cameraInit.video.output?.height ?? 512
-    });
-
-    // @ts-ignore
-    this.videoEncoder = new VideoEncoder({
-      output: (chunk: any) => {
-        this.videoDecoder.decode(chunk);
+      close: () => {
+        this.#available = false;
       },
-      error: () => {}
-    });
-
-    await this.videoEncoder.configure({
-      codec: 'vp8',
-      width: this.cameraInit.video.input?.width ?? DEFAULT_INPUT_VIDEO_WIDTH,
-      height: this.cameraInit.video.input?.height ?? DEFAULT_INPUT_VIDEO_HEIGHT,
-      framerate: this.cameraInit.video.input?.frameRate ?? DEFAULT_INPUT_VIDEO_FRAMERATE
-    });
-
-    this.videoTrackReader.start((frame: any) => {
-      // NOTE: カメラ入力の width|height === frame.display(Width|Height)
-      // frame.display(Width|Height) !== frame.coded(Width|Height) だとエラーになったからチェックしておく
-      if (frame.codedWidth !== frame.displayWidth || frame.codedHeight !== frame.displayHeight) {
-        return { success: false, reason: 'CAMERA_VIDEO_FRAME_SIZE_ERROR' };
+      abort: () => {
+        this.#available = false;
       }
-      this.videoEncoder.encode(frame);
     });
+
+    this.videoProcessor.readable.pipeTo(writable);
 
     this.#available = true;
     return { success: true };
