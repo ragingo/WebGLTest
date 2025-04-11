@@ -1,26 +1,37 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    },
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "baseUrl": "./src",
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "incremental": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "isolatedModules": true,
     "newLine": "lf",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "removeComments": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ESNext",
+    "verbatimModuleSyntax": true,
   },
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ]
 }
