@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "classic",
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"]
@@ -24,8 +24,7 @@
     "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "strict": true,
-    "verbatimModuleSyntax": true,
+    "strict": true
   },
   "include": [
     "src/**/*.ts"
